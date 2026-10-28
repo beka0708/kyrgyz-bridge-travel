@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<title>Мобильная версия: главная</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+</style>
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rise{animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both}
+.rise2{animation:fadeUp .8s .12s cubic-bezier(.2,.7,.2,1) both}
+.glass{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.12)}
+.snap{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+.snap>*{scroll-snap-align:start;flex:none}
+@media (prefers-reduced-motion:reduce){.rise,.rise2{animation:none}}
+</style>
+</helmet>
+<div style="width: 100%; box-sizing: border-box; background: #0E1B17; color: #F3F1EA; font-family: 'Manrope', system-ui, sans-serif; line-height: 1.5; display: flex; flex-direction: column; overflow: clip">
+
+  <header style="position: sticky; top: 0; z-index: 40; background: #0E1B17; border-bottom: 1.5px solid #243830">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 20px; min-height: 60px">
+      <a href="#top" style="display: flex; align-items: center; gap: 8px; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 16px"><svg width="28" height="28" sc-camel-view-box="0 0 36 36" fill="none" aria-hidden="true"><path d="M3 29 L14 10 L20 20 L24 14 L33 29 Z" stroke="{{accent}}" stroke-width="2.4" stroke-linejoin="round"></path></svg>[НАЗВАНИЕ]</a>
+      <button sc-camel-on-click="{{toggleMenu}}" aria-label="Меню" aria-expanded="{{menuOpen}}" style="width: 48px; height: 48px; border-radius: 999px; border: 0; background: none; color: #F3F1EA; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <svg width="26" height="26" sc-camel-view-box="0 0 24 24" fill="none" stroke="#F3F1EA" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+    <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+      <nav style="display: flex; flex-direction: column; padding: 8px 20px 20px; font-size: 18px; font-weight: 600; background: #0E1B17">
+        <a href="#tours" style="padding: 14px 0; border-top: 1.5px solid #243830">Туры</a>
+        <a href="#about" style="padding: 14px 0; border-top: 1.5px solid #243830">О нас</a>
+        <a href="#faq" style="padding: 14px 0; border-top: 1.5px solid #243830">Вопросы</a>
+        <a href="#contact" style="padding: 14px 0; border-top: 1.5px solid #243830; color: {{accent}}">Написать нам</a>
+      </nav>
+    </sc-if>
+  </header>
+
+  <section id="top" style="position: relative; overflow: hidden">
+    <img src="img-e917db00" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%">
+    <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(10, 22, 18, 0.62)"></div>
+    <div style="position: relative; padding: 96px 20px 72px; display: flex; flex-direction: column; gap: 20px">
+      <h1 class="rise" style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 40px; line-height: 1.06; letter-spacing: -0.02em">Горы, озёра <span style="color: {{accent}}">и юрты</span></h1>
+      <p class="rise2" style="margin: 0; font-size: 17px; color: #D5E0DA">Одиночные и групповые туры по Кыргызстану с местными гидами.</p>
+      <div class="rise2" style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px"><a href="#tours" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; font-weight: 700; font-size: 16px; background: {{accent}}; color: #11201A">Смотреть туры</a><a href="#contact" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; font-weight: 700; font-size: 16px; border: 1.5px solid #3C5247; color: #F3F1EA">Написать нам</a></div>
+    </div>
+  </section>
+
+  <section style="padding: 56px 20px 24px; display: flex; flex-direction: column; gap: 20px">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: {{accent}}">Как путешествовать</div><h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em">Выберите <span style="color: {{accent}}">свой формат</span></h2>
+    <a href="#tours" style="position: relative; display: block; height: 240px; border-radius: 28px; overflow: hidden; background: #2C4A3E"><img src="img-2108f2b5" alt="Туристы идут по тропе к озеру" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center">
+      <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(10, 22, 18, 0.5)"></div>
+      <div style="position: absolute; left: 20px; right: 20px; bottom: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 22px; line-height: 1.15">Одиночные туры</span><span style="font-size: 14px; color: #D5E0DA">Свой маршрут, темп и личный гид</span></div>
+        <span style="flex: none; width: 44px; height: 44px; border-radius: 999px; background: {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#11201A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+      </div></a><a href="#tours" style="position: relative; display: block; height: 240px; border-radius: 28px; overflow: hidden; background: #2C4A3E"><img src="img-b6b381bc" alt="Группа туристов на тропе" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center">
+      <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(10, 22, 18, 0.5)"></div>
+      <div style="position: absolute; left: 20px; right: 20px; bottom: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 22px; line-height: 1.15">Групповые туры</span><span style="font-size: 14px; color: #D5E0DA">Небольшая компания и фиксированные даты</span></div>
+        <span style="flex: none; width: 44px; height: 44px; border-radius: 999px; background: {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#11201A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+      </div></a>
+  </section>
+
+  <section id="tours" style="background: #F1F3EE; color: #11201A; padding: 56px 0 56px 20px; display: flex; flex-direction: column; gap: 24px">
+    <div style="padding-right: 20px; display: flex; flex-direction: column; gap: 10px"><div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #9A4A0B">Популярные туры</div><h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em">Куда <span style="color: #9A4A0B">поедем</span></h2></div>
+    <div class="snap" style="padding-right: 20px">
+      <a href="#" style="display: flex; flex-direction: column; width: 270px; background: #FFFFFF; color: #11201A; border-radius: 24px; overflow: hidden">
+        <div style="position: relative; height: 200px; background: #2C4A3E"><img src="img-b6b381bc" alt="Группа туристов идёт по тропе" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top"><span style="position: absolute; left: 12px; top: 12px; font-size: 12px; font-weight: 700; background: #F1F3EE; padding: 6px 12px; border-radius: 999px">Групповой</span></div>
+        <div style="padding: 18px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 16px; line-height: 1.3">Ала-Куль: поход к озеру</h3><span style="font-size: 14px; color: #4A5B53">[N] дней · от [ЦЕНА]</span></div>
+      </a><a href="#" style="display: flex; flex-direction: column; width: 270px; background: #FFFFFF; color: #11201A; border-radius: 24px; overflow: hidden">
+        <div style="position: relative; height: 200px; background: #2C4A3E"><img src="img-19807f58" alt="Бирюзовое озеро и сосны" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center"><span style="position: absolute; left: 12px; top: 12px; font-size: 12px; font-weight: 700; background: #F1F3EE; padding: 6px 12px; border-radius: 999px">Одиночный</span></div>
+        <div style="padding: 18px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 16px; line-height: 1.3">Иссык-Куль: берег и каньоны</h3><span style="font-size: 14px; color: #4A5B53">[N] дней · от [ЦЕНА]</span></div>
+      </a><a href="#" style="display: flex; flex-direction: column; width: 270px; background: #FFFFFF; color: #11201A; border-radius: 24px; overflow: hidden">
+        <div style="position: relative; height: 200px; background: #2C4A3E"><img src="img-0ee397fe" alt="Зелёная долина с рекой" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center"><span style="position: absolute; left: 12px; top: 12px; font-size: 12px; font-weight: 700; background: #F1F3EE; padding: 6px 12px; border-radius: 999px">Групповой</span></div>
+        <div style="padding: 18px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 16px; line-height: 1.3">Сон-Куль: ночёвка в юртах</h3><span style="font-size: 14px; color: #4A5B53">[N] дней · от [ЦЕНА]</span></div>
+      </a><a href="#" style="display: flex; flex-direction: column; width: 270px; background: #FFFFFF; color: #11201A; border-radius: 24px; overflow: hidden">
+        <div style="position: relative; height: 200px; background: #2C4A3E"><img src="img-dd256796" alt="Горная река и заснеженные склоны" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center"><span style="position: absolute; left: 12px; top: 12px; font-size: 12px; font-weight: 700; background: #F1F3EE; padding: 6px 12px; border-radius: 999px">Одиночный</span></div>
+        <div style="padding: 18px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 16px; line-height: 1.3">Арсланбоб: леса и водопады</h3><span style="font-size: 14px; color: #4A5B53">[N] дней · от [ЦЕНА]</span></div>
+      </a>
+    </div>
+    <div style="padding-right: 20px; display: flex; flex-direction: column"><a href="#tours" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; font-weight: 700; font-size: 16px; background: #11201A; color: #F3F1EA">Все туры</a></div>
+  </section>
+
+  <section id="why" style="padding: 64px 20px; display: flex; flex-direction: column; gap: 20px">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: {{accent}}">Почему мы</div><h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em">Путешествие без суеты и <span style="color: {{accent}}">лишних людей</span></h2>
+    <div class="glass" style="border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 18px">Малые группы</h3><p style="margin: 0; color: #A9B8B0; font-size: 15px">Мы не собираем автобусы: больше внимания каждому и гибкий маршрут.</p></div>
+    <div class="glass" style="border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 18px">Местные гиды</h3><p style="margin: 0; color: #A9B8B0; font-size: 15px">Люди, которые знают тропы, погоду и лучшие места.</p></div>
+    <div class="glass" style="border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 8px"><h3 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 18px">Заявка в мессенджере</h3><p style="margin: 0; color: #A9B8B0; font-size: 15px">Без форм и предоплат на сайте: пишите в WhatsApp.</p></div>
+  </section>
+
+  <section id="about" style="padding: 8px 20px 64px; display: flex; flex-direction: column; gap: 20px">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: {{accent}}">О нас</div><h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em">Команда, которая <span style="color: {{accent}}">знает горы</span></h2>
+    <p style="margin: 0; font-size: 16px; color: #A9B8B0">[Короткий рассказ о компании — 2–3 предложения]</p>
+    <div style="position: relative; height: 240px; border-radius: 28px; overflow: hidden; background: #2C4A3E"><img src="img-e917db00" alt="Горный хребет над рекой" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 45%"></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <div class="glass" style="border-radius: 20px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 24px; color: {{accent}}">[N]+</span><span style="font-size: 12px; color: #A9B8B0">маршрутов</span></div>
+      <div class="glass" style="border-radius: 20px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 24px; color: {{accent}}">[N]+</span><span style="font-size: 12px; color: #A9B8B0">гостей</span></div>
+      <div class="glass" style="border-radius: 20px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 24px; color: {{accent}}">[N]</span><span style="font-size: 12px; color: #A9B8B0">лет работы</span></div>
+    </div>
+  </section>
+
+  <section id="guides" style="padding: 8px 20px 64px; display: flex; flex-direction: column; gap: 20px">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: {{accent}}">Команда</div><h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em">Наши <span style="color: {{accent}}">гиды</span></h2>
+    <sc-for list="{{guides}}" as="g" hint-placeholder-count="3">
+      <div class="glass" style="border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <button sc-camel-on-click="{{ g.pick }}" aria-expanded="{{ g.open }}" style="width: 100%; display: flex; align-items: center; gap: 14px; background: none; border: 0; padding: 0; min-height: 56px; cursor: pointer; text-align: left; color: inherit">
+          <span style="flex: none; width: 56px; height: 56px; border-radius: 999px; background: #2C4A3E; overflow: hidden; display: block"><svg width="56" height="56" sc-camel-view-box="0 0 76 76" aria-hidden="true"><circle cx="38" cy="29" r="13" fill="#A9B8B0"></circle><path d="M12 76c0-16 11-26 26-26s26 10 26 26z" fill="#A9B8B0"></path></svg></span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 16px">{{ g.name }}</span><span style="font-size: 13px; color: #A9B8B0">{{ g.role }}</span></span>
+          <span style="flex: none; transform: rotate({{ g.rot }}); display: flex"><svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></span>
+        </button>
+        <sc-if value="{{ g.open }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 14px; color: #A9B8B0">[Биография гида: опыт, любимые маршруты, языки]</p></sc-if>
+      </div>
+    </sc-for>
+  </section>
+
+  <section id="faq" style="padding: 8px 20px 64px; display: flex; flex-direction: column; gap: 20px">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: {{accent}}">Вопросы</div><h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em">Частые <span style="color: {{accent}}">вопросы</span></h2>
+    <sc-for list="{{faqs}}" as="f" hint-placeholder-count="4">
+      <div class="glass" style="border-radius: 20px; padding: 4px 20px">
+        <button sc-camel-on-click="{{ f.pick }}" aria-expanded="{{ f.open }}" style="width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; color: inherit; font-weight: 700; font-size: 16px"><span>{{ f.q }}</span><span style="flex: none; transform: rotate({{ f.rot }}); display: flex"><svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span></button>
+        <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; padding: 0 0 18px; font-size: 15px; color: #A9B8B0">{{ f.a }}</p></sc-if>
+      </div>
+    </sc-for>
+  </section>
+
+  <section id="contact" style="padding: 0 20px 56px">
+    <div style="background: {{accent}}; color: #11201A; border-radius: 28px; padding: 32px 24px; display: flex; flex-direction: column; gap: 20px">
+      <h2 style="margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 26px; line-height: 1.15">Готовы к поездке?</h2>
+      <p style="margin: 0; font-size: 16px">Напишите нам — подберём маршрут под ваши даты.</p>
+      <a href="https://wa.me/" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; font-weight: 700; font-size: 16px; background: #11201A; color: #F3F1EA">WhatsApp</a>
+      <a href="https://t.me/" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 999px; border: 2px solid #11201A; font-weight: 700; font-size: 16px">Telegram</a>
+    </div>
+  </section>
+
+  <footer style="border-top: 1.5px solid #243830; padding: 32px 20px 96px; display: flex; flex-direction: column; gap: 14px; font-size: 14px; color: #A9B8B0">
+    <span style="font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: 16px; color: #F3F1EA">[НАЗВАНИЕ]</span>
+    <span>[Телефон] · [Email]</span><span>Бишкек, Кыргызстан</span>
+    <span style="display: flex; gap: 20px"><a href="#" style="padding: 8px 0">Instagram</a><a href="#" style="padding: 8px 0">WhatsApp</a></span>
+  </footer>
+  <div style="position: sticky; bottom: 16px; height: 0; z-index: 30">
+    <a href="https://wa.me/" aria-label="Написать в WhatsApp" style="position: absolute; right: 16px; bottom: 0; width: 58px; height: 58px; border-radius: 999px; background: {{accent}}; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px rgba(0,0,0,0.5)"><svg width="26" height="26" sc-camel-view-box="0 0 24 24" fill="none" stroke="#11201A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"></path></svg></a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#F2994A&quot;,&quot;options&quot;:[&quot;#F2994A&quot;,&quot;#E4572E&quot;,&quot;#E8C547&quot;,&quot;#5FB49C&quot;]},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:4900}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { menu: false, guide: 'g1', faq: 'f1' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#F2994A';
+    const guideList = [
+      { id: 'g1', name: '[Имя гида]', role: 'Старший гид · [N] лет опыта' },
+      { id: 'g2', name: '[Имя гида]', role: 'Гид по треккингу' },
+      { id: 'g3', name: '[Имя гида]', role: 'Гид по культурным турам' }
+    ];
+    const guides = guideList.map((g) => {
+      const open = this.state.guide === g.id;
+      return { name: g.name, role: g.role, open, rot: open ? '180deg' : '0deg', pick: () => this.setState({ guide: open ? null : g.id }) };
+    });
+    const faqList = [
+      { id: 'f1', q: 'Как забронировать тур?', a: 'Напишите нам в WhatsApp или Telegram: расскажем про свободные даты и подтвердим бронь.' },
+      { id: 'f2', q: 'Можно ли поехать одному?', a: '[Ответ заказчика]' },
+      { id: 'f3', q: 'Что, если погода испортится?', a: '[Ответ заказчика]' },
+      { id: 'f4', q: 'Как проходит оплата?', a: '[Ответ заказчика]' }
+    ];
+    const faqs = faqList.map((f) => {
+      const open = this.state.faq === f.id;
+      return { q: f.q, a: f.a, open, rot: open ? '45deg' : '0deg', pick: () => this.setState({ faq: open ? null : f.id }) };
+    });
+    return { accent, guides, faqs, menuOpen: this.state.menu, toggleMenu: () => this.setState({ menu: !this.state.menu }) };
+  }
+}
+</script>
+
+
+</body></html>

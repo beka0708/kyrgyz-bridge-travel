@@ -1,0 +1,15 @@
+<footer id="contacts" class="border-t-[1.5px] border-line pb-28 md:pb-0">
+  <div class="container-page flex flex-col gap-3.5 py-8 text-sm text-mist md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-5 md:py-10">
+    <span class="font-display text-base font-semibold text-snow">{{ site.brand_name }}</span>
+    <span class="flex flex-wrap gap-x-2">
+      {% if site.phone %}<a class="lnk" href="tel:{{ site.phone|cut:' ' }}">{{ site.phone }}</a><span aria-hidden="true">·</span>{% endif %}
+      {% if site.email %}<a class="lnk" href="mailto:{{ site.email }}">{{ site.email }}</a><span aria-hidden="true">·</span>{% endif %}
+      <span>{{ site.address|default:"Bishkek, Kyrgyzstan" }}</span>
+    </span>
+    <span class="flex gap-5">
+      {% if site.instagram_url %}<a class="lnk py-2 md:py-3" href="{{ site.instagram_url }}" rel="noopener" target="_blank">Instagram</a>{% endif %}
+      {% if site.whatsapp %}<a class="lnk py-2 md:py-3" href="{{ site.whatsapp_url }}" rel="noopener" target="_blank">WhatsApp</a>{% endif %}
+      {% if site.telegram %}<a class="lnk py-2 md:py-3" href="{{ site.telegram_url }}" rel="noopener" target="_blank">Telegram</a>{% endif %}
+    </span>
+  </div>
+</footer>

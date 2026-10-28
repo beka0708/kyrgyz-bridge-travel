@@ -1,11 +1,12 @@
 import { fileURLToPath, URL } from "node:url";
 
+import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 
 // Built files go to Django's static dir; django-vite reads the manifest to inject tags.
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), tailwindcss()],
   base: "/static/dist/",
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
@@ -24,6 +25,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
       input: {
+        main: "src/entries/main.ts",
         "route-editor": "src/entries/route-editor.ts",
         "route-map": "src/entries/route-map.ts",
       },

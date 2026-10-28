@@ -116,6 +116,10 @@ class SiteSettings(SEOModel):
             cache.set(cls.CACHE_KEY, obj, 60 * 10)
         return obj
 
+    @property
+    def telegram_url(self):
+        return f"https://t.me/{self.telegram}" if self.telegram else ""
+
     def whatsapp_url(self, text=""):
         if not self.whatsapp:
             return ""

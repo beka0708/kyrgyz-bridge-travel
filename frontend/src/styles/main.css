@@ -1,0 +1,183 @@
+/* Design system from the mockups (docs/design/source/*.html). */
+@import "tailwindcss";
+@import "@fontsource-variable/unbounded/wght.css";
+@import "@fontsource-variable/manrope/wght.css";
+
+/* Tailwind scans Django templates and the Vue islands for classes. */
+@source "../../../backend/templates";
+@source "../../../backend/apps";
+@source "..";
+
+@theme {
+  /* Dark surfaces */
+  --color-night: #0e1b17;        /* page background */
+  --color-forest: #15271f;       /* header pill, bars */
+  --color-line: #243830;         /* borders on dark */
+  --color-line-strong: #3c5247;  /* stronger borders, scroll track */
+  --color-pine: #183029;         /* map placeholder */
+  --color-moss: #2c4a3e;         /* image placeholder */
+
+  /* Text on dark */
+  --color-snow: #f3f1ea;
+  --color-mist: #a9b8b0;
+  --color-sage: #8fa498;
+
+  /* Light sections */
+  --color-paper: #f1f3ee;
+  --color-ink: #11201a;
+  --color-ink-muted: #4a5b53;
+  --color-rust: #9a4a0b;         /* accent text on light backgrounds (contrast) */
+  --color-pebble: #b9c2bb;
+
+  --color-accent: #f2994a;
+
+  --font-sans: "Manrope Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Unbounded Variable", "Manrope Variable", sans-serif;
+
+  --radius-card: 28px;
+  --radius-panel: 32px;
+  --radius-hero: 44px;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@layer base {
+  html {
+    @apply bg-night text-snow font-sans antialiased;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply leading-normal;
+  }
+  [x-cloak] {
+    display: none !important;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-[1200px] px-5 md:px-8;
+  }
+  .eyebrow {
+    @apply text-xs font-bold tracking-[0.14em] uppercase md:text-[13px];
+  }
+  .h-section {
+    @apply font-display text-[28px] leading-[1.12] font-semibold tracking-[-0.01em] md:text-[44px] md:leading-[1.1];
+  }
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center rounded-full px-6 text-[15px] font-bold whitespace-nowrap;
+    transition: transform 0.25s ease;
+  }
+  .btn:hover {
+    transform: translateY(-3px);
+  }
+  /* modifier: use as class="btn btn-accent" */
+  .btn-accent {
+    @apply bg-accent text-ink;
+  }
+  .glass {
+    @apply border-[1.5px] border-white/12 bg-white/4;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .glass:hover {
+    @apply border-accent;
+    box-shadow: 0 0 36px rgb(242 153 74 / 0.22);
+  }
+  .lnk {
+    transition: color 0.2s ease;
+  }
+  .lnk:hover {
+    @apply text-snow;
+  }
+  /* Horizontal scroller with snap, used for chips and galleries on phones. */
+  .snap-row {
+    @apply -mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .snap-row > * {
+    scroll-snap-align: start;
+    flex: none;
+  }
+  .snap-row::-webkit-scrollbar {
+    display: none;
+  }
+  .pic {
+    @apply relative overflow-hidden bg-moss;
+  }
+  .pic img {
+    @apply absolute inset-0 h-full w-full object-cover;
+    transition: transform 1s var(--ease-out-soft);
+  }
+  .pic:hover img.zoom {
+    transform: scale(1.07);
+  }
+}
+
+/* --- Motion (from the mockups); all of it is off with «reduce motion» --- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.rise {
+  animation: fade-up 0.8s var(--ease-out-soft) both;
+}
+.rise-2 {
+  animation: fade-up 0.8s 0.12s var(--ease-out-soft) both;
+}
+.rise-3 {
+  animation: fade-up 0.8s 0.24s var(--ease-out-soft) both;
+}
+.float {
+  animation: floaty 5s ease-in-out infinite;
+}
+/* Scroll reveal: main.ts adds .is-visible when the block enters the screen. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.8s var(--ease-out-soft),
+    transform 0.8s var(--ease-out-soft);
+}
+.js [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .rise-2,
+  .rise-3,
+  .float {
+    animation: none;
+  }
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .btn:hover {
+    transform: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

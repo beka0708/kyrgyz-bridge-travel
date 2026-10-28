@@ -1,0 +1,6 @@
+{% if site.whatsapp %}
+  <a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" aria-label="Write to us on WhatsApp"
+     class="btn btn-accent fixed right-4 bottom-4 z-30 size-14 !px-0 shadow-[0_16px_40px_rgba(0,0,0,0.45)] md:right-8 md:bottom-8">
+    {% include "partials/icon_whatsapp.html" with size="26" %}
+  </a>
+{% endif %}

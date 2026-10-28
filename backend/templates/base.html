@@ -1,15 +1,21 @@
-<!doctype html>
+{% load django_vite %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}{{ site.seo_title|default:site.brand_name }}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ site.seo_description }}{% endblock %}">
-  {# Temporary skeleton markup; Tailwind/Vite and the real layout come in the frontend stage. #}
-  <style>body{font-family:system-ui,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;line-height:1.5}</style>
+  <meta name="theme-color" content="#0e1b17">
+  {% vite_hmr_client %}
+  {% vite_asset "src/entries/main.ts" %}
+  {% block head %}{% endblock %}
 </head>
-<body>
-  <header><a href="{% url 'core:home' %}">{{ site.brand_name }}</a> · <a href="{% url 'tours:list' %}">Tours</a></header>
-  <main>{% block content %}{% endblock %}</main>
+<body class="min-h-dvh overflow-x-clip">
+  {% include "partials/scroll_progress.html" %}
+  {% block header %}{% include "partials/header.html" %}{% endblock %}
+  <main id="top">{% block content %}{% endblock %}</main>
+  {% block footer %}{% include "partials/footer.html" %}{% endblock %}
+  {% block floating %}{% include "partials/whatsapp_float.html" %}{% endblock %}
+  {% block scripts %}{% endblock %}
 </body>
 </html>

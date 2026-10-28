@@ -76,7 +76,7 @@ class TourAdmin(ModelAdmin):
                     "title",
                     "slug",
                     "tour_type",
-                    "cover",
+                    ("cover", "next_departure"),
                     "short_description",
                     "description",
                     "how_to_get_there",

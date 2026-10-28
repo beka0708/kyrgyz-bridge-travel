@@ -22,18 +22,18 @@ const container = ref<HTMLDivElement>();
 let map: maplibregl.Map | undefined;
 
 const routedDays = computed(() => props.days.filter((d) => d.waypoints.length || d.track));
-
-const activeTitle = computed(
-  () => props.days.find((d) => d.day_number === activeDay.value)?.title ?? "Whole route",
-);
+const active = computed(() => props.days.find((d) => d.day_number === activeDay.value) ?? null);
 
 /** Google Maps directions for the selected day (or the whole route), up to 10 stops. */
 const googleMapsUrl = computed(() => {
-  const days = activeDay.value === null ? props.days : props.days.filter((d) => d.day_number === activeDay.value);
+  const days = active.value ? [active.value] : props.days;
   const stops = days.flatMap((d) => d.waypoints).map((p) => `${p.lat},${p.lng}`);
   const unique = stops.filter((s, i) => s !== stops[i - 1]);
-  if (unique.length < 2) return unique.length ? `https://www.google.com/maps/search/?api=1&query=${unique[0]}` : "";
-  const trimmed = unique.length > 10 ? [unique[0], ...unique.slice(1, -1).slice(0, 8), unique.at(-1)!] : unique;
+  if (unique.length < 2) {
+    return unique.length ? `https://www.google.com/maps/search/?api=1&query=${unique[0]}` : "";
+  }
+  const trimmed =
+    unique.length > 10 ? [unique[0], ...unique.slice(1, -1).slice(0, 8), unique.at(-1)!] : unique;
   const params = new URLSearchParams({
     api: "1",
     origin: trimmed[0],
@@ -56,9 +56,8 @@ function onExternalSelect(event: Event) {
 
 function focusActive(animate = true) {
   if (!map) return;
-  const days =
-    activeDay.value === null ? routedDays.value : routedDays.value.filter((d) => d.day_number === activeDay.value);
-  fitTo(map, boundsOf(days.length ? days : routedDays.value), { animate, padding: 50 });
+  const days = active.value && routedDays.value.includes(active.value) ? [active.value] : routedDays.value;
+  fitTo(map, boundsOf(days), { animate, padding: 60 });
 }
 
 watch(activeDay, () => {
@@ -72,6 +71,7 @@ onMounted(async () => {
   map = createMap(container.value!, props.map, {
     enable3d: is3dAllowed(props.map.terrain_3d),
     cooperativeGestures: true,
+    controls: "bottom",
   });
   await whenReady(map);
   addRouteLayers(map);
@@ -86,71 +86,50 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="kt-route">
-    <div v-if="showDayChips" class="kt-route__chips" role="tablist" aria-label="Route days">
+  <div class="flex h-full flex-col">
+    <div v-if="showDayChips" class="snap-row pb-2.5" role="tablist" aria-label="Route days">
       <button
+        v-for="item in [null, ...days.map((d) => d.day_number)]"
+        :key="item ?? 'all'"
         type="button"
         role="tab"
-        :aria-selected="activeDay === null"
-        @click="select(null)"
+        :aria-selected="activeDay === item"
+        class="min-h-11 rounded-full border-[1.5px] px-5 text-sm font-bold"
+        :class="activeDay === item ? 'border-accent bg-accent text-ink' : 'border-line-strong text-snow'"
+        @click="select(item)"
       >
-        All days
-      </button>
-      <button
-        v-for="day in days"
-        :key="day.day_number"
-        type="button"
-        role="tab"
-        :aria-selected="activeDay === day.day_number"
-        @click="select(day.day_number)"
-      >
-        Day {{ day.day_number }}
+        {{ item === null ? "All days" : `Day ${item}` }}
       </button>
     </div>
-    <div ref="container" class="kt-route__map" :aria-label="`Route map: ${activeTitle}`" role="region" />
-    <a v-if="googleMapsUrl" class="kt-route__gmaps" :href="googleMapsUrl" target="_blank" rel="noopener">
-      Open in Google Maps ↗
-    </a>
+    <div class="relative min-h-0 flex-1">
+      <!-- maplibre-gl.css sets the map element to position:relative, so size it via a wrapper -->
+      <div class="absolute inset-0">
+        <div
+          ref="container"
+          class="h-full w-full"
+          role="region"
+          :aria-label="active ? `Route map, day ${active.day_number}: ${active.title}` : 'Route map'"
+        />
+      </div>
+      <!-- Overlays from the mockup: current day on the left, Google Maps on the right -->
+      <div class="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-2 md:inset-x-4 md:top-4">
+        <span
+          v-if="active"
+          class="max-w-[60%] truncate rounded-full bg-night px-3 py-1.5 text-[13px] font-bold text-snow md:px-4 md:py-2 md:text-sm"
+        >
+          Day {{ active.day_number }}<span class="hidden md:inline">: {{ active.title }}</span>
+        </span>
+        <span v-else />
+        <a
+          v-if="googleMapsUrl"
+          :href="googleMapsUrl"
+          target="_blank"
+          rel="noopener"
+          class="pointer-events-auto inline-flex min-h-10 items-center rounded-full bg-accent px-3.5 text-[13px] font-bold whitespace-nowrap text-ink md:px-4 md:text-sm"
+        >
+          <span class="md:hidden">Google Maps</span><span class="hidden md:inline">Open in Google Maps</span>
+        </a>
+      </div>
+    </div>
   </div>
 </template>
-
-<style>
-/* Temporary look; the real styles come with the tour page design (Tailwind). */
-.kt-route__chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-  scrollbar-width: none;
-}
-.kt-route__chips button {
-  flex: none;
-  border: 1px solid #c9c6bb;
-  background: #fff;
-  border-radius: 999px;
-  padding: 7px 14px;
-  font: inherit;
-  cursor: pointer;
-}
-.kt-route__chips button[aria-selected="true"] {
-  background: #e8964a;
-  border-color: #e8964a;
-  color: #fff;
-}
-.kt-route__map {
-  height: min(70vh, 520px);
-  border-radius: 16px;
-  overflow: hidden;
-}
-@media (max-width: 1023px) {
-  .kt-route__map {
-    height: 45vh;
-  }
-}
-.kt-route__gmaps {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 14px;
-  color: #b4642a;
-}
-</style>

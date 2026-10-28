@@ -23,6 +23,8 @@ export interface CreateMapOptions {
   enable3d?: boolean;
   /** Require two fingers / ctrl+scroll so the page scrolls past the map. */
   cooperativeGestures?: boolean;
+  /** Where zoom and «Map/Topo» controls go; "bottom" leaves the top for page overlays. */
+  controls?: "top" | "bottom";
 }
 
 // Kyrgyzstan overview, used when a route has no points yet.
@@ -63,10 +65,12 @@ export function createMap(
     attributionControl: { compact: true },
     cooperativeGestures: options.cooperativeGestures ?? false,
   });
+  const bottom = options.controls === "bottom";
   map.addControl(
     new maplibregl.NavigationControl({ showCompass: enable3d, visualizePitch: enable3d }),
+    bottom ? "bottom-right" : "top-right",
   );
-  map.addControl(new BaseLayerControl(map), "top-left");
+  map.addControl(new BaseLayerControl(map), bottom ? "bottom-left" : "top-left");
   ready.set(
     map,
     new Promise((resolve) =>

@@ -20,10 +20,21 @@ class TourType(models.TextChoices):
     GROUP = "group", "Групповой"
 
 
+# Labels on the public (English) site; the admin keeps the Russian choice labels.
+PUBLIC_TOUR_TYPE = {TourType.SOLO: "Private tour", TourType.GROUP: "Group tour"}
+
+
 class Difficulty(models.TextChoices):
     EASY = "easy", "Лёгкий"
     MODERATE = "moderate", "Средний"
     HARD = "hard", "Сложный"
+
+
+PUBLIC_DIFFICULTY = {
+    Difficulty.EASY: "Easy",
+    Difficulty.MODERATE: "Moderate",
+    Difficulty.HARD: "Challenging",
+}
 
 
 class Currency(models.TextChoices):
@@ -63,6 +74,12 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
     )
 
     cover = models.ImageField("главное фото", upload_to="tours/covers/")
+    next_departure = models.CharField(
+        "ближайший выезд",
+        max_length=60,
+        blank=True,
+        help_text="Показывается на фото тура, например: June 14. Пусто — не показывать.",
+    )
     is_featured = models.BooleanField("хит сезона", default=False)
 
     class Meta(OrderableModel.Meta):
@@ -80,6 +97,27 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
             raise ValidationError({"group_size_max": "Не может быть меньше «группа от»."})
         if bool(self.season_start) != bool(self.season_end):
             raise ValidationError("Укажите оба месяца сезона или ни одного.")
+
+    @property
+    def type_label(self):
+        return PUBLIC_TOUR_TYPE.get(self.tour_type, "")
+
+    @property
+    def difficulty_label(self):
+        return PUBLIC_DIFFICULTY.get(self.difficulty, "")
+
+    @property
+    def group_label(self):
+        if self.group_size_max:
+            return f"up to {self.group_size_max} people"
+        return f"from {self.group_size_min} people" if self.group_size_min > 1 else ""
+
+    @property
+    def price_label(self):
+        symbols = {Currency.USD: "$", Currency.EUR: "€"}
+        amount = f"{self.price_from:,.0f}"
+        symbol = symbols.get(self.currency)
+        return f"{symbol}{amount}" if symbol else f"{amount} {self.currency}"
 
     @property
     def season_label(self):
@@ -204,6 +242,20 @@ class TourDay(models.Model):
 
     def __str__(self):
         return f"{self.tour} · день {self.day_number}: {self.title}"
+
+    @property
+    def meta_label(self):
+        """«12 km · ↑ 900 m · 5–6 h · overnight: guesthouse» for the day card."""
+        parts = []
+        if self.distance_km is not None:
+            parts.append(f"{self.distance_km:g} km")
+        if self.ascent_m:
+            parts.append(f"↑ {self.ascent_m} m")
+        if self.travel_time:
+            parts.append(self.travel_time)
+        if self.overnight:
+            parts.append(f"overnight: {self.overnight}")
+        return " · ".join(parts)
 
 
 class TourDayImage(OrderableModel):
