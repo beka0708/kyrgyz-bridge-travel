@@ -1,0 +1,7 @@
+<ul>
+  {% for tour in tours %}
+    <li><a href="{{ tour.get_absolute_url }}">{{ tour.title }}</a> — {{ tour.get_tour_type_display }}, {{ tour.duration_days }} days, from {{ tour.price_from|floatformat }} {{ tour.currency }}</li>
+  {% empty %}
+    <li>No tours yet.</li>
+  {% endfor %}
+</ul>

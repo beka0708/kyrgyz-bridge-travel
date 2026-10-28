@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Tours — {{ site.brand_name }}{% endblock %}
+{% block content %}
+  <h1>Tours</h1>
+  <p><a href="?">All</a> · <a href="?type=solo">Solo</a> · <a href="?type=group">Group</a></p>
+  {% include "pages/_tour_links.html" %}
+{% endblock %}

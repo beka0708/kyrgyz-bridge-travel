@@ -1,0 +1,9 @@
+# Project-level Russian strings for the admin: fills gaps in third-party translations.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ru\n"
+
+# unfold: first tab on change forms with inlines
+msgid "General"
+msgstr "Основное"

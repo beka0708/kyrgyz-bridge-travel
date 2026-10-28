@@ -1,0 +1,217 @@
+import calendar
+
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator, MinValueValidator
+from django.db import models
+from django.urls import reverse
+
+from apps.core.models import (
+    OrderableModel,
+    PublishableModel,
+    SEOModel,
+    TimeStampedModel,
+)
+
+MONTH_CHOICES = [(i, calendar.month_name[i]) for i in range(1, 13)]
+
+
+class TourType(models.TextChoices):
+    SOLO = "solo", "Одиночный"
+    GROUP = "group", "Групповой"
+
+
+class Difficulty(models.TextChoices):
+    EASY = "easy", "Лёгкий"
+    MODERATE = "moderate", "Средний"
+    HARD = "hard", "Сложный"
+
+
+class Currency(models.TextChoices):
+    USD = "USD", "USD"
+    EUR = "EUR", "EUR"
+    KGS = "KGS", "KGS"
+
+
+class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
+    title = models.CharField("название", max_length=150)
+    slug = models.SlugField("адрес страницы", max_length=160, unique=True)
+    tour_type = models.CharField("тип", max_length=10, choices=TourType.choices)
+    short_description = models.CharField(
+        "кратко", max_length=300, help_text="Для карточки тура и превью."
+    )
+    description = models.TextField("описание", blank=True)
+    how_to_get_there = models.TextField("как добраться", blank=True)
+
+    price_from = models.DecimalField(
+        "цена от", max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
+    )
+    currency = models.CharField("валюта", max_length=3, choices=Currency, default=Currency.USD)
+    price_note = models.CharField(
+        "пояснение к цене", max_length=100, blank=True, help_text="Например: per person"
+    )
+    duration_days = models.PositiveSmallIntegerField(
+        "длительность, дней", validators=[MinValueValidator(1)]
+    )
+    difficulty = models.CharField("сложность", max_length=10, choices=Difficulty.choices)
+    group_size_min = models.PositiveSmallIntegerField("группа от", default=1)
+    group_size_max = models.PositiveSmallIntegerField("группа до", null=True, blank=True)
+    season_start = models.PositiveSmallIntegerField(
+        "сезон с", choices=MONTH_CHOICES, null=True, blank=True
+    )
+    season_end = models.PositiveSmallIntegerField(
+        "сезон по", choices=MONTH_CHOICES, null=True, blank=True
+    )
+
+    cover = models.ImageField("главное фото", upload_to="tours/covers/")
+    is_featured = models.BooleanField("хит сезона", default=False)
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "тур"
+        verbose_name_plural = "туры"
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("tours:detail", kwargs={"slug": self.slug})
+
+    def clean(self):
+        if self.group_size_max and self.group_size_max < self.group_size_min:
+            raise ValidationError({"group_size_max": "Не может быть меньше «группа от»."})
+        if bool(self.season_start) != bool(self.season_end):
+            raise ValidationError("Укажите оба месяца сезона или ни одного.")
+
+    @property
+    def season_label(self):
+        if not self.season_start:
+            return ""
+        start = calendar.month_abbr[self.season_start]
+        end = calendar.month_abbr[self.season_end]
+        return start if start == end else f"{start} – {end}"
+
+
+class TourImage(OrderableModel):
+    tour = models.ForeignKey(
+        Tour, verbose_name="тур", on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField("фото", upload_to="tours/gallery/")
+    alt = models.CharField("описание фото (alt)", max_length=200, blank=True)
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "фото галереи"
+        verbose_name_plural = "галерея"
+
+    def __str__(self):
+        return self.alt or f"Фото {self.pk}"
+
+
+class ListKind(models.TextChoices):
+    INCLUDED = "included", "Включено"
+    EXCLUDED = "excluded", "Не включено"
+    GEAR = "gear", "Снаряжение"
+
+
+class TourListItem(OrderableModel):
+    tour = models.ForeignKey(
+        Tour, verbose_name="тур", on_delete=models.CASCADE, related_name="list_items"
+    )
+    kind = models.CharField("раздел", max_length=10, choices=ListKind.choices)
+    text = models.CharField("пункт", max_length=255)
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "пункт списка"
+        verbose_name_plural = "включено / не включено / снаряжение"
+
+    def __str__(self):
+        return self.text
+
+
+class TrackSource(models.TextChoices):
+    MANUAL = "manual", "Линия по точкам"
+    ROUTED = "routed", "По дорогам (сервис маршрутов)"
+    GPX = "gpx", "Из GPX-трека"
+
+
+def validate_waypoints(value):
+    """[{"lat": 42.49, "lng": 78.39, "name": "Karakol"}, ...]"""
+    if not isinstance(value, list):
+        raise ValidationError("Точки маршрута должны быть списком.")
+    for i, point in enumerate(value, start=1):
+        if not isinstance(point, dict):
+            raise ValidationError(f"Точка {i}: ожидается объект.")
+        try:
+            lat, lng = float(point["lat"]), float(point["lng"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValidationError(f"Точка {i}: нужны числа lat и lng.") from exc
+        if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+            raise ValidationError(f"Точка {i}: координаты вне диапазона.")
+
+
+def validate_line_string(value):
+    """GeoJSON LineString: {"type": "LineString", "coordinates": [[lng, lat], ...]}"""
+    if value in (None, {}):
+        return
+    if not isinstance(value, dict) or value.get("type") != "LineString":
+        raise ValidationError("Линия маршрута должна быть GeoJSON LineString.")
+    coords = value.get("coordinates")
+    if not isinstance(coords, list) or len(coords) < 2:
+        raise ValidationError("В линии маршрута нужно минимум две точки.")
+
+
+class TourDay(models.Model):
+    tour = models.ForeignKey(
+        Tour, verbose_name="тур", on_delete=models.CASCADE, related_name="days"
+    )
+    day_number = models.PositiveSmallIntegerField("день №", validators=[MinValueValidator(1)])
+    title = models.CharField("заголовок", max_length=150, help_text="Например: Bishkek — Karakol")
+    description = models.TextField("описание дня", blank=True)
+    distance_km = models.DecimalField(
+        "расстояние, км", max_digits=6, decimal_places=1, null=True, blank=True
+    )
+    ascent_m = models.PositiveIntegerField("набор высоты, м", null=True, blank=True)
+    travel_time = models.CharField("время в пути", max_length=50, blank=True, help_text="5–6 h")
+    overnight = models.CharField("ночёвка", max_length=150, blank=True)
+
+    # Route geometry. Points are placed on a map in the admin; the line is computed once on
+    # save (routing service, straight segments or GPX) so visitors never trigger a paid API.
+    waypoints = models.JSONField(
+        "точки маршрута", default=list, blank=True, validators=[validate_waypoints]
+    )
+    track = models.JSONField(
+        "линия маршрута", null=True, blank=True, validators=[validate_line_string]
+    )
+    track_source = models.CharField(
+        "как строить линию", max_length=10, choices=TrackSource, default=TrackSource.MANUAL
+    )
+    gpx_file = models.FileField(
+        "GPX-трек",
+        upload_to="tours/gpx/",
+        blank=True,
+        validators=[FileExtensionValidator(["gpx"])],
+    )
+
+    class Meta:
+        verbose_name = "день маршрута"
+        verbose_name_plural = "дни маршрута"
+        ordering = ["tour", "day_number"]
+        constraints = [
+            models.UniqueConstraint(fields=["tour", "day_number"], name="unique_day_per_tour"),
+        ]
+
+    def __str__(self):
+        return f"{self.tour} · день {self.day_number}: {self.title}"
+
+
+class TourDayImage(OrderableModel):
+    day = models.ForeignKey(
+        TourDay, verbose_name="день", on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField("фото", upload_to="tours/days/")
+    alt = models.CharField("описание фото (alt)", max_length=200, blank=True)
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "фото дня"
+        verbose_name_plural = "фото дня"
+
+    def __str__(self):
+        return self.alt or f"Фото {self.pk}"

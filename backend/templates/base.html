@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.seo_title|default:site.brand_name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ site.seo_description }}{% endblock %}">
+  {# Temporary skeleton markup; Tailwind/Vite and the real layout come in the frontend stage. #}
+  <style>body{font-family:system-ui,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;line-height:1.5}</style>
+</head>
+<body>
+  <header><a href="{% url 'core:home' %}">{{ site.brand_name }}</a> · <a href="{% url 'tours:list' %}">Tours</a></header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

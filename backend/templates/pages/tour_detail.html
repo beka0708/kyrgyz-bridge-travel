@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ tour.seo_title|default:tour.title }} — {{ site.brand_name }}{% endblock %}
+{% block description %}{{ tour.seo_description|default:tour.short_description }}{% endblock %}
+{% block content %}
+  <h1>{{ tour.title }}</h1>
+  <p>{{ tour.short_description }}</p>
+  <h2>Day by day</h2>
+  <ol>
+    {% for day in tour.days.all %}<li><strong>{{ day.title }}</strong> — {{ day.description|truncatewords:30 }}</li>{% endfor %}
+  </ol>
+{% endblock %}

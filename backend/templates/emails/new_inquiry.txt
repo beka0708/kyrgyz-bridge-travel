@@ -1,0 +1,15 @@
+{% autoescape off %}New inquiry from the website
+
+Name:     {{ inquiry.name }}
+Email:    {{ inquiry.email }}
+Contact:  {{ inquiry.contact|default:"—" }}
+Tour:     {{ inquiry.tour_title|default:"—" }}
+Dates:    {{ inquiry.date_from|default:"?" }} — {{ inquiry.date_to|default:"?" }}
+People:   {{ inquiry.people }}
+
+Comment:
+{{ inquiry.comment|default:"—" }}
+
+Page: {{ inquiry.page_url|default:"—" }}
+Open in admin: {{ admin_url }}
+{% endautoescape %}

@@ -1,0 +1,48 @@
+[project]
+name = "kg-tours"
+version = "0.1.0"
+description = "Kyrgyzstan tour agency website"
+authors = [
+    { name = "beka0708", email = "abdulasanovbektur@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2,<5.3",
+    "django-environ>=0.14.0",
+    "django-filter>=26.2",
+    "django-unfold>=0.110.0",
+    "djangorestframework>=3.18.3",
+    "drf-spectacular>=0.30.0",
+    "gunicorn>=26.2.0",
+    "pillow>=13.0.0",
+    "psycopg[binary]>=3.3.6",
+]
+
+
+[dependency-groups]
+dev = [
+    "factory-boy>=3.3.3",
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+    "ruff>=0.17.2",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "SIM"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+addopts = "--reuse-db -q"
+filterwarnings = [
+    # URLField https default arrives with Django 6; harmless on 5.2 LTS
+    "ignore:The default scheme will be changed:django.utils.deprecation.RemovedInDjango60Warning",
+]
