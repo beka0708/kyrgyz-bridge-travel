@@ -1,4 +1,6 @@
 BACK = cd backend && uv run
+# Web port; override with: make dev PORT=9000
+PORT ?= 8010
 
 .PHONY: db dev migrate migrations superuser seed test lint fmt shell check front-install front-dev front-build
 
@@ -6,7 +8,7 @@ db:            ## start PostgreSQL in Docker
 	docker compose up -d --wait db
 
 dev: db        ## run Django dev server
-	$(BACK) python manage.py runserver
+	$(BACK) python manage.py runserver 127.0.0.1:$(PORT)
 
 migrate:
 	$(BACK) python manage.py migrate

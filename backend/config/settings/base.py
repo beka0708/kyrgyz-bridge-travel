@@ -14,7 +14,7 @@ DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Public origin without a trailing slash; used for links in emails, sitemap, Open Graph.
-SITE_URL = env("SITE_URL", default="http://localhost:8000").rstrip("/")
+SITE_URL = env("SITE_URL", default="http://localhost:8010").rstrip("/")
 
 INSTALLED_APPS = [
     # unfold must come before django.contrib.admin
@@ -72,7 +72,7 @@ TEMPLATES = [
 ]
 
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres://kgtours:kgtours@localhost:5434/kgtours"),
+    "default": env.db("DATABASE_URL", default="postgres://kgtours:kgtours@localhost:5440/kgtours"),
 }
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

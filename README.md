@@ -9,12 +9,12 @@ Django-монолит: страницы, админка (django-unfold) и REST 
 
 ```bash
 cp .env.example .env          # если .env ещё нет
-make db                       # PostgreSQL 17 в Docker на localhost:5434
+make db                       # PostgreSQL 17 в Docker на localhost:5440
 make migrate
 make superuser
 make seed                     # демо-туры, отзывы, FAQ (фото-заглушки)
 make front-install && make front-build   # карта маршрута и редактор в админке
-make dev                      # http://localhost:8000
+make dev                      # http://localhost:8010
 ```
 
 | Адрес | Что |

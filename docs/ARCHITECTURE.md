@@ -205,7 +205,7 @@ Django отдаёт HTML сам, а данные для островка кла�
 
 ## 9. Окружения и деплой
 
-- **dev**: PostgreSQL в Docker (`compose.yml`, порт 5434), Django через `uv run`, Vite dev-сервер с HMR.
+- **dev**: PostgreSQL в Docker (`compose.yml`, порт 5440), Django через `uv run`, Vite dev-сервер с HMR.
 - **prod**: `deploy/compose.prod.yml` — `app` (gunicorn), `db`, `caddy`; volumes для БД, media, static.
 - Секреты только в `.env` (в git — `.env.example`).
 - Бэкап: `pg_dump` + архив media раз в сутки, хранить 7 копий (рекомендуем, даже если
