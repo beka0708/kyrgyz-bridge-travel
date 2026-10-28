@@ -1,6 +1,317 @@
 {% extends "base.html" %}
+{% load site_tags %}
+{# Mockups: docs/design/source/desktop-home.html and mobile-home.html. Empty sections are hidden. #}
+
+{% block header %}{% include "partials/header_mobile.html" %}{% endblock %}
+
 {% block content %}
-  <h1>Mountains, lakes and yurts</h1>
-  <p>Skeleton page. API docs: <a href="/api/docs/">/api/docs/</a> · Admin: <a href="/admin/">/admin/</a></p>
-  {% include "pages/_tour_links.html" %}
+{# --------------------------------------------------------------- HERO + desktop nav over the photo #}
+<div class="relative overflow-hidden">
+  {% if hero_image %}
+    <img src="{{ hero_image.url }}" alt="" class="absolute inset-0 h-full w-full object-cover object-[center_40%]" fetchpriority="high">
+  {% endif %}
+  <div aria-hidden="true" class="absolute inset-0 bg-[rgb(10_22_18/0.62)]"></div>
+
+  {% include "partials/header_desktop.html" %}
+
+  <section class="container-page relative flex flex-col items-start gap-5 pt-24 pb-18 md:gap-7 md:pt-[150px] md:pb-[190px]">
+    <h1 class="rise-2 max-w-[880px] font-display text-[40px] leading-[1.06] font-semibold tracking-[-0.02em] md:text-[84px] md:leading-[1.04]">{{ site.hero_title|accent_title }}</h1>
+    <p class="rise-3 max-w-[560px] text-[17px] text-[#d5e0da] md:text-[22px]">{{ site.hero_subtitle }}</p>
+    <div class="rise-3 mt-2 flex w-full flex-col gap-3 md:mt-3 md:w-auto md:flex-row md:flex-wrap md:gap-4">
+      <a class="btn btn-accent min-h-[54px] gap-2.5 px-[34px] text-base md:min-h-[58px]" href="#tours">
+        View tours
+        <svg class="size-5 stroke-ink" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn min-h-[54px] border-[1.5px] border-snow px-[34px] text-base md:min-h-[58px]" href="#contact">Message us</a>
+    </div>
+  </section>
+</div>
+
+{# --------------------------------------------------------------- FORMATS: private / group #}
+<section id="formats" class="container-page flex flex-col gap-5 pt-14 pb-6 md:gap-12 md:py-26">
+  {% include "partials/section_heading.html" with eyebrow="How to travel" title="Choose *your format*" %}
+  <div class="grid gap-5 md:grid-cols-2 md:gap-6">
+    {% url 'tours:list' as tours_url %}
+    {% include "pages/_format_card.html" with href=tours_url|add:"?type=solo" title="Private tours" text=site.solo_text image=solo_image %}
+    {% include "pages/_format_card.html" with href=tours_url|add:"?type=group" title="Group tours" text=site.group_text image=group_image %}
+  </div>
+</section>
+
+{# --------------------------------------------------------------- POPULAR TOURS #}
+{% if tours %}
+<section id="tours" class="bg-paper text-ink" x-data="tourFilter">
+  <div class="container-page flex flex-col gap-6 py-14 md:gap-12 md:pt-26 md:pb-28">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      {% include "partials/section_heading.html" with eyebrow="Popular tours" title="Where *shall we go*" light=True %}
+      <div class="hidden flex-wrap gap-2.5 text-sm font-semibold md:flex" role="group" aria-label="Tour type">
+        {% for value, label in tour_filter_options %}
+          <button type="button" class="btn min-h-11 px-[22px] text-sm font-semibold" @click="type = '{{ value }}'" :aria-pressed="type === '{{ value }}'"
+                  :class="type === '{{ value }}' ? 'bg-ink text-snow' : 'border-[1.5px] border-pebble'">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Phones: horizontal snap row. Desktop: staggered 4-column grid. #}
+    <div class="snap-row md:mx-0 md:grid md:grid-cols-2 md:items-start md:gap-6 md:overflow-visible md:px-0 md:pb-10 lg:grid-cols-4">
+      {% for tour in tours %}
+        <div class="w-[270px] md:w-auto {% if forloop.counter|divisibleby:2 %}lg:mt-12{% endif %}" x-show="shows('{{ tour.tour_type }}')" x-transition.opacity data-reveal>
+          {% include "partials/tour_card.html" %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-center">
+      <a class="btn min-h-[54px] w-full bg-ink px-10 text-base text-snow md:min-h-[58px] md:w-auto md:border-[1.5px] md:border-ink md:bg-transparent md:text-ink" href="{% url 'tours:list' %}">All tours</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- HITS carousel (desktop) #}
+{% if featured|length > 1 %}
+<section id="hits" class="hidden bg-[#12231d] md:block" x-data="carousel({{ featured|length }})" @keydown.left="prev()" @keydown.right="next()">
+  <div class="container-page flex flex-col gap-12 py-26">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      {% include "partials/section_heading.html" with eyebrow="Season hits" title="Our guests' *favourites*" %}
+      <div class="flex gap-3">
+        <button type="button" class="btn size-14 !px-0 border-[1.5px] border-line-strong" @click="prev()" aria-label="Previous tour">
+          <svg class="size-[22px] stroke-snow" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" class="btn btn-accent size-14 !px-0" @click="next()" aria-label="Next tour">
+          <svg class="size-[22px] stroke-ink" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex min-h-[560px] items-center justify-center gap-6" aria-live="polite">
+      {% for tour in featured %}
+        <a href="{{ tour.get_absolute_url }}" x-show="role({{ forloop.counter0 }}) !== 'hidden'" x-cloak
+           @click="if (role({{ forloop.counter0 }}) !== 'current') { $event.preventDefault(); go({{ forloop.counter0 }}) }"
+           class="relative flex-none overflow-hidden rounded-[32px] bg-forest transition-all duration-500 ease-out"
+           :class="{
+             'order-1 h-[420px] w-[300px] opacity-55': role({{ forloop.counter0 }}) === 'prev',
+             'order-2 h-[540px] w-[440px] opacity-100': role({{ forloop.counter0 }}) === 'current',
+             'order-3 h-[420px] w-[300px] opacity-55': role({{ forloop.counter0 }}) === 'next',
+           }">
+          {% if tour.cover %}<img src="{{ tour.cover.url }}" alt="{{ tour.title }}" class="absolute inset-0 h-full w-full object-cover" loading="lazy">{% endif %}
+          <span class="absolute top-[18px] left-[18px] rounded-full bg-paper px-3.5 py-[7px] text-xs font-bold text-ink">{{ tour.type_label }}</span>
+          <span class="absolute inset-x-[18px] bottom-[18px] flex flex-col gap-1.5 rounded-[20px] bg-night px-[18px] py-4">
+            <span class="font-display text-[17px] leading-[1.3] font-medium">{{ tour.title }}</span>
+            <span class="text-sm text-mist">{{ tour.duration_days }} day{{ tour.duration_days|pluralize }} · from {{ tour.price_label }}</span>
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-center gap-1">
+      {% for tour in featured %}
+        <button type="button" class="px-1 py-[18px]" @click="go({{ forloop.counter0 }})" aria-label="Show {{ tour.title }}">
+          <span class="block h-2.5 rounded-full transition-all duration-300"
+                :class="index === {{ forloop.counter0 }} ? 'w-7 bg-accent' : 'w-2.5 bg-line-strong'"></span>
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- WHY US: bento #}
+<section id="why" class="container-page flex flex-col gap-5 py-16 md:gap-14 md:py-28">
+  {% include "partials/section_heading.html" with eyebrow="Why us" title="Travel without the rush and *the crowds*" class="max-w-[680px]" %}
+  <div class="grid gap-3 md:grid-cols-3 md:gap-6">
+    <div class="tile flex flex-col justify-between gap-8 rounded-3xl border-[1.5px] border-transparent bg-accent p-6 text-ink md:col-span-2 md:min-h-[300px] md:rounded-[32px] md:p-11" data-reveal>
+      <svg class="hidden size-12 stroke-ink md:block" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 15.2c.6-.2 1.3-.3 2-.3 2.2 0 4 1.8 4 4"/></svg>
+      <div class="flex flex-col gap-2 md:gap-3">
+        <h3 class="font-display text-lg font-semibold md:text-[30px] md:leading-[1.15]">Small groups</h3>
+        <p class="max-w-[520px] text-[15px] md:text-lg">No buses full of strangers. A small group means more attention for everyone and a flexible route.</p>
+      </div>
+    </div>
+    <div class="tile glass flex flex-col justify-between gap-8 rounded-3xl p-6 md:min-h-[300px] md:rounded-[32px] md:border-line md:bg-forest md:p-9" data-reveal>
+      <svg class="hidden size-11 stroke-accent md:block" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <div class="flex flex-col gap-2 md:gap-2.5">
+        <h3 class="font-display text-lg font-medium md:text-[22px]">Local guides</h3>
+        <p class="text-[15px] text-mist md:text-base">People who grew up in these mountains and know the trails, the weather and the best spots.</p>
+      </div>
+    </div>
+    <div class="tile glass flex flex-col justify-between gap-8 rounded-3xl p-6 md:min-h-[260px] md:rounded-[32px] md:border-line md:bg-forest md:p-9" data-reveal>
+      <svg class="hidden size-11 stroke-accent md:block" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg>
+      <div class="flex flex-col gap-2 md:gap-2.5">
+        <h3 class="font-display text-lg font-medium md:text-[22px]">Book in a messenger</h3>
+        <p class="text-[15px] text-mist md:text-base">No prepayment on the website: message us on WhatsApp or Telegram and we'll plan it together.</p>
+      </div>
+    </div>
+    <div class="tile hidden items-end justify-between gap-6 rounded-[32px] border-[1.5px] border-line-strong bg-moss px-11 py-9 md:col-span-2 md:flex md:min-h-[260px]" data-reveal>
+      <div class="flex max-w-[420px] flex-col gap-2.5">
+        <h3 class="font-display text-[22px] font-medium">Routes off the beaten track</h3>
+        <p class="text-base text-[#d5e0da]">Places regular tours never reach: summer pastures, high passes and villages where a real dastarkhan is waiting for you.</p>
+      </div>
+      <svg width="180" height="110" viewBox="0 0 180 110" fill="none" aria-hidden="true"><path d="M4 104 L50 34 L80 72 L112 20 L176 104 Z" class="stroke-accent" stroke-width="3" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+</section>
+
+{# --------------------------------------------------------------- ABOUT: growing photo + stats #}
+<section id="about" class="container-page flex flex-col gap-5 pt-2 pb-16 md:items-center md:gap-14 md:pt-6 md:pb-28 md:text-center">
+  <div class="flex max-w-[720px] flex-col gap-3.5">
+    {% include "partials/section_heading.html" with eyebrow="About us" title=site.about_title class="md:items-center" %}
+    {% if site.about_text %}<p class="text-base text-mist md:text-lg">{{ site.about_text|linebreaksbr }}</p>{% endif %}
+  </div>
+  {% if about_image %}
+    <div class="expand pic h-60 rounded-[28px] md:h-[520px]">
+      <img src="{{ about_image.url }}" alt="Our team in the mountains" class="object-[center_45%]" loading="lazy">
+    </div>
+  {% endif %}
+  {% if stats %}
+    <div class="grid w-full grid-cols-3 gap-2.5 md:gap-6">
+      {% for stat in stats %}
+        <div class="glass flex flex-col gap-0.5 rounded-[20px] px-3 py-4 text-left md:gap-2 md:rounded-[28px] md:p-9" data-reveal>
+          <span class="font-display text-lg min-[400px]:text-2xl leading-none font-semibold text-accent md:text-[52px]">{{ stat.value }}{{ stat.suffix }}</span>
+          <span class="text-xs text-mist md:text-base">{{ stat.label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+
+{# --------------------------------------------------------------- GUIDES (accordion) #}
+{% if guides %}
+<section id="guides" class="container-page flex flex-col gap-5 pt-2 pb-16 md:gap-12 md:pt-6 md:pb-28" x-data="{ open: {{ guides.0.pk }} }">
+  {% include "partials/section_heading.html" with eyebrow="Our team" title="Meet *our guides*" class="max-w-[640px]" %}
+  <div class="grid gap-3 md:grid-cols-3 md:items-start md:gap-6">
+    {% for guide in guides %}
+      <div class="glass flex flex-col gap-3.5 rounded-3xl p-5 md:gap-[18px] md:rounded-[28px] md:p-7" data-reveal>
+        <button type="button" class="flex min-h-14 w-full items-center gap-3.5 text-left md:gap-4"
+                @click="open = open === {{ guide.pk }} ? null : {{ guide.pk }}" :aria-expanded="open === {{ guide.pk }}" aria-controls="guide-{{ guide.pk }}">
+          <span class="pic size-14 flex-none rounded-full md:size-[76px]">
+            {% if guide.photo %}<img src="{{ guide.photo.url }}" alt="" loading="lazy">{% endif %}
+          </span>
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="text-base font-bold md:text-lg">{{ guide.name }}</span>
+            <span class="text-[13px] text-mist md:text-sm">{{ guide.role }}{% if guide.experience_years %} · {{ guide.experience_years }} years{% endif %}</span>
+          </span>
+          <svg class="size-[22px] flex-none stroke-accent transition-transform duration-300" :class="open === {{ guide.pk }} && 'rotate-180'" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        {% if guide.quote %}<p class="text-[15px] text-[#d5e0da] italic md:text-base">«{{ guide.quote }}»</p>{% endif %}
+        <div id="guide-{{ guide.pk }}" x-show="open === {{ guide.pk }}" x-collapse.duration.300ms {% if not forloop.first %}x-cloak{% endif %}>
+          {% if guide.bio %}<p class="text-sm text-mist md:text-[15px]">{{ guide.bio|linebreaksbr }}</p>{% endif %}
+          {% if guide.languages %}<p class="mt-2 text-sm text-sage">Languages: {{ guide.languages }}</p>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- STEPS #}
+<section class="bg-paper text-ink">
+  <div class="container-page flex flex-col gap-6 py-14 md:flex-row md:flex-wrap md:items-start md:gap-16 md:py-26">
+    {% include "partials/section_heading.html" with eyebrow="How it works" title="Three steps *to your trip*" light=True class="md:flex-[1_1_320px]" %}
+    <ol class="flex min-w-0 flex-col gap-3 md:flex-[2_1_560px] md:gap-4">
+      {% for title, text in steps %}
+        <li class="flex items-center gap-4 rounded-3xl bg-white px-5 py-5 md:gap-7 md:rounded-[28px] md:px-8 md:py-7" data-reveal>
+          <span class="flex size-12 flex-none items-center justify-center rounded-full bg-accent font-display text-lg font-semibold md:size-16 md:text-xl">{{ forloop.counter }}</span>
+          <div class="flex flex-col gap-1">
+            <h3 class="text-base font-bold md:text-xl">{{ title }}</h3>
+            <p class="text-sm text-ink-muted md:text-base">{{ text }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{# --------------------------------------------------------------- REVIEWS #}
+{% if reviews %}
+<section id="reviews" class="container-page flex flex-col gap-5 py-16 md:gap-12 md:py-28">
+  {% include "partials/section_heading.html" with eyebrow="Reviews" title="What travellers *say*" %}
+  <div class="grid gap-3 md:grid-cols-2 md:gap-6">
+    {% for review in reviews %}
+      <figure class="tile flex flex-col gap-5 rounded-3xl border-[1.5px] border-line bg-forest p-6 md:gap-7 md:rounded-[32px] md:p-10" data-reveal>
+        <svg class="h-6 w-8 fill-accent md:h-8 md:w-10" viewBox="0 0 40 32" aria-hidden="true"><path d="M0 32V19C0 8 6 2 16 0v6c-5 1.4-7 4.4-7 8h7v18H0zm22 0V19C22 8 28 2 38 0v6c-5 1.4-7 4.4-7 8h7v18H22z"/></svg>
+        <blockquote class="text-base leading-[1.55] md:text-[21px]">{{ review.text|linebreaksbr }}</blockquote>
+        <figcaption class="mt-auto flex items-center gap-3.5">
+          <span class="pic size-12 flex-none rounded-full md:size-[52px]">{% if review.photo %}<img src="{{ review.photo.url }}" alt="" loading="lazy">{% endif %}</span>
+          <span class="flex flex-col">
+            <span class="font-bold">{{ review.author_name }} <span class="ml-1 text-sm font-normal text-accent" aria-label="{{ review.rating }} out of 5">{% for _ in "x"|rjust:review.rating %}★{% endfor %}</span></span>
+            <span class="text-sm text-mist">{{ review.country }}{% if review.country and review.tour %} · {% endif %}{% if review.tour %}{{ review.tour.title }}{% endif %}</span>
+          </span>
+        </figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- FAQ #}
+{% if faqs %}
+<section id="faq" class="container-page flex flex-col gap-5 pt-2 pb-16 md:flex-row md:flex-wrap md:items-start md:gap-14 md:pt-6 md:pb-28" x-data="{ open: {{ faqs.0.pk }} }">
+  {% include "partials/section_heading.html" with eyebrow="Questions" title="Frequently *asked*" class="md:flex-[1_1_320px]" %}
+  <div class="flex min-w-0 flex-col gap-3 md:flex-[2_1_560px] md:gap-3.5">
+    {% for faq in faqs %}
+      <div class="glass rounded-[20px] px-5 py-1 md:rounded-3xl md:px-7 md:py-2">
+        <button type="button" class="flex min-h-[60px] w-full items-center justify-between gap-3 text-left text-base font-bold md:min-h-16 md:gap-4 md:text-lg"
+                @click="open = open === {{ faq.pk }} ? null : {{ faq.pk }}" :aria-expanded="open === {{ faq.pk }}" aria-controls="faq-{{ faq.pk }}">
+          <span>{{ faq.question }}</span>
+          <svg class="size-[22px] flex-none stroke-accent transition-transform duration-300" :class="open === {{ faq.pk }} && 'rotate-45'" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div id="faq-{{ faq.pk }}" x-show="open === {{ faq.pk }}" x-collapse.duration.300ms {% if not forloop.first %}x-cloak{% endif %}>
+          <p class="pb-[18px] text-[15px] text-mist md:pb-[22px] md:text-base">{{ faq.answer|linebreaksbr }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- PARTNERS #}
+{% if partners %}
+<section class="container-page flex flex-col items-center gap-5 pb-16 md:gap-7 md:pb-24">
+  <div class="eyebrow text-center text-mist">Recommended by and working with</div>
+  <div class="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
+    {% for partner in partners %}
+      <a class="glass flex min-h-[72px] items-center justify-center rounded-[20px] p-4 md:min-h-[84px]"
+         {% if partner.url %}href="{{ partner.url }}" target="_blank" rel="noopener"{% endif %} title="{{ partner.name }}">
+        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="max-h-10 w-auto max-w-full object-contain opacity-80" loading="lazy">
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- INSTAGRAM-like feed #}
+{% if gallery_posts %}
+<section id="insta" class="bg-[#12231d]">
+  <div class="container-page flex flex-col gap-6 py-14 md:gap-10 md:py-24">
+    <div class="flex flex-wrap items-end justify-between gap-5 md:gap-6">
+      {% include "partials/section_heading.html" with eyebrow="On social media" title="Real moments *from our trips*" %}
+      {% if site.instagram_url %}
+        <a class="btn min-h-[52px] border-[1.5px] border-line-strong px-7" href="{{ site.instagram_url }}" target="_blank" rel="noopener">Instagram</a>
+      {% endif %}
+    </div>
+    <div class="grid grid-cols-3 gap-2 md:grid-cols-6 md:gap-3">
+      {% for post in gallery_posts %}
+        <a class="pic aspect-square rounded-2xl md:rounded-[20px]" {% if post.link %}href="{{ post.link }}" target="_blank" rel="noopener"{% endif %}>
+          <img class="zoom" src="{{ post.image.url }}" alt="{{ post.caption|default:'Photo from a trip' }}" loading="lazy">
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --------------------------------------------------------------- CTA #}
+<section id="contact" class="container-page pt-0 pb-14 md:pt-6 md:pb-28">
+  <div class="relative flex flex-col gap-5 overflow-hidden rounded-[28px] bg-accent px-6 py-8 text-ink md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-9 md:rounded-[44px] md:p-18" data-reveal>
+    <svg class="absolute -right-10 -bottom-[30px] hidden opacity-[0.22] md:block" width="520" height="300" viewBox="0 0 520 300" fill="none" aria-hidden="true"><path d="M0 300 L150 90 L230 200 L330 40 L520 300 Z" class="stroke-ink" stroke-width="3" stroke-linejoin="round"/></svg>
+    <div class="relative flex min-w-0 flex-col gap-3.5 md:flex-[1_1_380px]">
+      <h2 class="font-display text-[26px] leading-[1.15] font-semibold md:text-[46px] md:leading-[1.1] md:tracking-[-0.01em]">Ready for the trip?</h2>
+      <p class="max-w-[460px] text-base md:text-[19px]">Message us — we'll match a route to your dates and budget.</p>
+    </div>
+    <div class="relative flex flex-col gap-3 md:flex-row md:flex-wrap md:gap-4">
+      {% if site.whatsapp %}<a class="btn min-h-[54px] bg-ink px-9 text-base text-snow md:min-h-[60px] md:text-[17px]" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
+      {% if site.telegram %}<a class="btn min-h-[54px] border-2 border-ink px-9 text-base md:min-h-[60px] md:text-[17px]" href="{{ site.telegram_url }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
+      {% if not site.whatsapp and not site.telegram and site.email %}<a class="btn min-h-[54px] bg-ink px-9 text-base text-snow md:min-h-[60px]" href="mailto:{{ site.email }}">Email us</a>{% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}

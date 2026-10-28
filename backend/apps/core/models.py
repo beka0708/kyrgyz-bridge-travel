@@ -89,6 +89,42 @@ class SiteSettings(SEOModel):
         help_text="Наклон и объёмные горы. Тени рельефа видны всегда. Если на телефонах карта "
         "тормозит — выберите «Только компьютеры».",
     )
+    # --- Home page texts (English); *stars* mark the accent part of a heading ---
+    hero_title = models.CharField(
+        "заголовок первого экрана",
+        max_length=120,
+        default="Mountains, lakes *and yurts*",
+        help_text="Часть в *звёздочках* выделяется оранжевым.",
+    )
+    hero_subtitle = models.CharField(
+        "подзаголовок первого экрана",
+        max_length=200,
+        default="Private and group tours across Kyrgyzstan with local guides.",
+    )
+    hero_image = models.ImageField(
+        "фото первого экрана", upload_to="home/", blank=True, help_text="Широкое фото, от 2000 px."
+    )
+    solo_text = models.CharField(
+        "текст «Private tours»",
+        max_length=200,
+        default=(
+            "Your own route, your own pace and a personal guide. "
+            "For couples and small groups of friends."
+        ),
+    )
+    solo_image = models.ImageField("фото «Private tours»", upload_to="home/", blank=True)
+    group_text = models.CharField(
+        "текст «Group tours»",
+        max_length=200,
+        default="A small group, fixed dates and a better price.",
+    )
+    group_image = models.ImageField("фото «Group tours»", upload_to="home/", blank=True)
+    about_title = models.CharField(
+        "заголовок «О нас»", max_length=120, default="A team that *knows the mountains*"
+    )
+    about_text = models.TextField("текст «О нас»", blank=True)
+    about_image = models.ImageField("фото «О нас»", upload_to="home/", blank=True)
+
     google_analytics_id = models.CharField(
         "Google Analytics ID", max_length=32, blank=True, help_text="G-XXXXXXXXXX"
     )

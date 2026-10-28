@@ -35,6 +35,22 @@ class SiteSettingsAdmin(ModelAdmin):
     fieldsets = [
         ("Компания", {"classes": ["tab"], "fields": ["brand_name", "tagline", "address"]}),
         (
+            "Главная",
+            {
+                "classes": ["tab"],
+                "fields": [
+                    "hero_title",
+                    "hero_subtitle",
+                    "hero_image",
+                    ("solo_text", "solo_image"),
+                    ("group_text", "group_image"),
+                    "about_title",
+                    "about_text",
+                    "about_image",
+                ],
+            },
+        ),
+        (
             "Контакты",
             {
                 "classes": ["tab"],

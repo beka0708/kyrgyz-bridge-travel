@@ -6,7 +6,7 @@ from apps.content.models import FAQ, GalleryPost, Guide, Partner, Review, Stat
 class GuideSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guide
-        fields = ["id", "name", "role", "bio", "photo", "languages", "experience_years"]
+        fields = ["id", "name", "role", "quote", "bio", "photo", "languages", "experience_years"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):

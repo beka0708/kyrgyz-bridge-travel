@@ -97,6 +97,7 @@
   .snap-row {
     @apply -mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1;
     scroll-snap-type: x mandatory;
+    scroll-padding-inline: 20px; /* snap cards to the page padding, not the screen edge */
     scrollbar-width: none;
   }
   .snap-row > * {
@@ -115,6 +116,51 @@
   }
   .pic:hover img.zoom {
     transform: scale(1.07);
+  }
+}
+
+@layer components {
+  /* Tour cards (home grid, tour list): lift, photo zoom, arrow turns dark */
+  .tour-card {
+    transition:
+      transform 0.4s var(--ease-out-soft),
+      box-shadow 0.4s ease;
+  }
+  .tour-card .tour-card__photo {
+    transition: transform 0.8s var(--ease-out-soft);
+  }
+  .tour-card__arrow {
+    transition:
+      background-color 0.3s ease,
+      transform 0.3s ease;
+  }
+  .tour-card__arrow svg {
+    transition: stroke 0.3s ease;
+  }
+  @media (hover: hover) {
+    .tour-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 24px 48px rgb(17 32 26 / 0.18);
+    }
+    .tour-card:hover .tour-card__photo {
+      transform: scale(1.08);
+    }
+    .tour-card:hover .tour-card__arrow {
+      @apply bg-ink;
+      transform: rotate(-45deg);
+    }
+    .tour-card:hover .tour-card__arrow svg {
+      @apply stroke-snow;
+    }
+    .tile {
+      transition:
+        transform 0.35s ease,
+        border-color 0.35s ease;
+    }
+    .tile:hover {
+      @apply border-line-strong;
+      transform: translateY(-6px);
+    }
   }
 }
 
@@ -162,7 +208,38 @@
   opacity: 1;
   transform: none;
 }
+/* «About» photo grows from a rounded pill to full width while scrolling (supported browsers). */
+.expand {
+  width: 100%;
+  border-radius: 32px;
+}
+@keyframes grow {
+  from {
+    width: 58%;
+    border-radius: 260px;
+  }
+  to {
+    width: 100%;
+    border-radius: 32px;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) {
+    .expand {
+      animation: grow linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 40%;
+    }
+  }
+}
 @media (prefers-reduced-motion: reduce) {
+  .expand {
+    animation: none;
+  }
+  .tour-card,
+  .tour-card:hover {
+    transform: none;
+  }
   .rise,
   .rise-2,
   .rise-3,

@@ -7,6 +7,9 @@ from apps.core.models import OrderableModel, PublishableModel, TimeStampedModel
 class Guide(OrderableModel, PublishableModel):
     name = models.CharField("имя", max_length=100)
     role = models.CharField("роль", max_length=100, blank=True, help_text="Mountain guide")
+    quote = models.CharField(
+        "цитата", max_length=200, blank=True, help_text="Короткая фраза гида, на английском."
+    )
     bio = models.TextField("о гиде", blank=True)
     photo = models.ImageField("фото", upload_to="guides/")
     languages = models.CharField("языки", max_length=100, blank=True, help_text="EN, RU, KG")

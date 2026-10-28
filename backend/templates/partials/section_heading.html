@@ -1,0 +1,6 @@
+{% load site_tags %}
+{# eyebrow + h2; pass light=True on paper backgrounds (rust accent for contrast). #}
+<div class="flex flex-col gap-2.5 md:gap-3 {{ class }}">
+  <div class="eyebrow {% if light %}text-rust{% elif muted %}text-mist{% else %}text-accent{% endif %}">{{ eyebrow }}</div>
+  {% if title %}<h2 class="h-section">{% if light %}{{ title|accent_title:"text-rust" }}{% else %}{{ title|accent_title }}{% endif %}</h2>{% endif %}
+</div>

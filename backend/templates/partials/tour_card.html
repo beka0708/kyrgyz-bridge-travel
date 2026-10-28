@@ -1,0 +1,17 @@
+{# Tour card from the mockups: «Popular tours» grid (desktop) and the snap row (phones). #}
+<a class="tour-card group flex flex-col overflow-hidden rounded-3xl bg-white text-ink md:rounded-[28px]" href="{{ tour.get_absolute_url }}">
+  <div class="pic h-[200px] md:h-80">
+    {% if tour.cover %}<img class="tour-card__photo" src="{{ tour.cover.url }}" alt="{{ tour.title }}" loading="lazy">{% endif %}
+    <span class="absolute top-3 left-3 rounded-full bg-paper px-3.5 py-1.5 text-xs font-bold text-ink md:top-4 md:left-4">{{ tour.type_label }}</span>
+  </div>
+  <div class="flex flex-col gap-2 p-[18px] md:gap-2.5 md:p-6">
+    <h3 class="font-display text-base leading-[1.3] font-medium md:text-[17px]">{{ tour.title }}</h3>
+    <div class="text-sm text-ink-muted">{{ tour.duration_days }} day{{ tour.duration_days|pluralize }} · {{ tour.difficulty_label }}</div>
+    <div class="flex items-center justify-between pt-2 md:pt-3.5">
+      <span class="text-base font-extrabold md:text-[17px]">from {{ tour.price_label }}</span>
+      <span class="tour-card__arrow flex size-10 items-center justify-center rounded-full bg-accent md:size-11">
+        <svg class="size-5 stroke-ink" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </div>
+  </div>
+</a>
