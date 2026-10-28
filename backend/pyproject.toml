@@ -11,6 +11,7 @@ dependencies = [
     "django-environ>=0.14.0",
     "django-filter>=26.2",
     "django-unfold>=0.110.0",
+    "django-vite>=3.2.0",
     "djangorestframework>=3.18.3",
     "drf-spectacular>=0.30.0",
     "gunicorn>=26.2.0",

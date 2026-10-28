@@ -1,0 +1,6 @@
+{% load django_vite %}
+<textarea name="{{ widget.name }}" id="{{ widget.attrs.id }}" hidden>{% if widget.value %}{{ widget.value }}{% endif %}</textarea>
+{{ editor_props|json_script:props_id }}
+<div data-island="route-editor" data-props-id="{{ props_id }}" data-input-id="{{ widget.attrs.id }}"></div>
+<noscript>Для редактирования маршрута нужен JavaScript.</noscript>
+{% vite_asset "src/entries/route-editor.ts" %}

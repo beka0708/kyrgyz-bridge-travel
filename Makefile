@@ -1,6 +1,6 @@
 BACK = cd backend && uv run
 
-.PHONY: db dev migrate migrations superuser seed test lint fmt shell check
+.PHONY: db dev migrate migrations superuser seed test lint fmt shell check front-install front-dev front-build
 
 db:            ## start PostgreSQL in Docker
 	docker compose up -d --wait db
@@ -34,3 +34,12 @@ check:
 
 shell:
 	$(BACK) python manage.py shell
+
+front-install: ## npm packages for frontend/
+	cd frontend && npm install
+
+front-dev:     ## Vite with hot reload; set VITE_DEV_MODE=true in .env
+	cd frontend && npm run dev
+
+front-build:   ## typecheck + build into backend/static/dist (restart Django after)
+	cd frontend && npm run build

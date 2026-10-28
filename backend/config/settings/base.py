@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "drf_spectacular",
+    "django_vite",
     # local
     "apps.core",
     "apps.tours",
@@ -100,6 +101,17 @@ MEDIA_ROOT = env.path("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 
+# --- Frontend (Vite) -----------------------------------------------------------
+# dev_mode=True loads assets from `npm run dev` (HMR); otherwise from the built manifest.
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": env.bool("VITE_DEV_MODE", default=False),
+        "dev_server_port": 5173,
+        "manifest_path": BASE_DIR / "static" / "dist" / "manifest.json",
+        "static_url_prefix": "dist",
+    }
+}
+
 # --- Email -------------------------------------------------------------------
 EMAIL_CONFIG = env.email_url("EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
@@ -111,6 +123,33 @@ INQUIRY_NOTIFY_EMAIL = env("INQUIRY_NOTIFY_EMAIL", default="")
 # Cloudflare Turnstile; verification is skipped when the secret is empty (dev, tests).
 TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY", default="")
 TURNSTILE_SITE_KEY = env("TURNSTILE_SITE_KEY", default="")
+
+# --- Maps ---------------------------------------------------------------------
+# Free public providers for the MVP. Every URL is configurable, so if a provider limits
+# access or moves, we switch it in .env (or self-host OpenFreeMap) without code changes.
+MAP = {
+    "STYLE_URL": env("MAP_STYLE_URL", default="https://tiles.openfreemap.org/styles/liberty"),
+    "TOPO_TILES": env.list(
+        "MAP_TOPO_TILES",
+        default=[f"https://{s}.tile.opentopomap.org/{{z}}/{{x}}/{{y}}.png" for s in "abc"],
+    ),
+    "TOPO_ATTRIBUTION": env(
+        "MAP_TOPO_ATTRIBUTION",
+        default='Map data: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, '
+        'SRTM | Style: © <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
+    ),
+    "TERRAIN_TILES": env(
+        "MAP_TERRAIN_TILES",
+        default="https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    ),
+    "TERRAIN_ENCODING": env("MAP_TERRAIN_ENCODING", default="terrarium"),
+    "TERRAIN_ATTRIBUTION": env("MAP_TERRAIN_ATTRIBUTION", default="Terrain: Mapzen, AWS Open Data"),
+}
+
+# Route lines are built once when a day is saved in the admin; visitors never hit this API.
+ORS_API_KEY = env("ORS_API_KEY", default="")
+ORS_BASE_URL = env("ORS_BASE_URL", default="https://api.heigit.org/openrouteservice").rstrip("/")
+ORS_TIMEOUT = env.int("ORS_TIMEOUT", default=15)
 
 # --- DRF / OpenAPI -------------------------------------------------------------
 REST_FRAMEWORK = {
@@ -133,6 +172,7 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "TourTypeEnum": "apps.tours.models.TourType",
         "InquiryStatusEnum": "apps.inquiries.models.InquiryStatus",
+        "Map3DModeEnum": "apps.core.models.Map3DMode",
     },
 }
 

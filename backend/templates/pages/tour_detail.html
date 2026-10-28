@@ -1,11 +1,28 @@
 {% extends "base.html" %}
+{% load django_vite %}
 {% block title %}{{ tour.seo_title|default:tour.title }} — {{ site.brand_name }}{% endblock %}
 {% block description %}{{ tour.seo_description|default:tour.short_description }}{% endblock %}
 {% block content %}
   <h1>{{ tour.title }}</h1>
   <p>{{ tour.short_description }}</p>
+
   <h2>Day by day</h2>
+  {# Day list stays in HTML for SEO; clicking a day tells the map island to highlight it. #}
   <ol>
-    {% for day in tour.days.all %}<li><strong>{{ day.title }}</strong> — {{ day.description|truncatewords:30 }}</li>{% endfor %}
+    {% for day in tour.days.all %}
+      <li>
+        <button type="button" onclick="window.dispatchEvent(new CustomEvent('route:day', {detail: {{ day.day_number }}}))">
+          <strong>{{ day.title }}</strong>
+        </button>
+        — {{ day.description|truncatewords:30 }}
+        {% if day.distance_km %}· {{ day.distance_km }} km{% endif %}{% if day.ascent_m %} · ↑{{ day.ascent_m }} m{% endif %}
+      </li>
+    {% endfor %}
   </ol>
+
+  {% if tour.days.all %}
+    {{ route_props|json_script:"route-props" }}
+    <div data-island="route-map" data-props-id="route-props" style="min-height:45vh"></div>
+    {% vite_asset "src/entries/route-map.ts" %}
+  {% endif %}
 {% endblock %}

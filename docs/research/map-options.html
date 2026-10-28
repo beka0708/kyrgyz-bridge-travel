@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сравнение карт — маршрут Ала-Куль</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #f5f4ef; color: #1f1e1d; }
+  header { padding: 16px 20px 8px; }
+  h1 { margin: 0 0 6px; font-size: 20px; }
+  .days { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px 12px; }
+  .days button { border: 1px solid #c9c6bb; background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; }
+  .days button.active { background: #e8964a; border-color: #e8964a; color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 14px; padding: 0 20px 20px; }
+  .card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card h2 { margin: 0; padding: 10px 14px 2px; font-size: 15px; }
+  .card p { margin: 0; padding: 0 14px 10px; color: #6b6a68; font-size: 13px; }
+  .map { height: 380px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Варианты карты: маршрут «Ala-Kul Lake Trek»</h1>
+  <div>Нажмите день: участок подсвечивается на всех картах сразу. Координаты примерные (из демо-данных).</div>
+</header>
+<div class="days" id="days"></div>
+<div class="grid" id="grid"></div>
+
+<script>
+// Demo route from seed_demo (lat, lng); straight segments between points.
+const P = {
+  bishkek: [74.5698, 42.8746], cholpon: [77.0855, 42.6495], karakol: [78.3936, 42.4907],
+  arashan: [78.6186, 42.3747], alakul: [78.5203, 42.2846],
+};
+const DAYS = [
+  { n: 1, title: "Bishkek — Karakol", pts: [P.bishkek, P.cholpon, P.karakol] },
+  { n: 2, title: "Altyn-Arashan", pts: [P.karakol, P.arashan] },
+  { n: 3, title: "Ala-Kul lake & pass", pts: [P.arashan, P.alakul] },
+  { n: 4, title: "Down to Karakol", pts: [P.alakul, P.karakol] },
+];
+
+const OSM_ATTR = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+const TERRAIN = {
+  type: "raster-dem",
+  tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+  encoding: "terrarium", tileSize: 256, maxzoom: 14,
+  attribution: "Terrain: Mapzen/AWS Open Data",
+};
+
+const VARIANTS = [
+  {
+    id: "liberty", title: "1. OpenFreeMap Liberty",
+    note: "Векторная, без ключа и лимитов, бесплатно для коммерции. Чистая, похожа на Google.",
+    style: "https://tiles.openfreemap.org/styles/liberty",
+  },
+  {
+    id: "relief", title: "2. OpenFreeMap Liberty + рельеф (3D)",
+    note: "То же + тени рельефа и наклон из бесплатных данных высот AWS. Горы читаются сразу.",
+    style: "https://tiles.openfreemap.org/styles/liberty", relief: true, pitch: 55,
+  },
+  {
+    id: "topo", title: "3. OpenTopoMap",
+    note: "Топокарта: тропы, перевалы, горизонтали. Растровая, без ключа, CC-BY-SA, без гарантий доступности.",
+    style: {
+      version: 8,
+      sources: { topo: { type: "raster", tileSize: 256, maxzoom: 17,
+        tiles: ["a", "b", "c"].map(s => `https://${s}.tile.opentopomap.org/{z}/{x}/{y}.png`),
+        attribution: OSM_ATTR + ', SRTM | © <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)' } },
+      layers: [{ id: "topo", type: "raster", source: "topo" }],
+    },
+  },
+  {
+    id: "positron", title: "4. OpenFreeMap Positron (светлая, минимальная)",
+    note: "Спокойный фон: маршрут и фото дней выделяются сильнее. Хорошо ложится на дизайн сайта.",
+    style: "https://tiles.openfreemap.org/styles/positron",
+  },
+];
+
+const routeGeoJSON = active => ({
+  type: "FeatureCollection",
+  features: DAYS.map(d => ({
+    type: "Feature",
+    properties: { day: d.n, active: d.n === active },
+    geometry: { type: "LineString", coordinates: d.pts },
+  })),
+});
+const pointsGeoJSON = active => ({
+  type: "FeatureCollection",
+  features: DAYS.flatMap(d => d.pts.map(c => ({
+    type: "Feature", properties: { active: d.n === active }, geometry: { type: "Point", coordinates: c },
+  }))),
+});
+const boundsOf = pts => pts.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(pts[0], pts[0]));
+
+let activeDay = 3;
+const maps = [];
+const grid = document.getElementById("grid");
+
+for (const v of VARIANTS) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<h2>${v.title}</h2><p>${v.note}</p><div class="map" id="map-${v.id}"></div>`;
+  grid.append(card);
+
+  const map = new maplibregl.Map({
+    container: `map-${v.id}`, style: v.style, center: [78.5, 42.35], zoom: 9,
+    pitch: v.pitch || 0, attributionControl: { compact: true }, cooperativeGestures: true,
+  });
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }));
+
+  map.on("load", () => {
+    if (v.relief) {
+      map.addSource("dem", TERRAIN);
+      map.addSource("dem-shade", TERRAIN);
+      map.addLayer({ id: "hillshade", type: "hillshade", source: "dem-shade",
+        paint: { "hillshade-exaggeration": 0.6, "hillshade-shadow-color": "#3d3a33" } });
+      map.setTerrain({ source: "dem", exaggeration: 1.3 });
+    }
+    map.addSource("route", { type: "geojson", data: routeGeoJSON(activeDay) });
+    map.addSource("points", { type: "geojson", data: pointsGeoJSON(activeDay) });
+    map.addLayer({ id: "route-casing", type: "line", source: "route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#fff", "line-width": ["case", ["get", "active"], 9, 5], "line-opacity": 0.9 } });
+    map.addLayer({ id: "route", type: "line", source: "route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": ["case", ["get", "active"], "#e8964a", "#7c7a73"],
+               "line-width": ["case", ["get", "active"], 5, 3],
+               "line-dasharray": ["case", ["get", "active"], ["literal", [1, 0]], ["literal", [2, 1.5]]] } });
+    map.addLayer({ id: "points", type: "circle", source: "points",
+      paint: { "circle-radius": ["case", ["get", "active"], 6, 4],
+               "circle-color": ["case", ["get", "active"], "#e8964a", "#7c7a73"],
+               "circle-stroke-color": "#fff", "circle-stroke-width": 2 } });
+    focus(map, false);
+  });
+  maps.push(map);
+}
+
+function focus(map, animate = true) {
+  const day = DAYS.find(d => d.n === activeDay);
+  map.fitBounds(boundsOf(day.pts), { padding: 60, maxZoom: 12, duration: animate ? 900 : 0 });
+}
+
+function selectDay(n) {
+  activeDay = n;
+  document.querySelectorAll(".days button").forEach(b => b.classList.toggle("active", +b.dataset.day === n));
+  for (const map of maps) {
+    if (!map.getSource("route")) continue;
+    map.getSource("route").setData(routeGeoJSON(n));
+    map.getSource("points").setData(pointsGeoJSON(n));
+    focus(map);
+  }
+}
+
+const days = document.getElementById("days");
+for (const d of DAYS) {
+  const b = document.createElement("button");
+  b.dataset.day = d.n;
+  b.textContent = `День ${d.n}: ${d.title}`;
+  b.onclick = () => selectDay(d.n);
+  days.append(b);
+}
+selectDay(activeDay);
+</script>
+</body>
+</html>

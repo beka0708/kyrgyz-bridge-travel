@@ -54,6 +54,12 @@ class SEOModel(models.Model):
         abstract = True
 
 
+class Map3DMode(models.TextChoices):
+    OFF = "off", "Выключен"
+    DESKTOP = "desktop", "Только компьютеры"
+    ALL = "all", "Везде, включая телефоны"
+
+
 class SiteSettings(SEOModel):
     """Singleton with contacts and defaults; always use SiteSettings.load()."""
 
@@ -75,6 +81,14 @@ class SiteSettings(SEOModel):
     facebook_url = models.URLField("Facebook", blank=True)
     youtube_url = models.URLField("YouTube", blank=True)
     tripadvisor_url = models.URLField("TripAdvisor", blank=True)
+    map_3d_mode = models.CharField(
+        "3D-рельеф на карте маршрута",
+        max_length=10,
+        choices=Map3DMode,
+        default=Map3DMode.ALL,
+        help_text="Наклон и объёмные горы. Тени рельефа видны всегда. Если на телефонах карта "
+        "тормозит — выберите «Только компьютеры».",
+    )
     google_analytics_id = models.CharField(
         "Google Analytics ID", max_length=32, blank=True, help_text="G-XXXXXXXXXX"
     )

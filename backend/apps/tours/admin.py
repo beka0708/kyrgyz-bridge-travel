@@ -5,6 +5,7 @@ from unfold.decorators import display
 
 from apps.core.admin import SEO_FIELDSET, thumbnail
 
+from .forms import TourDayAdminForm
 from .models import Tour, TourDay, TourDayImage, TourImage, TourListItem, TourType
 
 
@@ -137,6 +138,7 @@ class TourDayImageInline(TabularInline):
 
 @admin.register(TourDay)
 class TourDayAdmin(ModelAdmin):
+    form = TourDayAdminForm
     list_display = ["tour", "day_number", "title", "points_count", "has_track"]
     list_display_links = ["day_number", "title"]
     list_filter = ["tour"]
@@ -160,10 +162,10 @@ class TourDayAdmin(ModelAdmin):
         (
             "Маршрут на карте",
             {
-                # Temporary raw JSON; replaced by the map editor (Vue island) in the next stage.
-                "description": "Скоро здесь будет карта: точки ставятся кликом, линия строится "
-                "автоматически. Пока — JSON.",
-                "fields": ["track_source", "waypoints", "gpx_file", "track"],
+                "description": "Расставьте точки на карте и выберите, как соединить их линией. "
+                "Линия строится при сохранении (или сразу кнопкой «Построить линию»). "
+                "Расстояние и набор высоты заполнятся сами, если поля пустые.",
+                "fields": ["track_source", "waypoints", "gpx_file"],
             },
         ),
     ]

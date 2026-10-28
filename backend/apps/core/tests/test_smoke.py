@@ -68,3 +68,24 @@ def test_tour_page_and_staff_preview(client, admin_client):
     url = day.tour.get_absolute_url()
     assert client.get(url).status_code == 404
     assert admin_client.get(url).status_code == 200
+
+
+def test_settings_api_exposes_map_config(client, settings):
+    settings.MAP = {**settings.MAP, "STYLE_URL": "https://tiles.example.com/style.json"}
+    s = SiteSettings.load()
+    s.map_3d_mode = "desktop"
+    s.save()
+
+    data = client.get("/api/v1/settings/").json()["map"]
+
+    assert data["style_url"] == "https://tiles.example.com/style.json"
+    assert data["terrain_3d"] == "desktop"
+    assert data["terrain"]["encoding"] == "terrarium"
+    assert len(data["topo"]["tiles"]) == 3
+
+
+def test_tour_page_embeds_route_map(client):
+    day = TourDayFactory()
+    html = client.get(day.tour.get_absolute_url()).content.decode()
+    assert 'data-island="route-map"' in html
+    assert 'id="route-props"' in html

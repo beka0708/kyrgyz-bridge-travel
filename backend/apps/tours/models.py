@@ -127,8 +127,9 @@ class TourListItem(OrderableModel):
 
 
 class TrackSource(models.TextChoices):
-    MANUAL = "manual", "Линия по точкам"
-    ROUTED = "routed", "По дорогам (сервис маршрутов)"
+    MANUAL = "manual", "Прямые линии между точками"
+    ROAD = "road", "По дорогам (машина)"
+    HIKING = "hiking", "По пешим тропам"
     GPX = "gpx", "Из GPX-трека"
 
 
@@ -183,6 +184,9 @@ class TourDay(models.Model):
     track_source = models.CharField(
         "как строить линию", max_length=10, choices=TrackSource, default=TrackSource.MANUAL
     )
+    # Fingerprint of the inputs the current track was built from; the line is rebuilt only
+    # when points, mode or GPX change, so saving a day does not spend routing quota.
+    track_key = models.CharField(max_length=64, blank=True, editable=False)
     gpx_file = models.FileField(
         "GPX-трек",
         upload_to="tours/gpx/",

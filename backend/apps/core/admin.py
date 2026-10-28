@@ -48,6 +48,7 @@ class SiteSettingsAdmin(ModelAdmin):
                 "fields": ["instagram_url", "facebook_url", "youtube_url", "tripadvisor_url"],
             },
         ),
+        ("Карта", {"classes": ["tab"], "fields": ["map_3d_mode"]}),
         (
             "SEO и аналитика",
             {

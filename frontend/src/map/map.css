@@ -1,0 +1,20 @@
+/* Shared map UI; the site design system (Tailwind) arrives in the frontend stage. */
+.kt-baselayer {
+  display: flex;
+}
+.kt-baselayer button {
+  width: auto !important;
+  padding: 0 10px;
+  font: 600 12px/29px system-ui, sans-serif;
+  color: #1f1e1d;
+}
+/* :hover too, otherwise MapLibre's hover background hides the active state */
+.kt-baselayer button[aria-pressed="true"],
+.kt-baselayer button[aria-pressed="true"]:hover {
+  background-color: #e8964a !important;
+  color: #fff;
+}
+.kt-baselayer button + button {
+  border-top: 0 !important;
+  border-left: 1px solid #ddd;
+}

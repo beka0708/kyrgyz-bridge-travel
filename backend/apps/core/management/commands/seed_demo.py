@@ -39,10 +39,10 @@ TOURS = [
         "featured": True,
         "color": (46, 74, 62),
         "days": [
-            ("Bishkek — Karakol", [BISHKEK, CHOLPON_ATA, KARAKOL], "routed"),
-            ("Up to Altyn-Arashan valley", [KARAKOL, ALTYN_ARASHAN], "manual"),
-            ("Ala-Kul lake and the pass", [ALTYN_ARASHAN, ALA_KUL], "manual"),
-            ("Down to Karakol", [ALA_KUL, KARAKOL], "manual"),
+            ("Bishkek — Karakol", [BISHKEK, CHOLPON_ATA, KARAKOL], "road"),
+            ("Up to Altyn-Arashan valley", [KARAKOL, ALTYN_ARASHAN], "hiking"),
+            ("Ala-Kul lake and the pass", [ALTYN_ARASHAN, ALA_KUL], "hiking"),
+            ("Down to Karakol", [ALA_KUL, KARAKOL], "hiking"),
         ],
     },
     {
@@ -58,9 +58,9 @@ TOURS = [
         "featured": True,
         "color": (34, 86, 120),
         "days": [
-            ("Bishkek — Cholpon-Ata", [BISHKEK, CHOLPON_ATA], "routed"),
-            ("Skazka canyon", [CHOLPON_ATA, SKAZKA], "routed"),
-            ("Jeti-Oguz and back", [SKAZKA, JETI_OGUZ, KARAKOL], "routed"),
+            ("Bishkek — Cholpon-Ata", [BISHKEK, CHOLPON_ATA], "road"),
+            ("Skazka canyon", [CHOLPON_ATA, SKAZKA], "road"),
+            ("Jeti-Oguz and back", [SKAZKA, JETI_OGUZ, KARAKOL], "road"),
         ],
     },
     {
@@ -76,9 +76,9 @@ TOURS = [
         "featured": True,
         "color": (120, 84, 40),
         "days": [
-            ("Bishkek — Kochkor", [BISHKEK, KOCHKOR], "routed"),
-            ("Kochkor — Song-Kul", [KOCHKOR, SONG_KUL], "routed"),
-            ("Song-Kul — Bishkek", [SONG_KUL, KOCHKOR, BISHKEK], "routed"),
+            ("Bishkek — Kochkor", [BISHKEK, KOCHKOR], "road"),
+            ("Kochkor — Song-Kul", [KOCHKOR, SONG_KUL], "road"),
+            ("Song-Kul — Bishkek", [SONG_KUL, KOCHKOR, BISHKEK], "road"),
         ],
     },
     {
@@ -95,7 +95,7 @@ TOURS = [
         "color": (70, 100, 50),
         "days": [
             ("Flight to Jalal-Abad", [BISHKEK, JALAL_ABAD], "manual"),
-            ("Jalal-Abad — Arslanbob", [JALAL_ABAD, ARSLANBOB], "routed"),
+            ("Jalal-Abad — Arslanbob", [JALAL_ABAD, ARSLANBOB], "road"),
             ("Big and small waterfalls", [ARSLANBOB], "manual"),
             ("Back to Bishkek", [ARSLANBOB, JALAL_ABAD, BISHKEK], "manual"),
         ],
