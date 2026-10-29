@@ -5,15 +5,36 @@ from django.urls import reverse
 from apps.core.maps import map_config
 from apps.core.models import SiteSettings
 
-from .models import ListKind, Tour, TourDay
+from .models import ListKind, Tour, TourDay, TourType
+
+TYPE_FILTERS = [
+    ("", "All tours"),
+    (TourType.SOLO, "Private"),
+    (TourType.GROUP, "Group"),
+]
 
 
 def tour_list(request):
     tours = Tour.objects.published()
-    tour_type = request.GET.get("type")
+    tour_type = request.GET.get("type", "")
+    if tour_type not in TourType.values:
+        tour_type = ""
     if tour_type:
         tours = tours.filter(tour_type=tour_type)
-    return render(request, "pages/tour_list.html", {"tours": tours, "tour_type": tour_type})
+    filters = [
+        {
+            "value": value,
+            "label": label,
+            "active": value == tour_type,
+            "query": f"?type={value}" if value else "?",
+        }
+        for value, label in TYPE_FILTERS
+    ]
+    return render(
+        request,
+        "pages/tour_list.html",
+        {"tours": tours, "tour_type": tour_type, "filters": filters},
+    )
 
 
 def _detail_tabs(tour):
@@ -78,8 +99,9 @@ def tour_detail(request, slug):
                 {"href": "#program", "label": "Program"},
                 {"href": "#details", "label": "Details"},
                 {"href": "#gallery", "label": "Photos"},
+                {"href": "#inquiry", "label": "Request"},
             ],
-            "header_cta_href": "#book",
+            "header_cta_href": "#inquiry",
             "header_cta_label": "Book now",
             "back_url": reverse("tours:list"),
         },

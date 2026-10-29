@@ -110,6 +110,21 @@
   .pic {
     @apply relative overflow-hidden bg-moss;
   }
+  /* Form fields on dark backgrounds */
+  .kt-input {
+    @apply min-h-12 w-full rounded-2xl border-[1.5px] border-white/12 bg-white/4 px-4 text-base text-snow placeholder:text-sage/70;
+    color-scheme: dark; /* native date picker in dark theme */
+    transition: border-color 0.2s ease;
+  }
+  .kt-input:focus {
+    @apply border-accent outline-none;
+  }
+  .kt-input[aria-invalid="true"] {
+    @apply border-[#ff8a80];
+  }
+  select.kt-input option {
+    @apply bg-forest text-snow;
+  }
   .pic img {
     @apply absolute inset-0 h-full w-full object-cover;
     transition: transform 1s var(--ease-out-soft);

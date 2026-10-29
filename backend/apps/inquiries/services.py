@@ -4,6 +4,7 @@ import urllib.parse
 import urllib.request
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
@@ -42,6 +43,18 @@ def client_ip(request) -> str | None:
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.META.get("REMOTE_ADDR")
+
+
+def rate_limited(ip: str | None, limit: int = 5, window: int = 3600) -> bool:
+    """Per-IP limit for the no-JS form; the API has DRF throttling with the same rate."""
+    if not ip:
+        return False
+    key = f"inquiry-rate:{ip}"
+    count = cache.get(key, 0)
+    if count >= limit:
+        return True
+    cache.set(key, count + 1, window)
+    return False
 
 
 def create_inquiry(*, data: dict, request, is_spam: bool = False) -> Inquiry:

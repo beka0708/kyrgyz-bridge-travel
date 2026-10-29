@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{# Shown only for submissions without JavaScript that failed validation. #}
+{% block title %}Check your request — {{ site.brand_name }}{% endblock %}
+{% block content %}
+<section class="container-page flex flex-col gap-6 py-14 md:py-24">
+  <h1 class="h-section">Please check <span class="text-accent">your request</span></h1>
+  {% if error %}<p class="text-lg text-[#ff8a80]" role="alert">{{ error }}</p>{% endif %}
+  {% if form.errors %}
+    <ul class="flex flex-col gap-2 text-mist" role="alert">
+      {% for field, errors in form.errors.items %}<li><strong class="text-snow">{{ field|capfirst }}:</strong> {{ errors|join:" " }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+  <p><a class="btn btn-accent" href="javascript:history.back()">Back to the form</a></p>
+</section>
+{% endblock %}

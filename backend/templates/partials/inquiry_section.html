@@ -1,0 +1,23 @@
+{# Request form section. Pass `tour` to fix the tour (tour page); otherwise the visitor picks one. #}
+{% load site_tags %}
+<section id="inquiry" class="container-page scroll-mt-20 py-14 md:py-24">
+  <div class="flex flex-col gap-8 md:flex-row md:items-start md:gap-14">
+    <div class="flex min-w-0 flex-col gap-4 md:sticky md:top-8 md:flex-[1_1_380px]">
+      {% if tour %}
+        {% include "partials/section_heading.html" with eyebrow="Request" title="Book *this tour*" %}
+        <p class="text-base text-mist md:text-lg">Leave your dates and contacts — we'll check availability for «{{ tour.title }}» and reply within a day.</p>
+      {% else %}
+        {% include "partials/section_heading.html" with eyebrow="Request" title="Send *a request*" %}
+        <p class="text-base text-mist md:text-lg">Tell us your dates and wishes — we'll suggest a route and reply within a day.</p>
+      {% endif %}
+      {% if site.whatsapp or site.telegram %}
+        <p class="text-sm text-sage">Prefer a messenger?
+          {% if site.whatsapp %}<a class="font-semibold text-accent underline-offset-4 hover:underline" href="{{ whatsapp_url|default:site.whatsapp_url }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}{% if site.whatsapp and site.telegram %} or {% endif %}{% if site.telegram %}<a class="font-semibold text-accent underline-offset-4 hover:underline" href="{{ site.telegram_url }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
+        </p>
+      {% endif %}
+    </div>
+    <div class="min-w-0 md:flex-[1.6_1_520px]">
+      {% include "partials/inquiry_form.html" %}
+    </div>
+  </div>
+</section>

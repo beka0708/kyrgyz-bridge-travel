@@ -28,3 +28,11 @@ def accent_title(title, css_class="text-accent"):
     else:
         return escape(title)
     return format_html('{} <span class="{}">{}</span>', head, css_class, tail)
+
+
+@register.simple_tag
+def inquiry_tours():
+    """Published tours for the «Which tour?» select of the inquiry form."""
+    from apps.tours.models import Tour
+
+    return Tour.objects.published().only("title", "slug")
