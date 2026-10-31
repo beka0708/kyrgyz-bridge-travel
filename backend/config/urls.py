@@ -6,13 +6,14 @@ from django.urls import include, path
 from django.views.decorators.cache import cache_page
 
 from apps.core.sitemaps import SITEMAPS
-from apps.core.views import robots_txt
+from apps.core.views import healthz, robots_txt
 
 admin.site.site_header = "Kyrgyz Tours"
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("robots.txt", robots_txt, name="robots"),
+    path("healthz/", healthz, name="healthz"),
     path(
         "sitemap.xml",
         cache_page(60 * 60)(sitemap),

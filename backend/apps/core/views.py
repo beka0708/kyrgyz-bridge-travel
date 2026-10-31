@@ -99,3 +99,15 @@ def privacy(request):
         canonical=absolute(reverse("core:privacy")),
     )
     return render(request, "pages/privacy.html", {"meta": meta})
+
+
+def healthz(request):
+    """For Docker/uptime checks: the app answers and the database is reachable."""
+    from django.db import connection
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except Exception:
+        return HttpResponse("db error\n", status=503, content_type="text/plain")
+    return HttpResponse("ok\n", content_type="text/plain")

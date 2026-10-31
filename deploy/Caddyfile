@@ -1,0 +1,37 @@
+# HTTPS certificates are issued automatically (Let's Encrypt) for {$DOMAIN}.
+# For a local test use DOMAIN=localhost: Caddy then signs the certificate itself.
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Uploaded photos: served directly from the shared volume.
+	handle_path /media/* {
+		root * /srv/media
+		# WebP variants have unique names (uploads are never overwritten): cache for a year.
+		@variants path /cache/*
+		@originals not path /cache/*
+		header @variants Cache-Control "public, max-age=31536000, immutable"
+		header @originals Cache-Control "public, max-age=86400"
+		file_server
+	}
+
+	handle {
+		reverse_proxy app:8000
+	}
+
+	request_body {
+		max_size 30MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=2592000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+}
+
+# www -> main domain
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

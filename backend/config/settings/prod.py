@@ -26,9 +26,35 @@ CACHES = {
     }
 }
 
+# WhiteNoise serves /static/ with compression and long caching (prod only: in dev runserver does).
+MIDDLEWARE = [
+    *MIDDLEWARE[:1],  # noqa: F405 - SecurityMiddleware first
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    *MIDDLEWARE[1:],  # noqa: F405
+]
+
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
-    },
+    # Pre-compressed (gzip/brotli) files; no extra hashing: Vite already hashes its file names.
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
 }
+
+
+def _immutable(path, url):
+    """Vite bundles carry a content hash in the name, so browsers may cache them for a year."""
+    return url.startswith("/static/dist/assets/")
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = _immutable
+
+# Error reports: only when SENTRY_DSN is set (free plan is enough for this site).
+SENTRY_DSN = env("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=False,  # no visitor emails or IPs in error reports
+        traces_sample_rate=0.0,
+        environment=env("SENTRY_ENVIRONMENT", default="production"),
+    )

@@ -1,0 +1,5 @@
+# Install on the server with: crontab deploy/crontab.example  (adjust /opt/kg-tours)
+# Daily backup at 03:30
+30 3 * * * /opt/kg-tours/deploy/backup.sh >> /opt/kg-tours/backups/backup.log 2>&1
+# Retry inquiry emails that failed to send, every 15 minutes
+*/15 * * * * cd /opt/kg-tours/deploy && docker compose -f compose.prod.yml --env-file ../.env exec -T app python manage.py resend_inquiries > /dev/null

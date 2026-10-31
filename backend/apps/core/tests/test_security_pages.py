@@ -56,3 +56,8 @@ def test_admin_locks_after_five_wrong_passwords(client):
     locked = client.post(url, {"username": "boss", "password": "correct-horse-battery"})
     assert locked.status_code == 429
     assert not client.get("/admin/").wsgi_request.user.is_authenticated
+
+
+def test_healthz(client):
+    resp = client.get("/healthz/")
+    assert resp.status_code == 200 and resp.content == b"ok\n"
