@@ -1,0 +1,17 @@
+{# Shown to visitors with a European time zone until they choose; reopened from the footer. #}
+{% if site.google_analytics_id %}
+<div x-data="cookieBanner" x-show="open" x-cloak x-transition.opacity @cookie-settings.window="open = true"
+     class="fixed inset-x-3 bottom-3 z-50 md:inset-x-auto md:right-6 md:bottom-6 md:max-w-[420px]"
+     role="dialog" aria-live="polite" aria-label="Cookie settings">
+  <div class="flex flex-col gap-4 rounded-3xl border-[1.5px] border-line-strong bg-forest p-5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+    <p class="text-sm text-mist">
+      We use Google Analytics cookies to see which tours people look at and improve the site.
+      No ads, no selling of data. You can change your choice any time in the footer.
+    </p>
+    <div class="flex gap-3">
+      <button type="button" class="btn btn-accent min-h-11 flex-1" @click="choose('granted')">Accept</button>
+      <button type="button" class="btn min-h-11 flex-1 border-[1.5px] border-line-strong" @click="choose('denied')">Decline</button>
+    </div>
+  </div>
+</div>
+{% endif %}

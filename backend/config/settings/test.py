@@ -13,3 +13,5 @@ STORAGES = {
 
 # Tests must not depend on a built frontend (static/dist is not in git).
 DJANGO_VITE = {"default": {**DJANGO_VITE["default"], "dev_mode": True}}  # noqa: F405
+
+IMAGE_WARMUP = False  # no background threads in tests

@@ -20,7 +20,7 @@ export interface RouteDay {
 }
 
 export const COLORS = {
-  active: "#e8964a",
+  active: "#f2994a",
   inactive: "#7c7a73",
   casing: "#ffffff",
 };

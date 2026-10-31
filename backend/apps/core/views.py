@@ -1,9 +1,13 @@
+from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.cache import cache_page
 
 from apps.content.models import FAQ, GalleryPost, Guide, Partner, Review, Stat
 from apps.tours.models import Tour, TourType
 
 from .models import SiteSettings
+from .seo import home_meta
 
 HOME_TOURS_LIMIT = 8
 
@@ -62,7 +66,24 @@ def home(request):
             {"href": "#reviews" if reviews else "#faq", "label": "Reviews" if reviews else "FAQ"},
             {"href": "#contact", "label": "Contacts"},
         ],
+        "meta": home_meta(site, _first_cover(featured)),
         "header_cta_href": "#contact",
         "header_cta_label": "Message us",
     }
     return render(request, "pages/home.html", context)
+
+
+@cache_page(60 * 60)
+def robots_txt(request):
+    if settings.ROBOTS_DISALLOW_ALL:  # staging / preview servers must not be indexed
+        lines = ["User-agent: *", "Disallow: /"]
+    else:
+        lines = [
+            "User-agent: *",
+            "Disallow: /admin/",
+            "Disallow: /api/",
+            "Disallow: /inquiry/",
+            "",
+            f"Sitemap: {settings.SITE_URL}/sitemap.xml",
+        ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")

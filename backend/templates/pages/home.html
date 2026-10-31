@@ -2,13 +2,15 @@
 {% load site_tags %}
 {# Mockups: docs/design/source/desktop-home.html and mobile-home.html. Empty sections are hidden. #}
 
+{% block head %}{% preload_img hero_image "100vw" %}{% endblock %}
+
 {% block header %}{% include "partials/header_mobile.html" %}{% endblock %}
 
 {% block content %}
 {# --------------------------------------------------------------- HERO + desktop nav over the photo #}
 <div class="relative overflow-hidden">
   {% if hero_image %}
-    <img src="{{ hero_image.url }}" alt="" class="absolute inset-0 h-full w-full object-cover object-[center_40%]" fetchpriority="high">
+    {% img hero_image sizes="100vw" css="absolute inset-0 h-full w-full object-cover object-[center_40%]" priority=True %}
   {% endif %}
   <div aria-hidden="true" class="absolute inset-0 bg-[rgb(10_22_18/0.62)]"></div>
 
@@ -93,7 +95,7 @@
              'order-2 h-[540px] w-[440px] opacity-100': role({{ forloop.counter0 }}) === 'current',
              'order-3 h-[420px] w-[300px] opacity-55': role({{ forloop.counter0 }}) === 'next',
            }">
-          {% if tour.cover %}<img src="{{ tour.cover.url }}" alt="{{ tour.title }}" class="absolute inset-0 h-full w-full object-cover" loading="lazy">{% endif %}
+          {% img tour.cover alt=tour.title sizes="440px" css="absolute inset-0 h-full w-full object-cover" %}
           <span class="absolute top-[18px] left-[18px] rounded-full bg-paper px-3.5 py-[7px] text-xs font-bold text-ink">{{ tour.type_label }}</span>
           <span class="absolute inset-x-[18px] bottom-[18px] flex flex-col gap-1.5 rounded-[20px] bg-night px-[18px] py-4">
             <span class="font-display text-[17px] leading-[1.3] font-medium">{{ tour.title }}</span>
@@ -158,7 +160,7 @@
   </div>
   {% if about_image %}
     <div class="expand pic h-60 rounded-[28px] md:h-[520px]">
-      <img src="{{ about_image.url }}" alt="Our team in the mountains" class="object-[center_45%]" loading="lazy">
+      {% img about_image alt="Our team in the mountains" sizes="(min-width: 1200px) 1136px, 100vw" css="object-[center_45%]" %}
     </div>
   {% endif %}
   {% if stats %}
@@ -183,7 +185,7 @@
         <button type="button" class="flex min-h-14 w-full items-center gap-3.5 text-left md:gap-4"
                 @click="open = open === {{ guide.pk }} ? null : {{ guide.pk }}" :aria-expanded="open === {{ guide.pk }}" aria-controls="guide-{{ guide.pk }}">
           <span class="pic size-14 flex-none rounded-full md:size-[76px]">
-            {% if guide.photo %}<img src="{{ guide.photo.url }}" alt="" loading="lazy">{% endif %}
+            {% img guide.photo sizes="80px" %}
           </span>
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-base font-bold md:text-lg">{{ guide.name }}</span>
@@ -230,7 +232,7 @@
         <svg class="h-6 w-8 fill-accent md:h-8 md:w-10" viewBox="0 0 40 32" aria-hidden="true"><path d="M0 32V19C0 8 6 2 16 0v6c-5 1.4-7 4.4-7 8h7v18H0zm22 0V19C22 8 28 2 38 0v6c-5 1.4-7 4.4-7 8h7v18H22z"/></svg>
         <blockquote class="text-base leading-[1.55] md:text-[21px]">{{ review.text|linebreaksbr }}</blockquote>
         <figcaption class="mt-auto flex items-center gap-3.5">
-          <span class="pic size-12 flex-none rounded-full md:size-[52px]">{% if review.photo %}<img src="{{ review.photo.url }}" alt="" loading="lazy">{% endif %}</span>
+          <span class="pic size-12 flex-none rounded-full md:size-[52px]">{% img review.photo sizes="56px" %}</span>
           <span class="flex flex-col">
             <span class="font-bold">{{ review.author_name }} <span class="ml-1 text-sm font-normal text-accent" aria-label="{{ review.rating }} out of 5">{% for _ in "x"|rjust:review.rating %}★{% endfor %}</span></span>
             <span class="text-sm text-mist">{{ review.country }}{% if review.country and review.tour %} · {% endif %}{% if review.tour %}{{ review.tour.title }}{% endif %}</span>
@@ -271,7 +273,7 @@
     {% for partner in partners %}
       <a class="glass flex min-h-[72px] items-center justify-center rounded-[20px] p-4 md:min-h-[84px]"
          {% if partner.url %}href="{{ partner.url }}" target="_blank" rel="noopener"{% endif %} title="{{ partner.name }}">
-        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="max-h-10 w-auto max-w-full object-contain opacity-80" loading="lazy">
+        {% img partner.logo alt=partner.name sizes="160px" css="max-h-10 w-auto max-w-full object-contain opacity-80" %}
       </a>
     {% endfor %}
   </div>
@@ -291,7 +293,7 @@
     <div class="grid grid-cols-3 gap-2 md:grid-cols-6 md:gap-3">
       {% for post in gallery_posts %}
         <a class="pic aspect-square rounded-2xl md:rounded-[20px]" {% if post.link %}href="{{ post.link }}" target="_blank" rel="noopener"{% endif %}>
-          <img class="zoom" src="{{ post.image.url }}" alt="{{ post.caption|default:'Photo from a trip' }}" loading="lazy">
+          {% img post.image alt=post.caption|default:"Photo from a trip" sizes="(min-width: 768px) 190px, 33vw" css="zoom" %}
         </a>
       {% endfor %}
     </div>

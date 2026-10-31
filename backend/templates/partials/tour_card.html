@@ -1,7 +1,8 @@
+{% load site_tags %}
 {# Tour card from the mockups: «Popular tours» grid (desktop) and the snap row (phones). #}
 <a class="tour-card group flex flex-col overflow-hidden rounded-3xl bg-white text-ink md:rounded-[28px]" href="{{ tour.get_absolute_url }}">
   <div class="pic h-[200px] md:h-80">
-    {% if tour.cover %}<img class="tour-card__photo" src="{{ tour.cover.url }}" alt="{{ tour.title }}" loading="lazy">{% endif %}
+    {% img tour.cover alt=tour.title sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 270px" css="tour-card__photo" %}
     <span class="absolute top-3 left-3 rounded-full bg-paper px-3.5 py-1.5 text-xs font-bold text-ink md:top-4 md:left-4">{{ tour.type_label }}</span>
   </div>
   <div class="flex flex-col gap-2 p-[18px] md:gap-2.5 md:p-6">

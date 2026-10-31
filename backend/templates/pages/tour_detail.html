@@ -2,8 +2,9 @@
 {% load django_vite site_tags %}
 {# Mockups: docs/design/source/desktop-tour-a.html (≥1024px) and mobile-tour-b.html (phones). #}
 
-{% block title %}{{ tour.seo_title|default:tour.title }} — {{ site.brand_name }}{% endblock %}
-{% block description %}{{ tour.seo_description|default:tour.short_description }}{% endblock %}
+
+{% block head %}{% preload_img tour.cover "(min-width: 768px) 50vw, 100vw" %}{% endblock %}
+{% block body_attrs %}data-tour="{{ tour.slug }}" data-tour-title="{{ tour.title }}" data-tour-price="{{ tour.price_from }}" data-tour-currency="{{ tour.currency }}"{% endblock %}
 
 {% block content %}
 {# ---------------------------------------------------------------- HERO #}
@@ -36,7 +37,7 @@
 
   <div class="rise relative order-1 min-w-0 md:order-2 md:flex-[1_1_420px]">
     <div class="pic h-[340px] rounded-[28px] md:h-[580px] md:rounded-[44px]">
-      {% if tour.cover %}<img src="{{ tour.cover.url }}" alt="{{ tour.title }}" fetchpriority="high">{% endif %}
+      {% img tour.cover alt=tour.title sizes="(min-width: 768px) 50vw, 100vw" priority=True %}
       <span class="absolute top-3.5 left-3.5 rounded-full bg-paper px-3 py-1.5 text-xs font-bold text-ink md:hidden">{{ tour.type_label }}</span>
     </div>
     {% if tour.next_departure %}
@@ -78,11 +79,11 @@
           {% with photos=day.images.all %}
             {% if photos %}
               <div class="flex flex-col gap-2.5 lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
-                <div class="pic h-60 rounded-3xl"><img src="{{ photos.0.image.url }}" alt="{{ photos.0.alt|default:day.title }}" loading="lazy"></div>
+                <div class="pic h-60 rounded-3xl">{% img photos.0.image alt=photos.0.alt|default:day.title sizes="100vw" %}</div>
                 {% if photos|length > 1 %}
                   <div class="grid grid-cols-2 gap-2.5">
                     {% for photo in photos|slice:"1:3" %}
-                      <div class="pic h-[110px] rounded-[18px]"><img src="{{ photo.image.url }}" alt="{{ photo.alt|default:day.title }}" loading="lazy"></div>
+                      <div class="pic h-[110px] rounded-[18px]">{% img photo.image alt=photo.alt|default:day.title sizes="50vw" %}</div>
                     {% endfor %}
                   </div>
                 {% endif %}
@@ -98,7 +99,7 @@
                     class="flex w-full cursor-pointer items-center gap-6 rounded-[28px] border-2 bg-white p-5 text-left text-ink transition-colors"
                     :class="day === {{ day.day_number }} ? 'border-ink' : 'border-transparent hover:border-pebble'">
               <span class="pic h-40 w-[220px] flex-none rounded-[20px]">
-                {% with photo=day.images.all.0 %}{% if photo %}<img src="{{ photo.image.url }}" alt="{{ photo.alt|default:day.title }}" loading="lazy">{% endif %}{% endwith %}
+                {% with photo=day.images.all.0 %}{% if photo %}{% img photo.image alt=photo.alt|default:day.title sizes="220px" %}{% endif %}{% endwith %}
               </span>
               <span class="flex min-w-0 flex-1 flex-col gap-2">
                 <span class="font-display text-[13px] font-semibold text-rust">DAY {{ day.day_number }}</span>
@@ -184,7 +185,7 @@
   <div class="snap-row md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0">
     {% for photo in gallery %}
       <div class="pic h-80 w-[260px] rounded-3xl md:h-90 md:w-auto md:rounded-[28px]" data-reveal>
-        <img class="zoom" src="{{ photo.image.url }}" alt="{{ photo.alt|default:tour.title }}" loading="lazy">
+        {% img photo.image alt=photo.alt|default:tour.title sizes="(min-width: 768px) 33vw, 260px" css="zoom" %}
       </div>
     {% endfor %}
   </div>

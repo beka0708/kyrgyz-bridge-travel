@@ -1,21 +1,25 @@
-{% load django_vite %}<!doctype html>
+{% load django_vite static %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{% block title %}{{ site.seo_title|default:site.brand_name }}{% endblock %}</title>
-  <meta name="description" content="{% block description %}{{ site.seo_description }}{% endblock %}">
+  <title>{% block title %}{{ meta.title|default:site.seo_title|default:site.brand_name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ meta.description|default:site.seo_description }}{% endblock %}">
+  {% if meta %}{% include "partials/meta.html" %}{% endif %}
   <meta name="theme-color" content="#0e1b17">
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  {% include "partials/analytics.html" %}
   {% vite_hmr_client %}
   {% vite_asset "src/entries/main.ts" %}
   {% block head %}{% endblock %}
 </head>
-<body class="min-h-dvh overflow-x-clip">
+<body class="min-h-dvh overflow-x-clip" {% block body_attrs %}{% endblock %}>
   {% include "partials/scroll_progress.html" %}
   {% block header %}{% include "partials/header.html" %}{% endblock %}
   <main id="top">{% block content %}{% endblock %}</main>
   {% block footer %}{% include "partials/footer.html" %}{% endblock %}
   {% block floating %}{% include "partials/whatsapp_float.html" %}{% endblock %}
+  {% include "partials/cookie_banner.html" %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

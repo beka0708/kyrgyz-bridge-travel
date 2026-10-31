@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from apps.core.maps import map_config
 from apps.core.models import SiteSettings
+from apps.core.seo import tour_list_meta, tour_meta
 
 from .models import ListKind, Tour, TourDay, TourType
 
@@ -30,10 +31,16 @@ def tour_list(request):
         }
         for value, label in TYPE_FILTERS
     ]
+    label = {TourType.SOLO: "Private tours", TourType.GROUP: "Group tours"}.get(tour_type, "Tours")
     return render(
         request,
         "pages/tour_list.html",
-        {"tours": tours, "tour_type": tour_type, "filters": filters},
+        {
+            "tours": tours,
+            "tour_type": tour_type,
+            "filters": filters,
+            "meta": tour_list_meta(SiteSettings.load(), tour_type, label),
+        },
     )
 
 
@@ -93,6 +100,7 @@ def tour_detail(request, slug):
             "tabs": _detail_tabs(tour),
             "gallery": list(tour.images.all()),
             "route_props": route_props,
+            "meta": tour_meta(site, tour, days),
             "whatsapp_url": site.whatsapp_url(f"Hi! I'm interested in the tour «{tour.title}»."),
             # header (desktop pill nav and phone back link)
             "nav_links": [

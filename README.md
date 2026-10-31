@@ -41,6 +41,21 @@ MapLibre + OpenFreeMap (векторная карта), рельеф из отк
 - Линия маршрута дня строится при сохранении в админке: прямые линии, по дорогам, по пешим тропам
   (OpenRouteService, нужен бесплатный ключ `ORS_API_KEY` с account.heigit.org) или из GPX.
 
+## SEO, аналитика, скорость
+
+- **Картинки:** при сохранении в админке в фоне создаются WebP 160/480/960/1600 px и превью
+  1200×630 JPEG для соцсетей (`media/cache/`). Для уже загруженных фото:
+  `cd backend && uv run python manage.py warm_images`.
+- **SEO:** title/description/canonical/Open Graph на каждой странице, JSON-LD (`TravelAgency`,
+  `TouristTrip`, `BreadcrumbList`), `/sitemap.xml`, `/robots.txt`. На тестовом сервере —
+  `ROBOTS_DISALLOW_ALL=true`, чтобы его не индексировали. Адреса берутся из `SITE_URL`.
+- **GA4:** ID вписывается в админке («Контакты и SEO» → «SEO и аналитика»). Без ID скрипты Google
+  не грузятся. Consent Mode v2: для ЕС/UK/CH аналитика только после «Accept» в cookie-баннере
+  (баннер видят посетители с европейским часовым поясом). События: `view_item`,
+  `whatsapp_click`, `telegram_click`, `generate_lead`.
+- **Антиспам формы:** Cloudflare Turnstile включается ключами `TURNSTILE_SITE_KEY` и
+  `TURNSTILE_SECRET_KEY` в `.env`.
+
 ## Команды
 
 | Команда | Что делает |
@@ -51,6 +66,7 @@ MapLibre + OpenFreeMap (векторная карта), рельеф из отк
 | `make migrations` | создать миграции |
 | `make front-build` / `make front-dev` | сборка фронта / Vite с hot reload |
 | `cd backend && uv run python manage.py resend_inquiries` | переотправить письма о заявках (для cron) |
+| `cd backend && uv run python manage.py warm_images` | создать WebP-варианты для всех загруженных фото |
 
 ## API v1
 

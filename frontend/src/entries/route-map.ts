@@ -1,4 +1,5 @@
-// Tiny entry: the map library (~1 MB) is fetched only when the map is about to be seen,
+// Tiny entry: the map library (~1 MB) is fetched only when the map is about to be seen
+// (150px ahead: earlier would put it on the critical path of a phone's first load),
 // so the first screen on a phone does not pay for it.
 import { createApp } from "vue";
 
@@ -22,7 +23,7 @@ if ("IntersectionObserver" in window) {
         mount(entry.target as HTMLElement);
       }
     },
-    { rootMargin: "400px 0px" },
+    { rootMargin: "150px 0px" },
   );
   islands.forEach((el) => observer.observe(el));
 } else {

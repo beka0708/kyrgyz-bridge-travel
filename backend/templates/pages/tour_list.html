@@ -2,8 +2,6 @@
 {% load site_tags %}
 {# No mockup for this page: built from the home «Popular tours» section and the tour hero. #}
 
-{% block title %}{% if tour_type == "solo" %}Private tours{% elif tour_type == "group" %}Group tours{% else %}Tours{% endif %} in Kyrgyzstan — {{ site.brand_name }}{% endblock %}
-{% block description %}Private and group tours across Kyrgyzstan with local guides: lakes, mountains, yurts and treks.{% endblock %}
 
 {% block content %}
 <section class="container-page flex flex-col gap-5 pt-8 pb-10 md:gap-7 md:pt-20 md:pb-16">
@@ -27,6 +25,7 @@
 <section class="bg-paper text-ink">
   <div class="container-page flex flex-col gap-6 py-10 md:gap-10 md:py-20">
     {% if tours %}
+      <h2 class="sr-only">Tour list</h2>
       <p class="text-sm font-semibold text-ink-muted">{{ tours|length }} tour{{ tours|length|pluralize }}</p>
       <div class="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {% for tour in tours %}

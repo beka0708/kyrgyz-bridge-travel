@@ -11,8 +11,8 @@
 /* :hover too, otherwise MapLibre's hover background hides the active state */
 .kt-baselayer button[aria-pressed="true"],
 .kt-baselayer button[aria-pressed="true"]:hover {
-  background-color: #e8964a !important;
-  color: #fff;
+  background-color: #f2994a !important;
+  color: #11201a; /* dark text on accent: white fails contrast (2.4:1) */
 }
 .kt-baselayer button + button {
   border-top: 0 !important;

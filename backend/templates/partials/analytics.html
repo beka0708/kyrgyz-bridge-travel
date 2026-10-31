@@ -1,0 +1,22 @@
+{# GA4 with Consent Mode v2. Nothing from Google loads unless a GA ID is set in the admin. #}
+{% if site.google_analytics_id %}
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  // No ads on the site: ad storage is always off.
+  var off = { ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" };
+  // EEA, UK and Switzerland: analytics cookies only after «Accept» in the cookie banner.
+  gtag("consent", "default", Object.assign({}, off, {
+    analytics_storage: "denied", wait_for_update: 500,
+    region: ["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IS","IE","IT","LV","LI","LT","LU","MT","NL","NO","PL","PT","RO","SK","SI","ES","SE","GB","CH"]
+  }));
+  gtag("consent", "default", Object.assign({}, off, { analytics_storage: "granted" }));
+  try {
+    var choice = localStorage.getItem("kt-consent");
+    if (choice) gtag("consent", "update", { analytics_storage: choice });
+  } catch (e) {}
+  gtag("js", new Date());
+  gtag("config", "{{ site.google_analytics_id|escapejs }}");
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics_id|urlencode }}"></script>
+{% endif %}

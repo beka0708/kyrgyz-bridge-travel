@@ -15,6 +15,8 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Public origin without a trailing slash; used for links in emails, sitemap, Open Graph.
 SITE_URL = env("SITE_URL", default="http://localhost:8010").rstrip("/")
+# True on staging/preview servers: robots.txt then forbids indexing the whole site.
+ROBOTS_DISALLOW_ALL = env.bool("ROBOTS_DISALLOW_ALL", default=False)
 
 INSTALLED_APPS = [
     # unfold must come before django.contrib.admin
