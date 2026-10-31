@@ -9,11 +9,19 @@ export function initReveal() {
   }
   const observer = new IntersectionObserver(
     (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      }
+      // Items entering together (a row of cards) appear one after another, 50ms apart.
+      entries
+        .filter((entry) => entry.isIntersecting)
+        .forEach((entry, i) => {
+          const el = entry.target as HTMLElement;
+          if (i > 0) {
+            el.style.transitionDelay = `${Math.min(i, 3) * 50}ms`;
+            // drop the delay afterwards so hover/press transitions are not delayed
+            el.addEventListener("transitionend", () => (el.style.transitionDelay = ""), { once: true });
+          }
+          el.classList.add("is-visible");
+          observer.unobserve(el);
+        });
     },
     { rootMargin: "0px 0px -10% 0px" },
   );

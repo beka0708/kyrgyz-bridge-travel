@@ -1,4 +1,4 @@
-/* Design system from the mockups (docs/design/source/*.html). */
+/* Design system. Started from the mockups (docs/design/source/*.html), refined for UX. */
 @import "tailwindcss";
 @import "@fontsource-variable/unbounded/wght.css";
 @import "@fontsource-variable/manrope/wght.css";
@@ -7,6 +7,9 @@
 @source "../../../backend/templates";
 @source "../../../backend/apps";
 @source "..";
+
+/* `can-hover:` = a real mouse. Touch screens get press feedback instead of sticky hover. */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
 
 @theme {
   /* Dark surfaces */
@@ -30,6 +33,7 @@
   --color-pebble: #b9c2bb;
 
   --color-accent: #f2994a;
+  --color-danger: #ff8a80;
 
   --font-sans: "Manrope Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Unbounded Variable", "Manrope Variable", sans-serif;
@@ -38,17 +42,42 @@
   --radius-panel: 32px;
   --radius-hero: 44px;
 
-  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Motion: strong ease-out for things appearing/reacting, ease-in-out for moving on screen. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @layer base {
   html {
     @apply bg-night text-snow font-sans antialiased;
+    color-scheme: dark; /* dark scrollbars and native controls */
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    /* anchors and focused fields stay clear of the sticky phone header */
+    scroll-padding-top: 5rem;
+  }
+  @media (min-width: 768px) {
+    html {
+      scroll-padding-top: 1.5rem;
+    }
+  }
+  /* pages with the fixed booking bar keep focused fields above it */
+  html:has(.booking-bar) {
+    scroll-padding-bottom: 7rem;
   }
   body {
     @apply leading-normal;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  /* Unbounded is very wide: break long words instead of clipping them on phones */
+  h1,
+  h2 {
+    hyphens: auto;
+    overflow-wrap: break-word;
   }
   [x-cloak] {
     display: none !important;
@@ -56,11 +85,30 @@
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-accent;
   }
+  /* an orange ring is invisible on orange and faint on light: use ink there */
+  .bg-paper :focus-visible,
+  .bg-white :focus-visible,
+  .bg-accent :focus-visible,
+  .btn-accent:focus-visible {
+    @apply outline-ink;
+  }
+  .btn-accent:focus-visible {
+    outline-offset: 3px;
+  }
 }
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-[1200px] px-5 md:px-8;
+    @apply mx-auto w-full max-w-[1200px];
+    /* safe areas: landscape iPhone notch */
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+  @media (min-width: 768px) {
+    .container-page {
+      padding-left: max(2rem, env(safe-area-inset-left));
+      padding-right: max(2rem, env(safe-area-inset-right));
+    }
   }
   .eyebrow {
     @apply text-xs font-bold tracking-[0.14em] uppercase md:text-[13px];
@@ -70,10 +118,11 @@
   }
   .btn {
     @apply inline-flex min-h-12 items-center justify-center rounded-full px-6 text-[15px] font-bold whitespace-nowrap;
-    transition: transform 0.25s ease;
+    transition: transform 160ms var(--ease-out);
+    touch-action: manipulation;
   }
-  .btn:hover {
-    transform: translateY(-3px);
+  .btn:active {
+    transform: scale(0.97);
   }
   /* modifier: use as class="btn btn-accent" */
   .btn-accent {
@@ -81,17 +130,10 @@
   }
   .glass {
     @apply border-[1.5px] border-white/12 bg-white/4;
-    transition: border-color 0.35s ease, box-shadow 0.35s ease;
-  }
-  .glass:hover {
-    @apply border-accent;
-    box-shadow: 0 0 36px rgb(242 153 74 / 0.22);
+    transition: border-color 200ms ease;
   }
   .lnk {
-    transition: color 0.2s ease;
-  }
-  .lnk:hover {
-    @apply text-snow;
+    transition: color 150ms ease;
   }
   /* Horizontal scroller with snap, used for chips and galleries on phones. */
   .snap-row {
@@ -99,6 +141,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 20px; /* snap cards to the page padding, not the screen edge */
     scrollbar-width: none;
+    overscroll-behavior-x: contain;
   }
   .snap-row > * {
     scroll-snap-align: start;
@@ -109,6 +152,10 @@
   }
   .pic {
     @apply relative overflow-hidden bg-moss;
+  }
+  .pic img {
+    @apply absolute inset-0 h-full w-full object-cover;
+    transition: transform 600ms var(--ease-out);
   }
   /* Editable legal text (Privacy Policy) */
   .legal h2 {
@@ -125,53 +172,74 @@
   }
   /* Form fields on dark backgrounds */
   .kt-input {
-    @apply min-h-12 w-full rounded-2xl border-[1.5px] border-white/12 bg-white/4 px-4 text-base text-snow placeholder:text-sage/70;
+    /* border white/40 ≈ 3.4:1 against the field: findable outdoors on a phone */
+    @apply min-h-12 w-full rounded-2xl border-[1.5px] border-white/40 bg-white/4 px-4 text-base text-snow placeholder:text-sage;
     color-scheme: dark; /* native date picker in dark theme */
-    transition: border-color 0.2s ease;
+    transition: border-color 150ms ease;
   }
   .kt-input:focus {
     @apply border-accent outline-none;
   }
   .kt-input[aria-invalid="true"] {
-    @apply border-[#ff8a80];
+    @apply border-danger;
+  }
+  .kt-input[type="date"] {
+    @apply appearance-none text-left;
+  }
+  .kt-input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
   }
   select.kt-input option {
     @apply bg-forest text-snow;
   }
-  .pic img {
-    @apply absolute inset-0 h-full w-full object-cover;
-    transition: transform 1s var(--ease-out-soft);
-  }
-  .pic:hover img.zoom {
-    transform: scale(1.07);
-  }
-}
 
-@layer components {
-  /* Tour cards (home grid, tour list): lift, photo zoom, arrow turns dark */
+  /* Tour cards (home grid, tour list) */
   .tour-card {
     transition:
-      transform 0.4s var(--ease-out-soft),
-      box-shadow 0.4s ease;
+      transform 250ms var(--ease-out),
+      box-shadow 250ms ease;
+  }
+  .tour-card:active {
+    transform: scale(0.98);
   }
   .tour-card .tour-card__photo {
-    transition: transform 0.8s var(--ease-out-soft);
+    transition: transform 500ms var(--ease-out);
   }
   .tour-card__arrow {
     transition:
-      background-color 0.3s ease,
-      transform 0.3s ease;
+      background-color 200ms ease,
+      transform 200ms var(--ease-out);
   }
   .tour-card__arrow svg {
-    transition: stroke 0.3s ease;
+    transition: stroke 200ms ease;
   }
-  @media (hover: hover) {
+  .tile {
+    transition: border-color 200ms ease;
+  }
+
+  /* Hover only with a real mouse: on touch screens it sticks after a tap. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn:hover:active {
+      transform: scale(0.97);
+    }
+    .glass-hover:hover {
+      @apply border-accent;
+    }
+    .lnk:hover {
+      @apply text-snow;
+    }
+    .pic:hover img.zoom {
+      transform: scale(1.04);
+    }
     .tour-card:hover {
-      transform: translateY(-10px);
+      transform: translateY(-6px);
       box-shadow: 0 24px 48px rgb(17 32 26 / 0.18);
     }
     .tour-card:hover .tour-card__photo {
-      transform: scale(1.08);
+      transform: scale(1.05);
     }
     .tour-card:hover .tour-card__arrow {
       @apply bg-ink;
@@ -180,23 +248,25 @@
     .tour-card:hover .tour-card__arrow svg {
       @apply stroke-snow;
     }
-    .tile {
-      transition:
-        transform 0.35s ease,
-        border-color 0.35s ease;
-    }
+    /* tiles are not clickable: only the border reacts, no lift */
     .tile:hover {
       @apply border-line-strong;
-      transform: translateY(-6px);
+    }
+  }
+
+  /* While typing on a phone the fixed bars would cover the field and the keyboard. */
+  @media (hover: none) {
+    body:has(:is(input, textarea, select):focus) :is(.booking-bar, .wa-float) {
+      display: none;
     }
   }
 }
 
-/* --- Motion (from the mockups); all of it is off with «reduce motion» --- */
+/* --- Motion --------------------------------------------------------------------- */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -209,80 +279,91 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
+/* Entrance of hero text. Never used on the LCP image or the header. */
 .rise {
-  animation: fade-up 0.8s var(--ease-out-soft) both;
+  animation: fade-up 500ms var(--ease-out) both;
 }
 .rise-2 {
-  animation: fade-up 0.8s 0.12s var(--ease-out-soft) both;
+  animation: fade-up 500ms 60ms var(--ease-out) both;
 }
 .rise-3 {
-  animation: fade-up 0.8s 0.24s var(--ease-out-soft) both;
+  animation: fade-up 500ms 120ms var(--ease-out) both;
 }
 .float {
-  animation: floaty 5s ease-in-out infinite;
+  animation: floaty 5s var(--ease-in-out) infinite;
 }
-/* Scroll reveal: main.ts adds .is-visible when the block enters the screen. */
+/* Scroll reveal: the `js` class is set inline in <head> before first paint (no flash),
+   scroll.ts adds .is-visible (with a short stagger) when the block enters the screen. */
 .js [data-reveal] {
   opacity: 0;
-  transform: translateY(40px);
+  transform: translateY(16px);
   transition:
-    opacity 0.8s var(--ease-out-soft),
-    transform 0.8s var(--ease-out-soft);
+    opacity 500ms var(--ease-out),
+    transform 500ms var(--ease-out);
 }
 .js [data-reveal].is-visible {
   opacity: 1;
   transform: none;
 }
-/* «About» photo grows from a rounded pill to full width while scrolling (supported browsers). */
-.expand {
-  width: 100%;
-  border-radius: 32px;
+/* Items in phone swipe rows start off-screen: revealing them would show blank slots. */
+@media (max-width: 767.98px) {
+  .js .snap-row > [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
-@keyframes grow {
+/* «About» photo opens from a rounded pill to full width while scrolling (supported browsers).
+   clip-path keeps it on the compositor: no layout work on every scroll frame. */
+@keyframes open-up {
   from {
-    width: 58%;
-    border-radius: 260px;
+    clip-path: inset(0 21% 0 21% round 260px);
   }
   to {
-    width: 100%;
-    border-radius: 32px;
+    clip-path: inset(0 0 0 0 round 32px);
   }
 }
 @supports (animation-timeline: view()) {
   @media (min-width: 768px) {
     .expand {
-      animation: grow linear both;
+      animation: open-up linear both;
       animation-timeline: view();
       animation-range: entry 5% cover 40%;
     }
   }
 }
+
+/* Reduced motion: no movement; content just appears, short fades only. */
 @media (prefers-reduced-motion: reduce) {
-  .expand {
-    animation: none;
-  }
-  .tour-card,
-  .tour-card:hover {
-    transform: none;
+  html {
+    scroll-behavior: auto;
   }
   .rise,
   .rise-2,
   .rise-3,
-  .float {
+  .float,
+  .expand {
     animation: none;
   }
   .js [data-reveal] {
-    opacity: 1;
     transform: none;
+    transition: opacity 200ms ease;
+  }
+  .btn,
+  .btn:hover,
+  .btn:active,
+  .tour-card,
+  .tour-card:hover,
+  .tour-card:active,
+  .tour-card:hover .tour-card__photo,
+  .tour-card:hover .tour-card__arrow,
+  .pic:hover img.zoom {
+    transform: none;
+  }
+  .pic img {
     transition: none;
-  }
-  .btn:hover {
-    transform: none;
-  }
-  html {
-    scroll-behavior: auto;
   }
 }

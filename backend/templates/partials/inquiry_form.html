@@ -1,6 +1,6 @@
 {% load site_tags %}
 {# Works without JS (posts to /inquiry/); with JS Alpine sends JSON to the API and shows errors inline. #}
-<div class="glass rounded-3xl p-5 md:rounded-[32px] md:p-10 hover:transform-none"
+<div class="glass rounded-3xl p-5 md:rounded-[32px] md:p-10"
      x-data="inquiryForm('{% url 'v1:inquiry-create' %}')">
   {% if request.GET.sent %}
     <div class="flex flex-col gap-3" role="status">
@@ -24,11 +24,12 @@
       <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
     </div>
 
+    <p class="text-xs text-sage md:col-span-2"><span class="text-accent" aria-hidden="true">*</span> Required fields</p>
     {% include "partials/field.html" with name="name" label="Your name" type="text" required=True autocomplete="name" %}
-    {% include "partials/field.html" with name="email" label="Email" type="email" required=True autocomplete="email" %}
-    {% include "partials/field.html" with name="contact" label="WhatsApp / Telegram / phone" type="text" autocomplete="tel" placeholder="+44 7700 900123" %}
+    {% include "partials/field.html" with name="email" label="Email" type="email" required=True autocomplete="email" spellcheck_off=True %}
+    {% include "partials/field.html" with name="contact" label="WhatsApp / Telegram / phone" type="text" autocomplete="tel" placeholder="e.g. +44 7700 900123…" %}
 
-    {% include "partials/field.html" with name="people" label="People" type="number" min="1" max="100" value="2" %}
+    {% include "partials/field.html" with name="people" label="Number of travellers" type="number" inputmode="numeric" min="1" max="100" value="2" %}
 
     {% if tour %}
       <input type="hidden" name="tour" value="{{ tour.slug }}">
@@ -36,21 +37,26 @@
       {% inquiry_tours as tour_options %}
       <label class="flex flex-col gap-1.5 md:col-span-2">
         <span class="text-sm font-semibold text-mist">Which tour?</span>
-        <select name="tour" class="kt-input">
+        <select name="tour" class="kt-input" aria-describedby="tour-error" :aria-invalid="!!errors.tour">
           <option value="">Not sure yet — help me choose</option>
           {% for t in tour_options %}<option value="{{ t.slug }}">{{ t.title }}</option>{% endfor %}
         </select>
-        <span class="text-sm text-[#ff8a80]" x-show="errors.tour" x-text="errors.tour" x-cloak></span>
+        <span id="tour-error" class="text-sm text-danger" x-show="errors.tour" x-text="errors.tour" x-cloak></span>
       </label>
     {% endif %}
 
-    {% include "partials/field.html" with name="date_from" label="From" type="date" %}
-    {% include "partials/field.html" with name="date_to" label="To" type="date" %}
+    {% now "Y-m-d" as today %}
+    <fieldset class="grid gap-4 md:col-span-2 md:grid-cols-2 md:gap-5">
+      <legend class="mb-1.5 text-sm font-semibold text-mist">Travel dates <span class="font-normal text-sage">— approximate is fine</span></legend>
+      {% include "partials/field.html" with name="date_from" label="Start date" type="date" min=today %}
+      {% include "partials/field.html" with name="date_to" label="End date" type="date" min=today %}
+    </fieldset>
 
     <label class="flex flex-col gap-1.5 md:col-span-2">
       <span class="text-sm font-semibold text-mist">Message</span>
-      <textarea name="comment" rows="4" class="kt-input py-3" placeholder="Anything we should know: experience, wishes, questions"></textarea>
-      <span class="text-sm text-[#ff8a80]" x-show="errors.comment" x-text="errors.comment" x-cloak></span>
+      <textarea name="comment" rows="4" class="kt-input py-3" placeholder="Anything we should know: experience, wishes, questions…"
+                aria-describedby="comment-error" :aria-invalid="!!errors.comment"></textarea>
+      <span id="comment-error" class="text-sm text-danger" x-show="errors.comment" x-text="errors.comment" x-cloak></span>
     </label>
 
     {% if turnstile_site_key %}
@@ -60,10 +66,10 @@
       </div>
     {% endif %}
 
-    <p class="text-sm text-[#ff8a80] md:col-span-2" x-show="error" x-text="error" x-cloak role="alert"></p>
+    <p class="text-sm text-danger md:col-span-2" x-show="error" x-text="error" x-cloak role="alert"></p>
 
     <div class="flex flex-col gap-3 md:col-span-2 md:flex-row md:items-center md:justify-between">
-      <p class="text-xs text-sage">We use your contacts only to reply to this request. <a class="underline underline-offset-2 hover:text-snow" href="{% url 'core:privacy' %}">Privacy Policy</a></p>
+      <p class="text-xs text-sage">We use your contacts only to reply to this request. <a class="inline-block py-2 underline underline-offset-2 can-hover:hover:text-snow" href="{% url 'core:privacy' %}">Privacy Policy</a></p>
       <button type="submit" class="btn btn-accent min-h-[54px] px-9 text-base disabled:opacity-60" :disabled="busy">
         <span x-show="!busy">Send request</span>
         <span x-show="busy" x-cloak>Sending…</span>

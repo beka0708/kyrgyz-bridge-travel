@@ -155,6 +155,8 @@ export function fitTo(
     padding,
     maxZoom,
     pitch: map.getPitch(),
-    duration: animate && !prefersReducedMotion() ? 900 : 0,
+    // clicked tens of times per visit: short, ease-out, interruptible by the next click
+    duration: animate && !prefersReducedMotion() ? 600 : 0,
+    easing: (k: number) => 1 - Math.pow(1 - k, 3),
   });
 }

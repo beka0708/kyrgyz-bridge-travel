@@ -61,3 +61,24 @@ def test_admin_locks_after_five_wrong_passwords(client):
 def test_healthz(client):
     resp = client.get("/healthz/")
     assert resp.status_code == 200 and resp.content == b"ok\n"
+
+
+@pytest.mark.parametrize("url", ["/", "/tours/", "/privacy/", "/no-such-page/"])
+def test_no_template_syntax_leaks(client, url):
+    """Multi-line {# #} is not a comment in Django: it would print on every page."""
+    from apps.core.models import SiteSettings as Settings
+
+    s = Settings.load()
+    s.google_analytics_id = "G-TEST123"  # renders the cookie banner too
+    s.save()
+    body = client.get(url).content.decode().split("<body", 1)[1]
+    for token in ("{#", "#}", "{%", "%}"):
+        assert token not in body, token
+
+
+def test_tour_page_has_no_template_syntax(client):
+    from conftest import TourDayFactory
+
+    day = TourDayFactory()
+    body = client.get(day.tour.get_absolute_url()).content.decode().split("<body", 1)[1]
+    assert "{#" not in body and "{%" not in body

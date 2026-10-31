@@ -41,7 +41,7 @@ def test_home_shows_filled_sections(client):
         assert f'id="{section}"' in html, section
     assert 'Mountains <span class="text-accent">and yurts</span>' in html
     assert "I love these hills" in html
-    assert "3000+" in html
+    assert "3,000+" in html  # thousands separator
     assert "https://wa.me/996555000000" in html
 
 

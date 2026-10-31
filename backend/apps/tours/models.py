@@ -120,6 +120,16 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
         return f"{symbol}{amount}" if symbol else f"{amount} {self.currency}"
 
     @property
+    def price_display(self):
+        """«from $390», or «Price on request» when the price is 0."""
+        return f"from {self.price_label}" if self.price_from else "Price on request"
+
+    @property
+    def duration_label(self):
+        days = self.duration_days
+        return f"{days}\u00a0day{'' if days == 1 else 's'}"  # nbsp: never «4 / days»
+
+    @property
     def season_label(self):
         if not self.season_start:
             return ""
@@ -248,9 +258,9 @@ class TourDay(models.Model):
         """«12 km · ↑ 900 m · 5–6 h · overnight: guesthouse» for the day card."""
         parts = []
         if self.distance_km is not None:
-            parts.append(f"{self.distance_km:g} km")
+            parts.append(f"{self.distance_km:g}\u00a0km")
         if self.ascent_m:
-            parts.append(f"↑ {self.ascent_m} m")
+            parts.append(f"↑\u00a0{self.ascent_m:,}\u00a0m")
         if self.travel_time:
             parts.append(self.travel_time)
         if self.overnight:

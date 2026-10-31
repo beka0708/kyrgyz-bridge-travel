@@ -10,9 +10,20 @@ import { registerInquiry } from "@/lib/inquiry";
 import { initReveal, initScrollProgress } from "@/lib/scroll";
 import { registerTourPage } from "@/lib/tour-page";
 
-document.documentElement.classList.add("js");
+/** Alpine's collapse plugin ignores «reduce motion»: make accordions open instantly there. */
+function instantCollapseForReducedMotion() {
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.querySelectorAll("*").forEach((el) => {
+    for (const { name } of Array.from(el.attributes)) {
+      if (!name.startsWith("x-collapse")) continue;
+      el.removeAttribute(name);
+      el.setAttribute("x-collapse.duration.1ms", "");
+    }
+  });
+}
 
 Alpine.plugin(collapse);
+instantCollapseForReducedMotion();
 registerConsent(Alpine);
 registerHome(Alpine);
 registerInquiry(Alpine);

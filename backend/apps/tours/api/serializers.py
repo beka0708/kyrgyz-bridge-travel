@@ -102,7 +102,7 @@ class TourDetailSerializer(TourListSerializer):
         return self._list(obj, ListKind.GEAR)
 
     def get_whatsapp_url(self, obj) -> str:
-        return SiteSettings.load().whatsapp_url(f"Hi! I'm interested in the tour «{obj.title}».")
+        return SiteSettings.load().whatsapp_url(f"Hi! I'm interested in the tour “{obj.title}”.")
 
     @extend_schema_field(SEOSerializer)
     def get_seo(self, obj):

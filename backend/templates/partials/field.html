@@ -1,10 +1,11 @@
-{# One form field with an inline error slot for Alpine (errors.<name>). #}
+{# One form field; its error (errors.<name> in Alpine) is linked to the input for screen readers. #}
 <label class="flex flex-col gap-1.5">
   <span class="text-sm font-semibold text-mist">{{ label }}{% if required %} <span class="text-accent" aria-hidden="true">*</span>{% endif %}</span>
   <input type="{{ type|default:'text' }}" name="{{ name }}" class="kt-input"
          {% if required %}required{% endif %} {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+         {% if inputmode %}inputmode="{{ inputmode }}"{% endif %} {% if spellcheck_off %}spellcheck="false" autocapitalize="off"{% endif %}
          {% if placeholder %}placeholder="{{ placeholder }}"{% endif %} {% if min %}min="{{ min }}"{% endif %} {% if max %}max="{{ max }}"{% endif %}
          {% if value %}value="{{ value }}"{% endif %}
-         :aria-invalid="!!errors.{{ name }}" @input="delete errors.{{ name }}">
-  <span class="text-sm text-[#ff8a80]" x-show="errors.{{ name }}" x-text="errors.{{ name }}" x-cloak></span>
+         aria-describedby="{{ name }}-error" :aria-invalid="!!errors.{{ name }}" @input="delete errors.{{ name }}">
+  <span id="{{ name }}-error" class="text-sm text-danger" x-show="errors.{{ name }}" x-text="errors.{{ name }}" x-cloak></span>
 </label>

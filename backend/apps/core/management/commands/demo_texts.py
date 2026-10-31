@@ -62,7 +62,7 @@ TOURS = {
         "next_departure": "Any day, May – October",
         "description": (
             "An easy private trip for families and anyone who wants Kyrgyzstan without long hikes. "
-            "We explore the colourful Skazka «Fairy-tale» canyon, swim in the high-mountain lake "
+            "We explore the colourful Skazka “Fairy-tale” canyon, swim in the high-mountain lake "
             "and walk to the red Seven Bulls rocks of Jeti-Oguz."
         ),
         "how_to_get_there": "Pick-up from your hotel in Bishkek\nPrivate car with driver for all three days",

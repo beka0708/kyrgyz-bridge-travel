@@ -101,7 +101,7 @@ def tour_detail(request, slug):
             "gallery": list(tour.images.all()),
             "route_props": route_props,
             "meta": tour_meta(site, tour, days),
-            "whatsapp_url": site.whatsapp_url(f"Hi! I'm interested in the tour «{tour.title}»."),
+            "whatsapp_url": site.whatsapp_url(f"Hi! I'm interested in the tour “{tour.title}”."),
             # header (desktop pill nav and phone back link)
             "nav_links": [
                 {"href": "#program", "label": "Program"},

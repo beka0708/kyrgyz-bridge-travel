@@ -35,7 +35,7 @@ Some of these providers are outside your country; they use standard safeguards s
 
 ## Cookies
 
-- **Analytics cookies** (_ga, _ga_*): set by Google Analytics, up to 2 years, only after you click «Accept» where consent is required. You can change your choice any time with «Cookie settings» in the footer.
+- **Analytics cookies** (_ga, _ga_*): set by Google Analytics, up to 2 years, only after you click “Accept” where consent is required. You can change your choice any time with “Cookie settings” in the footer.
 - **Technical storage:** your cookie choice and campaign tags are kept in your browser (localStorage / sessionStorage). A security cookie (csrftoken) protects the form.
 
 ## How long we keep it

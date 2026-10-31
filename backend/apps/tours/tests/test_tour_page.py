@@ -38,8 +38,9 @@ def test_public_labels_are_english():
 
 @pytest.mark.django_db
 def test_day_meta_label():
-    day = TourDayFactory(distance_km=Decimal("12.5"), ascent_m=900, travel_time="5–6 h")
-    assert day.meta_label == "12.5 km · ↑ 900 m · 5–6 h"
+    day = TourDayFactory(distance_km=Decimal("12.5"), ascent_m=1200, travel_time="5–6 h")
+    # non-breaking spaces keep numbers and units together; thousands separator for metres
+    assert day.meta_label == "12.5\u00a0km · ↑\u00a01,200\u00a0m · 5–6 h"
 
 
 @pytest.mark.django_db

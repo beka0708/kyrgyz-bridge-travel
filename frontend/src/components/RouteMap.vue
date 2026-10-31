@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
           :href="googleMapsUrl"
           target="_blank"
           rel="noopener"
-          class="pointer-events-auto inline-flex min-h-10 items-center rounded-full bg-accent px-3.5 text-[13px] font-bold whitespace-nowrap text-ink md:px-4 md:text-sm"
+          class="pointer-events-auto inline-flex min-h-11 items-center rounded-full bg-accent px-3.5 text-[13px] font-bold whitespace-nowrap text-ink md:px-4 md:text-sm"
         >
           <span class="md:hidden">Google Maps</span><span class="hidden md:inline">Open in Google Maps</span>
         </a>

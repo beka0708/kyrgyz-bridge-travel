@@ -55,7 +55,15 @@ export function initAnalytics() {
 /** Cookie banner for visitors in Europe (Consent Mode v2). */
 export function registerConsent(Alpine: AlpineType) {
   Alpine.data("cookieBanner", () => ({
-    open: !storedConsent() && inEuropeanTimeZone(),
+    open: false,
+    init() {
+      if (!storedConsent() && inEuropeanTimeZone()) this.openBanner();
+    },
+    openBanner() {
+      this.open = true;
+      // keyboard users land on the choice instead of tabbing through the whole page
+      this.$nextTick(() => (this.$refs.first as HTMLElement | undefined)?.focus({ preventScroll: true }));
+    },
     choose(choice: "granted" | "denied") {
       try {
         localStorage.setItem(CONSENT_KEY, choice);
@@ -64,6 +72,7 @@ export function registerConsent(Alpine: AlpineType) {
       }
       window.gtag?.("consent", "update", { analytics_storage: choice });
       this.open = false;
+      (document.getElementById("top") as HTMLElement | null)?.focus({ preventScroll: true });
     },
   }));
 }

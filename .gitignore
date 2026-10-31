@@ -27,3 +27,6 @@ docs/design/photos/
 .DS_Store
 .idea/
 .vscode/
+
+# Agent skills installed locally (third-party design guidance, not part of the site)
+.claude/skills/

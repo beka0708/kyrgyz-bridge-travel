@@ -37,6 +37,15 @@ export function registerInquiry(Alpine: AlpineType) {
       });
     },
 
+    /** The button is at the bottom: bring the first broken field into view and focus it. */
+    focusFirstError(form: HTMLFormElement) {
+      this.$nextTick(() => {
+        const field = form.querySelector<HTMLElement>('[aria-invalid="true"]');
+        field?.focus({ preventScroll: true });
+        field?.scrollIntoView({ block: "center", behavior: "smooth" });
+      });
+    },
+
     async submit(form: HTMLFormElement) {
       this.error = "";
       this.errors = {};
@@ -46,8 +55,13 @@ export function registerInquiry(Alpine: AlpineType) {
       });
 
       if (!data.name) this.errors.name = "Please tell us your name.";
-      if (!/^\S+@\S+\.\S+$/.test(data.email ?? "")) this.errors.email = "Please enter a valid email.";
-      if (Object.keys(this.errors).length) return;
+      if (!/^\S+@\S+\.\S+$/.test(data.email ?? "")) {
+        this.errors.email = "Please enter a valid email, e.g. anna@example.com.";
+      }
+      if (data.date_from && data.date_to && data.date_to < data.date_from) {
+        this.errors.date_to = "The end date must be after the start date.";
+      }
+      if (Object.keys(this.errors).length) return this.focusFirstError(form);
 
       this.busy = true;
       try {
@@ -89,6 +103,7 @@ export function registerInquiry(Alpine: AlpineType) {
           else this.errors[key] = message;
         }
         if (!this.error && !Object.keys(this.errors).length) this.error = "Something went wrong. Please try again.";
+        if (Object.keys(this.errors).length) this.focusFirstError(form);
       } catch {
         this.error = "No connection. Please check your internet and try again.";
       } finally {

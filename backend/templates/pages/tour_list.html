@@ -29,7 +29,7 @@
       <p class="text-sm font-semibold text-ink-muted">{{ tours|length }} tour{{ tours|length|pluralize }}</p>
       <div class="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {% for tour in tours %}
-          <div data-reveal>{% include "partials/tour_card.html" %}</div>
+          <div class="flex" data-reveal>{% include "partials/tour_card.html" %}</div>
         {% endfor %}
       </div>
     {% else %}

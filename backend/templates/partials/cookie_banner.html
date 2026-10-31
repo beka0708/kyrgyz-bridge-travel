@@ -1,16 +1,22 @@
-{# Shown to visitors with a European time zone until they choose; reopened from the footer. #}
+{% comment %}
+  Shown to visitors with a European time zone until they choose; reopened from the footer.
+  Accept and Decline look the same on purpose (GDPR: equal prominence). Placed first in <body>
+  so keyboard users reach it right away; it takes focus when it opens.
+{% endcomment %}
 {% if site.google_analytics_id %}
-<div x-data="cookieBanner" x-show="open" x-cloak x-transition.opacity @cookie-settings.window="open = true"
-     class="fixed inset-x-3 bottom-3 z-50 md:inset-x-auto md:right-6 md:bottom-6 md:max-w-[420px]"
-     role="dialog" aria-live="polite" aria-label="Cookie settings">
+<div x-data="cookieBanner" x-show="open" x-cloak x-transition.opacity.duration.200ms @cookie-settings.window="openBanner()"
+     class="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 md:inset-x-auto md:right-6 md:bottom-6 md:max-w-[420px]"
+     role="dialog" aria-labelledby="cookie-title">
   <div class="flex flex-col gap-4 rounded-3xl border-[1.5px] border-line-strong bg-forest p-5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
     <p class="text-sm text-mist">
-      We use Google Analytics cookies to see which tours people look at and improve the site.
-      No ads, no selling of data. You can change your choice any time in the footer. <a class="text-accent underline" href="{% url 'core:privacy' %}">Privacy Policy</a>
+      <strong id="cookie-title" class="mb-1 block text-base text-snow">Analytics cookies</strong>
+      We use Google Analytics to see which tours people look at and improve the site.
+      No ads, no selling of data. Change your choice any time in the footer.
+      <a class="text-accent underline underline-offset-2" href="{% url 'core:privacy' %}">Privacy Policy</a>
     </p>
     <div class="flex gap-3">
-      <button type="button" class="btn btn-accent min-h-11 flex-1" @click="choose('granted')">Accept</button>
-      <button type="button" class="btn min-h-11 flex-1 border-[1.5px] border-line-strong" @click="choose('denied')">Decline</button>
+      <button type="button" x-ref="first" class="btn min-h-11 flex-1 border-[1.5px] border-snow/70" @click="choose('granted')">Accept</button>
+      <button type="button" class="btn min-h-11 flex-1 border-[1.5px] border-snow/70" @click="choose('denied')">Decline</button>
     </div>
   </div>
 </div>

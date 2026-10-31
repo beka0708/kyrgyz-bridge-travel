@@ -7,6 +7,8 @@
   <meta name="description" content="{% block description %}{{ meta.description|default:site.seo_description }}{% endblock %}">
   {% if meta %}{% include "partials/meta.html" %}{% endif %}
   <meta name="theme-color" content="#0e1b17">
+  {# Set before the first paint so scroll-reveal blocks never flash visible-then-hidden. #}
+  <script>document.documentElement.classList.add("js")</script>
   <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
   {% include "partials/analytics.html" %}
   {% vite_hmr_client %}
@@ -14,12 +16,13 @@
   {% block head %}{% endblock %}
 </head>
 <body class="min-h-dvh overflow-x-clip" {% block body_attrs %}{% endblock %}>
+  <a href="#top" class="btn btn-accent sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60]">Skip to content</a>
+  {% include "partials/cookie_banner.html" %}
   {% include "partials/scroll_progress.html" %}
   {% block header %}{% include "partials/header.html" %}{% endblock %}
-  <main id="top">{% block content %}{% endblock %}</main>
+  <main id="top" tabindex="-1" class="outline-none">{% block content %}{% endblock %}</main>
   {% block footer %}{% include "partials/footer.html" %}{% endblock %}
   {% block floating %}{% include "partials/whatsapp_float.html" %}{% endblock %}
-  {% include "partials/cookie_banner.html" %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

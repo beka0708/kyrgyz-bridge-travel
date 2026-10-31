@@ -1,16 +1,16 @@
 {% load site_tags %}
 {# Tour card from the mockups: «Popular tours» grid (desktop) and the snap row (phones). #}
-<a class="tour-card group flex flex-col overflow-hidden rounded-3xl bg-white text-ink md:rounded-[28px]" href="{{ tour.get_absolute_url }}">
+<a class="tour-card group flex h-full w-full flex-col overflow-hidden rounded-3xl bg-white text-ink md:rounded-[28px]" href="{{ tour.get_absolute_url }}">
   <div class="pic h-[200px] md:h-80">
-    {% img tour.cover alt=tour.title sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 270px" css="tour-card__photo" %}
+    {% img tour.cover alt="" sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 270px" css="tour-card__photo" %}
     <span class="absolute top-3 left-3 rounded-full bg-paper px-3.5 py-1.5 text-xs font-bold text-ink md:top-4 md:left-4">{{ tour.type_label }}</span>
   </div>
-  <div class="flex flex-col gap-2 p-[18px] md:gap-2.5 md:p-6">
-    <h3 class="font-display text-base leading-[1.3] font-medium md:text-[17px]">{{ tour.title }}</h3>
-    <div class="text-sm text-ink-muted">{{ tour.duration_days }} day{{ tour.duration_days|pluralize }} · {{ tour.difficulty_label }}</div>
-    <div class="flex items-center justify-between pt-2 md:pt-3.5">
-      <span class="text-base font-extrabold md:text-[17px]">from {{ tour.price_label }}</span>
-      <span class="tour-card__arrow flex size-10 items-center justify-center rounded-full bg-accent md:size-11">
+  <div class="flex flex-1 flex-col gap-2 p-[18px] md:gap-2.5 md:p-6">
+    <h3 class="line-clamp-2 font-display text-base leading-[1.3] font-medium md:text-[17px]">{{ tour.title }}</h3>
+    <div class="text-sm text-ink-muted">{{ tour.duration_label }} · {{ tour.difficulty_label }}</div>
+    <div class="mt-auto flex items-center justify-between gap-3 pt-2 md:pt-3.5">
+      <span class="min-w-0 text-base font-extrabold tabular-nums md:text-[17px]">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="text-xs font-semibold text-ink-muted">{{ tour.price_note }}</span>{% endif %}</span>
+      <span class="tour-card__arrow flex size-10 flex-none items-center justify-center rounded-full bg-accent md:size-11">
         <svg class="size-5 stroke-ink" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </span>
     </div>

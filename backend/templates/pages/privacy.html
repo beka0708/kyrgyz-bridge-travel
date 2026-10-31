@@ -7,6 +7,6 @@
 </section>
 <section class="container-page pb-20 md:pb-28">
   <div class="legal max-w-[760px] text-mist">{{ site.privacy_policy|simple_markdown }}</div>
-  {% if site.email %}<p class="mt-10 text-mist">Contact: <a class="text-accent underline-offset-4 hover:underline" href="mailto:{{ site.email }}">{{ site.email }}</a></p>{% endif %}
+  {% if site.email %}<p class="mt-10 text-mist">Contact: <a class="text-accent underline-offset-4 [overflow-wrap:anywhere] hover:underline" href="mailto:{{ site.email }}">{{ site.email }}</a></p>{% endif %}
 </section>
 {% endblock %}

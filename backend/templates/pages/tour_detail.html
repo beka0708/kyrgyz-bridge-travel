@@ -18,16 +18,18 @@
     <p class="rise-3 max-w-[520px] text-base text-mist md:text-[19px]">{{ tour.short_description }}</p>
 
     <dl class="rise-3 grid max-w-[520px] grid-cols-2 gap-2.5 md:gap-3.5">
-      {% include "pages/_tour_fact.html" with label="Duration" value=tour.duration_days|stringformat:"d"|add:" days" %}
+      {% include "pages/_tour_fact.html" with label="Duration" value=tour.duration_label %}
       {% include "pages/_tour_fact.html" with label="Difficulty" value=tour.difficulty_label %}
       {% if tour.group_label %}{% include "pages/_tour_fact.html" with label="Group" value=tour.group_label %}{% endif %}
       {% if tour.season_label %}{% include "pages/_tour_fact.html" with label="Season" value=tour.season_label %}{% endif %}
+      {# phones: the floating «Next departure» card is desktop-only, so show it as a fact here #}
+      {% if tour.next_departure %}{% include "pages/_tour_fact.html" with label="Next departure" value=tour.next_departure css="col-span-2 md:hidden" %}{% endif %}
     </dl>
 
     <div class="rise-3 mt-1.5 hidden flex-wrap items-center gap-6 md:flex">
       <div class="flex flex-col">
         <span class="text-[13px] text-mist">Price</span>
-        <span class="font-display text-[30px] font-semibold">from {{ tour.price_label }}</span>
+        <span class="font-display text-[30px] font-semibold tabular-nums">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="font-sans text-base font-normal text-mist">{{ tour.price_note }}</span>{% endif %}</span>
       </div>
       {% if whatsapp_url %}
         <a class="btn btn-accent min-h-[58px] px-[34px] text-base" href="{{ whatsapp_url }}" target="_blank" rel="noopener">Message on WhatsApp</a>
@@ -35,7 +37,7 @@
     </div>
   </div>
 
-  <div class="rise relative order-1 min-w-0 md:order-2 md:flex-[1_1_420px]">
+  <div class="relative order-1 min-w-0 md:order-2 md:flex-[1_1_420px]">
     <div class="pic h-[340px] rounded-[28px] md:h-[580px] md:rounded-[44px]">
       {% img tour.cover alt=tour.title sizes="(min-width: 768px) 50vw, 100vw" priority=True %}
       <span class="absolute top-3.5 left-3.5 rounded-full bg-paper px-3 py-1.5 text-xs font-bold text-ink md:hidden">{{ tour.type_label }}</span>
@@ -65,47 +67,30 @@
     <div class="flex flex-col gap-4 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
       <div class="flex min-w-0 flex-col gap-4 lg:col-span-7">
         {# Phones and tablets: day chips + photos of the selected day (mockup B) #}
-        <div class="snap-row lg:hidden" role="tablist" aria-label="Route days">
+        <div class="snap-row lg:hidden" role="group" aria-label="Route days">
           {% for day in days %}
-            <button type="button" role="tab" @click="select({{ day.day_number }})"
-                    :aria-selected="day === {{ day.day_number }}"
+            <button type="button" @click="select({{ day.day_number }})"
+                    :aria-pressed="day === {{ day.day_number }}"
                     class="min-h-12 rounded-full border-[1.5px] px-6 text-[15px] font-bold whitespace-nowrap transition-colors"
                     :class="day === {{ day.day_number }} ? 'border-accent bg-accent text-ink' : 'border-line-strong text-snow'">
               Day {{ day.day_number }}
             </button>
           {% endfor %}
         </div>
-        {% for day in days %}
-          {% with photos=day.images.all %}
-            {% if photos %}
-              <div class="flex flex-col gap-2.5 lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
-                <div class="pic h-60 rounded-3xl">{% img photos.0.image alt=photos.0.alt|default:day.title sizes="100vw" %}</div>
-                {% if photos|length > 1 %}
-                  <div class="grid grid-cols-2 gap-2.5">
-                    {% for photo in photos|slice:"1:3" %}
-                      <div class="pic h-[110px] rounded-[18px]">{% img photo.image alt=photo.alt|default:day.title sizes="50vw" %}</div>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              </div>
-            {% endif %}
-          {% endwith %}
-        {% endfor %}
-
         {# Desktop: day cards (mockup A); the map on the right follows the selection #}
         <div class="hidden flex-col gap-4 lg:flex">
           {% for day in days %}
-            <button type="button" @click="select({{ day.day_number }})" data-reveal
-                    class="flex w-full cursor-pointer items-center gap-6 rounded-[28px] border-2 bg-white p-5 text-left text-ink transition-colors"
-                    :class="day === {{ day.day_number }} ? 'border-ink' : 'border-transparent hover:border-pebble'">
+            <button type="button" @click="select({{ day.day_number }})" :aria-pressed="day === {{ day.day_number }}"
+                    class="flex w-full cursor-pointer items-center gap-6 rounded-[28px] border-2 bg-white p-5 text-left text-ink transition-colors duration-150"
+                    :class="day === {{ day.day_number }} ? 'border-ink' : 'border-transparent can-hover:hover:border-pebble'">
               <span class="pic h-40 w-[220px] flex-none rounded-[20px]">
-                {% with photo=day.images.all.0 %}{% if photo %}{% img photo.image alt=photo.alt|default:day.title sizes="220px" %}{% endif %}{% endwith %}
+                {% with photo=day.images.all.0 %}{% if photo %}{% img photo.image alt="" sizes="220px" %}{% endif %}{% endwith %}
               </span>
               <span class="flex min-w-0 flex-1 flex-col gap-2">
                 <span class="font-display text-[13px] font-semibold text-rust">DAY {{ day.day_number }}</span>
                 <span class="font-display text-xl leading-tight font-medium">{{ day.title }}</span>
                 {% if day.meta_label %}<span class="text-sm font-semibold text-ink-muted">{{ day.meta_label }}</span>{% endif %}
-                {% if day.description %}<span class="line-clamp-3 text-[15px] text-ink-muted">{{ day.description }}</span>{% endif %}
+                {% if day.description %}<span class="line-clamp-3 text-[15px] text-ink-muted [overflow-wrap:anywhere]">{{ day.description }}</span>{% endif %}
               </span>
             </button>
           {% endfor %}
@@ -120,15 +105,34 @@
         </div>
       </div>
 
-      {# Phones and tablets: text of the selected day under the map #}
+      {# Phones and tablets: text of the selected day right under the map #}
       {% for day in days %}
         <article class="glass flex flex-col gap-1.5 rounded-3xl p-[22px] lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
           <span class="font-display text-xs font-semibold text-accent">DAY {{ day.day_number }}</span>
           <h3 class="font-display text-lg leading-tight font-medium">{{ day.title }}</h3>
           {% if day.meta_label %}<span class="text-[13px] font-semibold text-mist">{{ day.meta_label }}</span>{% endif %}
-          {% if day.description %}<p class="text-[15px] text-mist">{{ day.description|linebreaksbr }}</p>{% endif %}
+          {% if day.description %}<p class="text-[15px] text-mist [overflow-wrap:anywhere]">{{ day.description|urlize|linebreaksbr }}</p>{% endif %}
         </article>
       {% endfor %}
+
+      {# Phones and tablets: photos of the selected day, after its text #}
+        {% for day in days %}
+          {% with photos=day.images.all %}
+            {% if photos %}
+              <div class="flex flex-col gap-2.5 lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
+                <div class="pic h-60 rounded-3xl">{% img photos.0.image alt=photos.0.alt|default:day.title sizes="100vw" %}</div>
+                {% if photos|length > 1 %}
+                  <div class="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2.5">
+                    {% for photo in photos|slice:"1:3" %}
+                      <div class="pic h-[110px] rounded-[18px]">{% img photo.image alt=photo.alt|default:day.title sizes="50vw" %}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endwith %}
+        {% endfor %}
+
     </div>
   </div>
 </section>
@@ -143,32 +147,37 @@
   </div>
   <div class="flex flex-col gap-[18px] md:flex-row md:flex-wrap md:items-start md:gap-12">
     {# Phones: chips #}
-    <div class="snap-row md:hidden" role="tablist" aria-label="Tour details">
+    <div class="snap-row md:hidden" role="tablist" aria-label="Tour details" @keydown="onKey($event)">
       {% for t in tabs %}
-        <button type="button" role="tab" @click="tab = '{{ t.key }}'" :aria-selected="tab === '{{ t.key }}'"
+        <button type="button" role="tab" id="tab-m-{{ t.key }}" aria-controls="panel-{{ t.key }}" data-tab="{{ t.key }}"
+                @click="tab = '{{ t.key }}'" :aria-selected="tab === '{{ t.key }}'" :tabindex="tab === '{{ t.key }}' ? 0 : -1"
                 class="min-h-12 rounded-full border-[1.5px] px-5 text-[15px] font-bold whitespace-nowrap"
                 :class="tab === '{{ t.key }}' ? 'border-accent bg-accent text-ink' : 'border-line-strong text-snow'">{{ t.label }}</button>
       {% endfor %}
     </div>
     {# Desktop: vertical tabs with a marker #}
-    <div class="hidden min-w-0 flex-[1_1_260px] flex-col gap-1 md:flex" role="tablist" aria-label="Tour details">
+    <div class="hidden min-w-0 flex-[1_1_260px] flex-col gap-1 md:flex" role="tablist" aria-label="Tour details" aria-orientation="vertical" @keydown="onKey($event)">
       {% for t in tabs %}
-        <button type="button" role="tab" @click="tab = '{{ t.key }}'" :aria-selected="tab === '{{ t.key }}'"
-                class="flex min-h-14 cursor-pointer items-center gap-4 text-left font-display text-xl font-medium transition-[color,padding] duration-300 hover:pl-7"
-                :class="tab === '{{ t.key }}' ? 'text-snow' : 'text-sage'">
-          <span class="h-7 w-1 rounded" :class="tab === '{{ t.key }}' ? 'bg-accent' : 'bg-transparent'"></span>{{ t.label }}
+        <button type="button" role="tab" id="tab-d-{{ t.key }}" aria-controls="panel-{{ t.key }}" data-tab="{{ t.key }}"
+                @click="tab = '{{ t.key }}'" :aria-selected="tab === '{{ t.key }}'" :tabindex="tab === '{{ t.key }}' ? 0 : -1"
+                class="group flex min-h-14 cursor-pointer items-center gap-4 text-left font-display text-xl font-medium transition-colors duration-150"
+                :class="tab === '{{ t.key }}' ? 'text-snow' : 'text-sage can-hover:hover:text-mist'">
+          <span class="h-7 w-1 flex-none rounded transition-colors duration-150" :class="tab === '{{ t.key }}' ? 'bg-accent' : 'bg-transparent'"></span>
+          {# hover nudge with transform, not padding: no text reflow #}
+          <span class="transition-transform duration-200 ease-[var(--ease-out)] can-hover:group-hover:translate-x-1.5">{{ t.label }}</span>
         </button>
       {% endfor %}
     </div>
     {% for t in tabs %}
       <div class="glass flex min-h-0 min-w-0 flex-col gap-4 rounded-3xl p-6 md:min-h-[340px] md:flex-[2_1_520px] md:gap-[22px] md:rounded-[32px] md:p-10"
-           role="tabpanel" x-show="tab === '{{ t.key }}'"{% if not forloop.first %} x-cloak{% endif %}>
+           role="tabpanel" id="panel-{{ t.key }}" :aria-labelledby="window.innerWidth < 768 ? 'tab-m-{{ t.key }}' : 'tab-d-{{ t.key }}'" tabindex="0"
+           x-show="tab === '{{ t.key }}'"{% if not forloop.first %} x-cloak{% endif %}>
         <h3 class="font-display text-lg font-medium md:text-2xl">{{ t.title }}</h3>
         <ul class="flex flex-col gap-3 md:gap-3.5">
           {% for item in t.items %}
             <li class="flex items-start gap-3 text-base md:items-center md:gap-3.5 md:text-lg">
               <svg class="mt-0.5 size-5 flex-none stroke-accent md:mt-0 md:size-[22px]" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-              {{ item }}
+              <span class="min-w-0 [overflow-wrap:anywhere]">{{ item|urlize }}</span>
             </li>
           {% endfor %}
         </ul>
@@ -200,15 +209,16 @@
   <div class="flex flex-col gap-4 rounded-[28px] bg-accent px-[22px] py-7 text-ink md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-8 md:rounded-[44px] md:p-16" data-reveal>
     <div class="flex min-w-0 flex-col gap-3 md:flex-[1_1_380px]">
       <h2 class="font-display text-2xl leading-[1.15] font-semibold md:text-[40px] md:leading-[1.12] md:tracking-[-0.01em]">Want to go to {{ tour.title }}?</h2>
-      <p class="max-w-[460px] text-base md:text-lg">Message us — we'll suggest free dates and answer any question about the route.</p>
+      <p class="max-w-[460px] text-base md:text-lg">Message us — we'll suggest available dates and answer any question about the route.</p>
     </div>
     <div class="flex flex-col gap-4 md:flex-row md:flex-wrap">
       {% if whatsapp_url %}
         <a class="btn min-h-[54px] bg-ink px-9 text-base text-snow md:min-h-[60px] md:text-[17px]" href="{{ whatsapp_url }}" target="_blank" rel="noopener">WhatsApp</a>
       {% endif %}
       {% if site.telegram %}
-        <a class="btn hidden min-h-[60px] border-2 border-ink px-9 text-[17px] md:inline-flex" href="{{ site.telegram_url }}" target="_blank" rel="noopener">Telegram</a>
+        <a class="btn min-h-[54px] border-2 border-ink px-9 text-base md:min-h-[60px] md:text-[17px]" href="{{ site.telegram_url }}" target="_blank" rel="noopener">Telegram</a>
       {% endif %}
+      <a class="btn min-h-[54px] border-2 border-ink px-9 text-base md:min-h-[60px] md:text-[17px]" href="#inquiry">Send a request</a>
     </div>
   </div>
 </section>
@@ -216,19 +226,19 @@
 
 {% block floating %}
 {# Booking bar: full-width on phones, floating pill on desktop (replaces the WhatsApp button) #}
-<div class="fixed inset-x-0 bottom-0 z-30 md:bottom-6">
-  <div class="flex items-center justify-between gap-3 border-t-[1.5px] border-line-strong bg-forest px-4 py-3 md:mx-auto md:w-[min(880px,calc(100%-48px))] md:rounded-full md:border-[1.5px] md:py-2.5 md:pr-2.5 md:pl-7 md:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-    <div class="flex flex-col leading-tight md:flex-row md:items-baseline md:gap-3.5">
+<div class="booking-bar fixed inset-x-0 bottom-0 z-30 md:bottom-6">
+  <div class="flex items-center justify-between gap-3 border-t-[1.5px] border-line-strong bg-forest px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:mx-auto md:w-[min(880px,calc(100%-48px))] md:rounded-full md:border-[1.5px] md:py-2.5 md:pb-2.5 md:pr-2.5 md:pl-7 md:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+    <div class="flex min-w-0 flex-col leading-tight md:flex-row md:items-baseline md:gap-3.5">
       <span class="text-xs text-mist md:hidden">Price</span>
       <span class="hidden font-display text-base font-medium md:inline">{{ tour.title }}</span>
-      <span class="font-display text-base font-semibold whitespace-nowrap md:font-sans md:text-[15px] md:font-normal md:text-mist">from {{ tour.price_label }}</span>
+      <span class="truncate font-display text-[clamp(14px,4.2vw,16px)] font-semibold tabular-nums md:font-sans md:text-[15px] md:font-normal md:text-mist">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="font-sans text-xs font-normal text-mist md:text-[15px]">{{ tour.price_note }}</span>{% endif %}</span>
     </div>
     {% if whatsapp_url %}
-      <a class="btn btn-accent min-h-[52px] md:min-h-12" href="{{ whatsapp_url }}" target="_blank" rel="noopener">
+      <a class="btn btn-accent min-h-[52px] flex-none px-5 md:min-h-12 md:px-6" href="{{ whatsapp_url }}" target="_blank" rel="noopener">
         {% include "partials/icon_whatsapp.html" with size="20" %}<span class="ml-2 sm:hidden">WhatsApp</span><span class="ml-2 hidden sm:inline">Message on WhatsApp</span>
       </a>
     {% else %}
-      <a class="btn btn-accent min-h-[52px] md:min-h-12" href="#book">Book this tour</a>
+      <a class="btn btn-accent min-h-[52px] flex-none px-5 md:min-h-12 md:px-6" href="#inquiry">Send a request</a>
     {% endif %}
   </div>
 </div>

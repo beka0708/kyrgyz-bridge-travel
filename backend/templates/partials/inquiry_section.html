@@ -5,7 +5,7 @@
     <div class="flex min-w-0 flex-col gap-4 md:sticky md:top-8 md:flex-[1_1_380px]">
       {% if tour %}
         {% include "partials/section_heading.html" with eyebrow="Request" title="Book *this tour*" %}
-        <p class="text-base text-mist md:text-lg">Leave your dates and contacts — we'll check availability for «{{ tour.title }}» and reply within a day.</p>
+        <p class="text-base text-mist md:text-lg">Leave your dates and contacts — we'll check availability for “{{ tour.title }}” and reply within a day.</p>
       {% else %}
         {% include "partials/section_heading.html" with eyebrow="Request" title="Send *a request*" %}
         <p class="text-base text-mist md:text-lg">Tell us your dates and wishes — we'll suggest a route and reply within a day.</p>
