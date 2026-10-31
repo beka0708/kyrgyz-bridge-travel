@@ -4,6 +4,7 @@ import io
 from decimal import Decimal
 
 from django.core.files.base import ContentFile
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from PIL import Image, ImageDraw
@@ -234,4 +235,5 @@ class Command(BaseCommand):
             ):
                 Stat.objects.create(value=value, suffix=suffix, label=label, order=i)
 
+        call_command("demo_texts", stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS(f"Demo data ready, new tours: {created}"))

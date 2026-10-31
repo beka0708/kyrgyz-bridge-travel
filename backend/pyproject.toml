@@ -50,3 +50,7 @@ filterwarnings = [
     # URLField https default arrives with Django 6; harmless on 5.2 LTS
     "ignore:The default scheme will be changed:django.utils.deprecation.RemovedInDjango60Warning",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# demo copy for the client presentation: long sentences are data, not code
+"apps/core/management/commands/demo_texts.py" = ["E501"]
