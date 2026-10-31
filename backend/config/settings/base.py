@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "django_vite",
+    "axes",
     # local
     "apps.core",
     "apps.tours",
@@ -52,7 +53,24 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # must be last: locks out repeated failed admin logins
+    "axes.middleware.AxesMiddleware",
 ]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# --- Admin security --------------------------------------------------------------
+# A less obvious admin path on production, e.g. ADMIN_URL=manage-7f3k/
+ADMIN_URL = env("ADMIN_URL", default="admin/").strip("/") + "/"
+# Lock a username+IP pair for an hour after 5 wrong passwords.
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1  # hours
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+AXES_CLIENT_IP_CALLABLE = "apps.inquiries.services.client_ip"
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -85,6 +103,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# Our JS reads the CSRF token from the form, so the cookie can be hidden from scripts.
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
 
 # The public site is English only; the admin is switched to Russian by AdminLocaleMiddleware.
 LANGUAGE_CODE = "en"
@@ -168,6 +190,12 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Public read API for tours and site content, plus the inquiry form.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Swagger/ReDoc for staff only unless API_DOCS_PUBLIC=true (the API itself stays public).
+    "SERVE_PERMISSIONS": [
+        "rest_framework.permissions.AllowAny"
+        if env.bool("API_DOCS_PUBLIC", default=DEBUG)
+        else "rest_framework.permissions.IsAdminUser"
+    ],
     "COMPONENT_SPLIT_REQUEST": True,
     # Group endpoints in Swagger by resource (tours, faq, inquiries…) instead of one "v1" tag.
     "SCHEMA_PATH_PREFIX": r"/api/v1",

@@ -6,7 +6,7 @@
   <div class="flex flex-col gap-4 rounded-3xl border-[1.5px] border-line-strong bg-forest p-5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
     <p class="text-sm text-mist">
       We use Google Analytics cookies to see which tours people look at and improve the site.
-      No ads, no selling of data. You can change your choice any time in the footer.
+      No ads, no selling of data. You can change your choice any time in the footer. <a class="text-accent underline" href="{% url 'core:privacy' %}">Privacy Policy</a>
     </p>
     <div class="flex gap-3">
       <button type="button" class="btn btn-accent min-h-11 flex-1" @click="choose('granted')">Accept</button>

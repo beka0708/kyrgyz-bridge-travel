@@ -1,3 +1,4 @@
+from pathlib import Path
 from urllib.parse import quote
 
 from django.core.cache import cache
@@ -52,6 +53,10 @@ class SEOModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+def default_privacy_policy():
+    return (Path(__file__).parent / "legal" / "privacy_default.md").read_text(encoding="utf-8")
 
 
 class Map3DMode(models.TextChoices):
@@ -125,6 +130,12 @@ class SiteSettings(SEOModel):
     about_text = models.TextField("текст «О нас»", blank=True)
     about_image = models.ImageField("фото «О нас»", upload_to="home/", blank=True)
 
+    privacy_policy = models.TextField(
+        "политика конфиденциальности",
+        default=default_privacy_policy,
+        help_text="На английском. «## Заголовок» — раздел, «- » — пункт списка, "
+        "**текст** — жирный. Заполните поля в [квадратных скобках].",
+    )
     google_analytics_id = models.CharField(
         "Google Analytics ID", max_length=32, blank=True, help_text="G-XXXXXXXXXX"
     )

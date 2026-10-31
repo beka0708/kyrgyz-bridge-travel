@@ -110,6 +110,19 @@
   .pic {
     @apply relative overflow-hidden bg-moss;
   }
+  /* Editable legal text (Privacy Policy) */
+  .legal h2 {
+    @apply mt-10 mb-3 font-display text-xl font-medium text-snow md:text-2xl;
+  }
+  .legal p {
+    @apply mb-4 leading-relaxed;
+  }
+  .legal ul {
+    @apply mb-4 flex list-disc flex-col gap-2 pl-5 marker:text-accent;
+  }
+  .legal strong {
+    @apply text-snow;
+  }
   /* Form fields on dark backgrounds */
   .kt-input {
     @apply min-h-12 w-full rounded-2xl border-[1.5px] border-white/12 bg-white/4 px-4 text-base text-snow placeholder:text-sage/70;

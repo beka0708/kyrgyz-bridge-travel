@@ -65,6 +65,7 @@ class SiteSettingsAdmin(ModelAdmin):
             },
         ),
         ("Карта", {"classes": ["tab"], "fields": ["map_3d_mode"]}),
+        ("Правовое", {"classes": ["tab"], "fields": ["privacy_policy"]}),
         (
             "SEO и аналитика",
             {

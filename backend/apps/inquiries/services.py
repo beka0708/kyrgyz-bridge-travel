@@ -1,11 +1,12 @@
 import json
 import logging
+import re
 import urllib.parse
 import urllib.request
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -70,6 +71,13 @@ def create_inquiry(*, data: dict, request, is_spam: bool = False) -> Inquiry:
     return inquiry
 
 
+def whatsapp_link(contact: str) -> str:
+    """wa.me link when the contact looks like a phone number with a country code."""
+    digits = re.sub(r"\D", "", contact or "")
+    looks_like_phone = 9 <= len(digits) <= 15 and not re.search(r"[A-Za-z@]", contact or "")
+    return f"https://wa.me/{digits}" if looks_like_phone else ""
+
+
 def notification_recipients() -> list[str]:
     email = SiteSettings.load().inquiry_email or settings.INQUIRY_NOTIFY_EMAIL
     return [email] if email else []
@@ -88,15 +96,18 @@ def notify_about_inquiry(inquiry: Inquiry) -> bool:
         "inquiry": inquiry,
         "admin_url": settings.SITE_URL
         + reverse("admin:inquiries_inquiry_change", args=[inquiry.pk]),
+        "whatsapp_link": whatsapp_link(inquiry.contact),
     }
-    subject = f"New inquiry: {inquiry.name} — {inquiry.tour_title or 'general question'}"
+    tour = inquiry.tour_title or "консультация"
+    message = EmailMessage(
+        subject=f"Новая заявка: {inquiry.name} — {tour}, {inquiry.people} чел.",
+        body=render_to_string("emails/new_inquiry.txt", context),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=recipients,
+        reply_to=[inquiry.email],  # «Reply» in the mail app goes straight to the traveller
+    )
     try:
-        send_mail(
-            subject=subject,
-            message=render_to_string("emails/new_inquiry.txt", context),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=recipients,
-        )
+        message.send()
     except Exception:
         logger.exception("Failed to send notification for inquiry %s", inquiry.pk)
         return False

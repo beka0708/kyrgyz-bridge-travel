@@ -2,6 +2,7 @@ import re
 
 from django import template
 from django.utils.html import escape, format_html, format_html_join
+from django.utils.safestring import mark_safe
 
 from apps.core.images import og_image, safe_variants
 
@@ -82,3 +83,32 @@ def preload_img(fieldfile, sizes="100vw"):
         srcset,
         sizes,
     )
+
+
+@register.filter
+def simple_markdown(text):
+    """Tiny, safe subset for editable legal texts: «## heading», «- item», **bold**, paragraphs."""
+
+    def inline(line):
+        parts = escape(line).split("**")
+        return "".join(f"<strong>{p}</strong>" if i % 2 else p for i, p in enumerate(parts))
+
+    html, items = [], []
+
+    def flush_list():
+        if items:
+            html.append("<ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>")
+            items.clear()
+
+    for block in str(text or "").replace("\r\n", "\n").split("\n"):
+        line = block.strip()
+        if line.startswith("- "):
+            items.append(inline(line[2:]))
+            continue
+        flush_list()
+        if line.startswith("## "):
+            html.append(f"<h2>{inline(line[3:])}</h2>")
+        elif line:
+            html.append(f"<p>{inline(line)}</p>")
+    flush_list()
+    return mark_safe("\n".join(html))  # noqa: S308 - every piece is escaped above

@@ -9,7 +9,7 @@ class AdminLocaleMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path.startswith("/admin/"):
+        if request.path.startswith(f"/{settings.ADMIN_URL}"):
             translation.activate(settings.ADMIN_LANGUAGE_CODE)
             request.LANGUAGE_CODE = settings.ADMIN_LANGUAGE_CODE
         response = self.get_response(request)

@@ -1,15 +1,21 @@
-{% autoescape off %}New inquiry from the website
+{% autoescape off %}Новая заявка с сайта
 
-Name:     {{ inquiry.name }}
-Email:    {{ inquiry.email }}
-Contact:  {{ inquiry.contact|default:"—" }}
-Tour:     {{ inquiry.tour_title|default:"—" }}
-Dates:    {{ inquiry.date_from|default:"?" }} — {{ inquiry.date_to|default:"?" }}
-People:   {{ inquiry.people }}
+Имя:       {{ inquiry.name }}
+Email:     {{ inquiry.email }}
+Контакт:   {{ inquiry.contact|default:"—" }}{% if whatsapp_link %}
+WhatsApp:  {{ whatsapp_link }}{% endif %}
+Тур:       {{ inquiry.tour_title|default:"не выбран — нужна консультация" }}
+Даты:      {% if inquiry.date_from %}{{ inquiry.date_from|date:"d.m.Y" }}{% else %}?{% endif %} — {% if inquiry.date_to %}{{ inquiry.date_to|date:"d.m.Y" }}{% else %}?{% endif %}
+Человек:   {{ inquiry.people }}
 
-Comment:
+Сообщение:
 {{ inquiry.comment|default:"—" }}
 
-Page: {{ inquiry.page_url|default:"—" }}
-Open in admin: {{ admin_url }}
+Чтобы ответить туристу, просто нажмите «Ответить» — письмо уйдёт на {{ inquiry.email }}.
+
+Открыть заявку в админке: {{ admin_url }}
+
+---
+Страница: {{ inquiry.page_url|default:"—" }}{% if inquiry.utm_source %}
+Источник: {{ inquiry.utm_source }}{% if inquiry.utm_medium %} / {{ inquiry.utm_medium }}{% endif %}{% if inquiry.utm_campaign %} / {{ inquiry.utm_campaign }}{% endif %}{% endif %}
 {% endautoescape %}

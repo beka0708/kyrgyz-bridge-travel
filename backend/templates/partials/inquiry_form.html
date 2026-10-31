@@ -63,7 +63,7 @@
     <p class="text-sm text-[#ff8a80] md:col-span-2" x-show="error" x-text="error" x-cloak role="alert"></p>
 
     <div class="flex flex-col gap-3 md:col-span-2 md:flex-row md:items-center md:justify-between">
-      <p class="text-xs text-sage">We use your contacts only to reply to this request.</p>
+      <p class="text-xs text-sage">We use your contacts only to reply to this request. <a class="underline underline-offset-2 hover:text-snow" href="{% url 'core:privacy' %}">Privacy Policy</a></p>
       <button type="submit" class="btn btn-accent min-h-[54px] px-9 text-base disabled:opacity-60" :disabled="busy">
         <span x-show="!busy">Send request</span>
         <span x-show="busy" x-cloak>Sending…</span>

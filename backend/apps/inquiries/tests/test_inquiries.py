@@ -39,8 +39,11 @@ def test_creates_inquiry_and_emails_agency(api, django_capture_on_commit_callbac
     assert inquiry.status == InquiryStatus.NEW
     assert inquiry.notified_at is not None
     assert len(mail.outbox) == 1
-    assert mail.outbox[0].to == ["agency@example.com"]
-    assert "Ala-Kul" in mail.outbox[0].subject
+    message = mail.outbox[0]
+    assert message.to == ["agency@example.com"]
+    assert message.reply_to == ["anna@example.com"]
+    assert message.subject == "Новая заявка: Anna — Ala-Kul, 2 чел."
+    assert "Чтобы ответить туристу" in message.body
 
 
 def test_honeypot_marks_spam_without_email(api, django_capture_on_commit_callbacks):
@@ -76,3 +79,19 @@ def test_resend_command_retries_unsent(settings):
     inquiry.refresh_from_db()
     assert inquiry.notified_at is not None
     assert len(mail.outbox) == 1
+
+
+@pytest.mark.parametrize(
+    ("contact", "link"),
+    [
+        ("+996 555 123 456", "https://wa.me/996555123456"),
+        ("+44 (7700) 900-123", "https://wa.me/447700900123"),
+        ("@anna_telegram", ""),
+        ("anna@example.com", ""),
+        ("123", ""),
+    ],
+)
+def test_whatsapp_link_from_contact(contact, link):
+    from apps.inquiries.services import whatsapp_link
+
+    assert whatsapp_link(contact) == link

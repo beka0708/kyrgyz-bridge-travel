@@ -1,13 +1,14 @@
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
 from apps.content.models import FAQ, GalleryPost, Guide, Partner, Review, Stat
 from apps.tours.models import Tour, TourType
 
 from .models import SiteSettings
-from .seo import home_meta
+from .seo import PageMeta, absolute, home_meta
 
 HOME_TOURS_LIMIT = 8
 
@@ -80,10 +81,21 @@ def robots_txt(request):
     else:
         lines = [
             "User-agent: *",
-            "Disallow: /admin/",
+            # a custom admin path is a (small) secret: do not advertise it here
+            *(["Disallow: /admin/"] if settings.ADMIN_URL == "admin/" else []),
             "Disallow: /api/",
             "Disallow: /inquiry/",
             "",
             f"Sitemap: {settings.SITE_URL}/sitemap.xml",
         ]
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
+
+
+def privacy(request):
+    site = SiteSettings.load()
+    meta = PageMeta(
+        title=f"Privacy Policy — {site.brand_name}",
+        description=f"How {site.brand_name} handles personal data, cookies and analytics.",
+        canonical=absolute(reverse("core:privacy")),
+    )
+    return render(request, "pages/privacy.html", {"meta": meta})

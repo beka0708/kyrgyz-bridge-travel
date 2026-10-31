@@ -11,7 +11,7 @@ from apps.core.views import robots_txt
 admin.site.site_header = "Kyrgyz Tours"
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path("robots.txt", robots_txt, name="robots"),
     path(
         "sitemap.xml",
