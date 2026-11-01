@@ -173,6 +173,8 @@ MAP = {
 
 # Route lines are built once when a day is saved in the admin; visitors never hit this API.
 ORS_API_KEY = env("ORS_API_KEY", default="")
+# Only for `manage.py fetch_demo_photos` (demo content); not used by the site itself.
+UNSPLASH_ACCESS_KEY = env("UNSPLASH_ACCESS_KEY", default="")
 ORS_BASE_URL = env("ORS_BASE_URL", default="https://api.heigit.org/openrouteservice").rstrip("/")
 ORS_TIMEOUT = env.int("ORS_TIMEOUT", default=15)
 
@@ -263,6 +265,16 @@ UNFOLD = {
             {
                 "title": "Контент",
                 "items": [
+                    {
+                        "title": "Почему мы",
+                        "icon": "verified",
+                        "link": reverse_lazy("admin:content_feature_changelist"),
+                    },
+                    {
+                        "title": "Когда ехать",
+                        "icon": "calendar_month",
+                        "link": reverse_lazy("admin:content_season_changelist"),
+                    },
                     {
                         "title": "Гиды",
                         "icon": "badge",

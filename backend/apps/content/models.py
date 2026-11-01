@@ -113,3 +113,42 @@ class Stat(OrderableModel, PublishableModel):
 
     def __str__(self):
         return f"{self.value}{self.suffix} {self.label}"
+
+
+class Feature(OrderableModel, PublishableModel):
+    """«Why us» tiles on the home page: a photo with a short caption."""
+
+    title = models.CharField("заголовок", max_length=80)
+    text = models.CharField("текст", max_length=240)
+    image = models.ImageField("фото", upload_to="features/", blank=True)
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "преимущество"
+        verbose_name_plural = "почему мы"
+
+    def __str__(self):
+        return self.title
+
+
+class Season(OrderableModel, PublishableModel):
+    """«When to go» panels: what each season looks like in Kyrgyzstan."""
+
+    months = models.CharField("месяцы", max_length=40, help_text="June – July")
+    title = models.CharField("заголовок", max_length=80, help_text="Green pastures")
+    text = models.CharField("текст", max_length=200)
+    image = models.ImageField("фото", upload_to="seasons/")
+    tour = models.ForeignKey(
+        "tours.Tour",
+        verbose_name="тур для ссылки",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Пусто — ссылка на список туров.",
+    )
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "сезон"
+        verbose_name_plural = "когда ехать (сезоны)"
+
+    def __str__(self):
+        return f"{self.months}: {self.title}"

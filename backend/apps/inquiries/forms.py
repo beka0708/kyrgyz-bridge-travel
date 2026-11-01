@@ -20,6 +20,7 @@ class InquiryForm(forms.ModelForm):
             "email",
             "contact",
             "tour",
+            "travel_when",
             "date_from",
             "date_to",
             "people",
@@ -32,6 +33,8 @@ class InquiryForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if not cleaned.get("email") and not (cleaned.get("contact") or "").strip():
+            self.add_error("contact", "Please leave an email or a WhatsApp/phone number.")
         date_from, date_to = cleaned.get("date_from"), cleaned.get("date_to")
         if date_from and date_to and date_to < date_from:
             self.add_error("date_to", "End date is before start date.")

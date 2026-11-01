@@ -30,3 +30,6 @@ docs/design/photos/
 
 # Agent skills installed locally (third-party design guidance, not part of the site)
 .claude/skills/
+
+# Demo photos (downloaded from Unsplash by manage.py fetch_demo_photos)
+demo/photos/

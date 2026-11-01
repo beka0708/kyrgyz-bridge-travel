@@ -1,0 +1,405 @@
+{
+ "_note": "Demo photos from Unsplash (https://unsplash.com/license: free to use, incl. commercial). Downloaded by `manage.py fetch_demo_photos` into demo/photos/ (not in git). Demo only: people shown are not real guides or guests of the agency.",
+ "photos": {
+  "tour-ala-kul-0": {
+   "unsplash_id": "o8OCCwVMtG8",
+   "author": "Marek Brzóska",
+   "about": "lake among mountains"
+  },
+  "tour-ala-kul-1": {
+   "unsplash_id": "LKvaVPhmHLk",
+   "author": "Marek Brzóska",
+   "about": "rocky peaks"
+  },
+  "tour-ala-kul-2": {
+   "unsplash_id": "1jrXsmvacnM",
+   "author": "T Y",
+   "about": "stream in a green valley"
+  },
+  "tour-ala-kul-3": {
+   "unsplash_id": "wY1ZUbgTbqw",
+   "author": "Mikhail Blinov",
+   "about": "walking a mountain road"
+  },
+  "tour-ala-kul-4": {
+   "unsplash_id": "z5ktB4To8as",
+   "author": "Kim Cordenete",
+   "about": "wooden bridge over a river"
+  },
+  "tour-ala-kul-5": {
+   "unsplash_id": "MWZS-ThJLJo",
+   "author": "Janita Top",
+   "about": "valley with a river"
+  },
+  "tour-ala-kul-6": {
+   "unsplash_id": "9YT_WFZftKM",
+   "author": "Denis Volkov",
+   "about": "river between mountains"
+  },
+  "tour-issyk-kul-0": {
+   "unsplash_id": "QeceGGgbNMI",
+   "author": "Isakov Eldiiar",
+   "about": "Issyk-Kul with mountains"
+  },
+  "tour-issyk-kul-1": {
+   "unsplash_id": "xT2N4z9VcsQ",
+   "author": "Vladimir Ivanov",
+   "about": "lake shore and meadow"
+  },
+  "tour-issyk-kul-2": {
+   "unsplash_id": "hqPtnORm9gU",
+   "author": "Igor Tverdovskiy",
+   "about": "lake and ridge"
+  },
+  "tour-issyk-kul-3": {
+   "unsplash_id": "do5kwaTLh0w",
+   "author": "Mike Dudin",
+   "about": "water near a mountain"
+  },
+  "tour-issyk-kul-4": {
+   "unsplash_id": "4WKyhSFAjSQ",
+   "author": "Nizar F",
+   "about": "red sandstone formations"
+  },
+  "tour-issyk-kul-5": {
+   "unsplash_id": "8UVr-502KHI",
+   "author": "Nizar F",
+   "about": "path between red cliffs"
+  },
+  "tour-issyk-kul-6": {
+   "unsplash_id": "-1x2PIlOF1E",
+   "author": "Nizar F",
+   "about": "trail through red canyon"
+  },
+  "tour-song-kul-0": {
+   "unsplash_id": "2KLc5O-D1OE",
+   "author": "T Y",
+   "about": "yurt in a green field"
+  },
+  "tour-song-kul-1": {
+   "unsplash_id": "O9idohz-1JE",
+   "author": "Nizar F",
+   "about": "yurt in a mountain meadow"
+  },
+  "tour-song-kul-2": {
+   "unsplash_id": "60JI7Pa8aWk",
+   "author": "Malik Osmonov",
+   "about": "tent near a mountain"
+  },
+  "tour-song-kul-3": {
+   "unsplash_id": "CjvZYvH6f4M",
+   "author": "Thomas Evans",
+   "about": "yurt camp under clouds"
+  },
+  "tour-song-kul-4": {
+   "unsplash_id": "8qv0BPskgoA",
+   "author": "Marek Brzóska",
+   "about": "riders on the pasture"
+  },
+  "tour-song-kul-5": {
+   "unsplash_id": "NDcjI_x2tZ0",
+   "author": "Daniele Nabissi",
+   "about": "horses by the water"
+  },
+  "tour-song-kul-6": {
+   "unsplash_id": "qR4fw2OkWc8",
+   "author": "Ria Huang",
+   "about": "hills and a distant lake"
+  },
+  "tour-arslanbob-0": {
+   "unsplash_id": "UJMy_CrKoI0",
+   "author": "Damir Samatkulov",
+   "about": "mountains through trees"
+  },
+  "tour-arslanbob-1": {
+   "unsplash_id": "BZ0IU675Z20",
+   "author": "Isakov Eldiiar",
+   "about": "autumn stream"
+  },
+  "tour-arslanbob-2": {
+   "unsplash_id": "gWXuVSOLuG0",
+   "author": "Irina Shishkina",
+   "about": "green trees and mountains"
+  },
+  "tour-arslanbob-3": {
+   "unsplash_id": "kk-xrKsP5Xw",
+   "author": "Janita Top",
+   "about": "trees and bushes on a slope"
+  },
+  "tour-arslanbob-4": {
+   "unsplash_id": "JPIlHbvsPdk",
+   "author": "Igor Tverdovskiy",
+   "about": "field with trees"
+  },
+  "tour-arslanbob-5": {
+   "unsplash_id": "2sDp9p4NYoE",
+   "author": "Igor Tverdovskiy",
+   "about": "orange autumn tree"
+  },
+  "tour-ala-archa-0": {
+   "unsplash_id": "8TUCgXlrVmY",
+   "author": "Vladimir Ivanov",
+   "about": "mountain landscape"
+  },
+  "tour-ala-archa-1": {
+   "unsplash_id": "HjTOkTCZR-U",
+   "author": "Vladimir Ivanov",
+   "about": "peak under clouds"
+  },
+  "tour-ala-archa-2": {
+   "unsplash_id": "DZwGxaIUHOI",
+   "author": "Vladimir Ivanov",
+   "about": "green mountains"
+  },
+  "tour-ala-archa-3": {
+   "unsplash_id": "kWsV-Q2ksQE",
+   "author": "Vladimir Ivanov",
+   "about": "winding road in green hills"
+  },
+  "tour-horse-trek-0": {
+   "unsplash_id": "bGZbl-SaAec",
+   "author": "Akmaral Abduraim",
+   "about": "riders on a rocky hill"
+  },
+  "tour-horse-trek-1": {
+   "unsplash_id": "HnNCSH4t3_U",
+   "author": "Isakov Eldiiar",
+   "about": "horses in a grassy field"
+  },
+  "tour-horse-trek-2": {
+   "unsplash_id": "e6-Gs9y91sc",
+   "author": "Isakov Eldiiar",
+   "about": "horses by a river"
+  },
+  "tour-horse-trek-3": {
+   "unsplash_id": "s98fnvqI6GI",
+   "author": "Isakov Eldiiar",
+   "about": "horses on a hillside"
+  },
+  "tour-horse-trek-4": {
+   "unsplash_id": "PHeJ461FqyY",
+   "author": "Isakov Eldiiar",
+   "about": "horses on a green hillside"
+  },
+  "tour-jeti-oguz-0": {
+   "unsplash_id": "S2_EdosRTl8",
+   "author": "Azamat E",
+   "about": "green and brown mountains"
+  },
+  "tour-jeti-oguz-1": {
+   "unsplash_id": "ryWDhMNme7o",
+   "author": "Azamat Kylychev",
+   "about": "grassy field and mountains"
+  },
+  "tour-jeti-oguz-2": {
+   "unsplash_id": "etsecVg3bgY",
+   "author": "Aziza Timurova",
+   "about": "green hills to the peaks"
+  },
+  "tour-jeti-oguz-3": {
+   "unsplash_id": "AS4lkxjpVxQ",
+   "author": "Aziza Timurova",
+   "about": "green valley"
+  },
+  "tour-winter-karakol-0": {
+   "unsplash_id": "9NihV5DlwXg",
+   "author": "Vlada Shcherb",
+   "about": "skiing down the slope"
+  },
+  "tour-winter-karakol-1": {
+   "unsplash_id": "QC4SNN5TLSA",
+   "author": "Amir Asake",
+   "about": "snowy mountain"
+  },
+  "tour-winter-karakol-2": {
+   "unsplash_id": "Xh4WfDO02uA",
+   "author": "Amir Asake",
+   "about": "snow-covered peaks"
+  },
+  "tour-winter-karakol-3": {
+   "unsplash_id": "rLrDft3Vt08",
+   "author": "Vlada Shcherb",
+   "about": "snowy forest from above"
+  },
+  "tour-winter-karakol-4": {
+   "unsplash_id": "Ura-xTfl5zM",
+   "author": "Collab Media",
+   "about": "snowy forest"
+  },
+  "hero": {
+   "unsplash_id": "rcKwFrhhkiU",
+   "author": "Isakov Eldiiar",
+   "about": "green valley"
+  },
+  "about": {
+   "unsplash_id": "6HHULHF6_qQ",
+   "author": "Isakov Eldiiar",
+   "about": "mountain range over water"
+  },
+  "format-solo": {
+   "unsplash_id": "gVG1nv7WBko",
+   "author": "Iana Klimenko",
+   "about": "two people resting by a river"
+  },
+  "format-group": {
+   "unsplash_id": "8qv0BPskgoA",
+   "author": "Marek Brzóska",
+   "about": "group riding horses"
+  },
+  "season-june": {
+   "unsplash_id": "HnNCSH4t3_U",
+   "author": "Isakov Eldiiar",
+   "about": "June pastures"
+  },
+  "season-august": {
+   "unsplash_id": "O9idohz-1JE",
+   "author": "Nizar F",
+   "about": "yurt in summer"
+  },
+  "season-october": {
+   "unsplash_id": "BZ0IU675Z20",
+   "author": "Isakov Eldiiar",
+   "about": "autumn colours"
+  },
+  "season-winter": {
+   "unsplash_id": "Xh4WfDO02uA",
+   "author": "Amir Asake",
+   "about": "winter peaks"
+  },
+  "why-groups": {
+   "unsplash_id": "hX_gzPhhzaA",
+   "author": "Victoria Nazaruk",
+   "about": "small group in a field"
+  },
+  "why-guides": {
+   "unsplash_id": "6u0I--H7hRA",
+   "author": "Joel Heard",
+   "about": "local man by a tent"
+  },
+  "why-booking": {
+   "unsplash_id": "qLchd-tax_g",
+   "author": "Oziel Gómez",
+   "about": "camp tent and dome"
+  },
+  "why-offtrack": {
+   "unsplash_id": "jTO7daIRh0U",
+   "author": "EJ Wolfson",
+   "about": "lonely house under a mountain"
+  },
+  "steps": {
+   "unsplash_id": "j0WTZ6HWfCU",
+   "author": "Frans Hulet",
+   "about": "boy riding a horse"
+  },
+  "faq": {
+   "unsplash_id": "WlRDNUJ06fc",
+   "author": "Spenser Sembrat",
+   "about": "musician in a kalpak"
+  },
+  "request": {
+   "unsplash_id": "6Zj6sY19dow",
+   "author": "Dastan Suiuntbekov",
+   "about": "woman in front of a tent"
+  },
+  "footer": {
+   "unsplash_id": "OgkWLjDUMGw",
+   "author": "Sergei Sviridov",
+   "about": "river valley panorama"
+  },
+  "guide-aibek": {
+   "unsplash_id": "tE_l_mh0KM8",
+   "author": "AL Kaium",
+   "about": "smiling man"
+  },
+  "guide-nurlan": {
+   "unsplash_id": "5xAeXV125lM",
+   "author": "Rodrigo Rodrigues",
+   "about": "smiling man in greenery"
+  },
+  "guide-aigerim": {
+   "unsplash_id": "9gkDpIm93KA",
+   "author": "amin naderloei",
+   "about": "smiling woman in a field"
+  },
+  "guide-timur": {
+   "unsplash_id": "bk_DqKxLdCI",
+   "author": "Marina Nazina",
+   "about": "smiling man with a backpack"
+  },
+  "guide-bakyt": {
+   "unsplash_id": "BWZXWeK2Bb8",
+   "author": "Fadhil Abhimantra",
+   "about": "elderly man in a fur hat"
+  },
+  "review-anna": {
+   "unsplash_id": "HKcE2gqov4Y",
+   "author": "Zulfugar Karimov",
+   "about": "smiling woman"
+  },
+  "review-james": {
+   "unsplash_id": "-diU9gdfkRo",
+   "author": "Elliott Colburn",
+   "about": "man with glasses"
+  },
+  "review-lea": {
+   "unsplash_id": "MHg6J6m_eqI",
+   "author": "Parimal Jain",
+   "about": "woman in a red sweater"
+  },
+  "review-kenji": {
+   "unsplash_id": "gtNYwx0QioA",
+   "author": "Babak Eshaghian",
+   "about": "man in sunglasses"
+  },
+  "review-sofia": {
+   "unsplash_id": "YT91DdRisyo",
+   "author": "Ionela Mat",
+   "about": "woman among blossoms"
+  },
+  "review-mark": {
+   "unsplash_id": "_E3pDFPfBBk",
+   "author": "Thilina Alagiyawanna",
+   "about": "man with grey beard"
+  },
+  "feed-0": {
+   "unsplash_id": "JuNrJQf2odw",
+   "author": "Thomas Evans",
+   "about": "boy by a red door"
+  },
+  "feed-1": {
+   "unsplash_id": "WrhuSgRsm54",
+   "author": "Joel Heard",
+   "about": "boy on a horse"
+  },
+  "feed-2": {
+   "unsplash_id": "5-lb87Q-Cnk",
+   "author": "Joel Heard",
+   "about": "girl on the pasture"
+  },
+  "feed-3": {
+   "unsplash_id": "EICKjkaPt0g",
+   "author": "Isakov Eldiiar",
+   "about": "horses in water"
+  },
+  "feed-4": {
+   "unsplash_id": "4nEmKN1BnUg",
+   "author": "Isakov Eldiiar",
+   "about": "Ferris wheel by Issyk-Kul"
+  },
+  "feed-5": {
+   "unsplash_id": "OXQ3H7QEvN0",
+   "author": "Isakov Eldiiar",
+   "about": "herd on a green field"
+  },
+  "feed-6": {
+   "unsplash_id": "WlRDNUJ06fc",
+   "author": "Spenser Sembrat",
+   "about": "komuz player"
+  },
+  "feed-7": {
+   "unsplash_id": "CjvZYvH6f4M",
+   "author": "Thomas Evans",
+   "about": "yurt camp"
+  }
+ }
+}

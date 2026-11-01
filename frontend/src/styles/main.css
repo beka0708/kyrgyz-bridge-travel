@@ -206,12 +206,7 @@
     transition: transform 500ms var(--ease-out);
   }
   .tour-card__arrow {
-    transition:
-      background-color 200ms ease,
-      transform 200ms var(--ease-out);
-  }
-  .tour-card__arrow svg {
-    transition: stroke 200ms ease;
+    transition: transform 200ms var(--ease-out);
   }
   .tile {
     transition: border-color 200ms ease;
@@ -242,11 +237,7 @@
       transform: scale(1.05);
     }
     .tour-card:hover .tour-card__arrow {
-      @apply bg-ink;
-      transform: rotate(-45deg);
-    }
-    .tour-card:hover .tour-card__arrow svg {
-      @apply stroke-snow;
+      transform: translateX(6px);
     }
     /* tiles are not clickable: only the border reacts, no lift */
     .tile:hover {
@@ -336,6 +327,72 @@
   }
 }
 
+/* Photos «open up» as they enter: rounded inset clip → full frame, image settles from 1.12. */
+.js [data-reveal="photo"] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(9% 7% round 32px);
+  transition: clip-path 900ms var(--ease-out);
+}
+.js [data-reveal="photo"] img {
+  transform: scale(1.12);
+  transition: transform 1200ms var(--ease-out);
+}
+.js [data-reveal="photo"].is-visible {
+  clip-path: inset(0 0 0 0 round 0);
+}
+.js [data-reveal="photo"].is-visible img {
+  transform: none;
+}
+@media (max-width: 767.98px) {
+  .js .snap-row > [data-reveal="photo"],
+  .js .snap-row > [data-reveal="photo"] img {
+    clip-path: none;
+    transform: none;
+  }
+}
+
+/* Scroll-driven depth: hero drifts, photo bands parallax, season panels settle. */
+@keyframes hero-drift {
+  to {
+    transform: translateY(18%) scale(1.08);
+  }
+}
+@keyframes band-parallax {
+  from {
+    transform: translateY(-10%) scale(1.2);
+  }
+  to {
+    transform: translateY(10%) scale(1.2);
+  }
+}
+@keyframes settle {
+  from {
+    transform: scale(1.18);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-drift {
+      animation: hero-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    .band-parallax {
+      animation: band-parallax linear both;
+      animation-timeline: view();
+    }
+    .settle {
+      animation: settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 55%;
+    }
+  }
+}
+
 /* Reduced motion: no movement; content just appears, short fades only. */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -365,5 +422,10 @@
   }
   .pic img {
     transition: none;
+  }
+  .js [data-reveal="photo"],
+  .js [data-reveal="photo"] img {
+    clip-path: none;
+    transform: none;
   }
 }

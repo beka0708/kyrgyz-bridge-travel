@@ -16,8 +16,13 @@ from apps.tours.models import Difficulty, ListKind, Tour, TourType
 # Approximate coordinates, good enough for map development.
 BISHKEK = (42.8746, 74.5698, "Bishkek")
 KARAKOL = (42.4907, 78.3936, "Karakol")
-ALTYN_ARASHAN = (42.3747, 78.6186, "Altyn-Arashan")
-ALA_KUL = (42.2846, 78.5203, "Ala-Kul lake")
+# Ala-Kul trek: points from OpenStreetMap, so hiking routing snaps to the real trails.
+AK_SUU = (42.4997, 78.5224, "Ak-Suu village")
+ALTYN_ARASHAN = (42.37316, 78.61103, "Altyn-Arashan")
+ALA_KUL_PASS = (42.32639, 78.54534, "Ala-Kul pass, 3,920 m")
+ALA_KUL = (42.3189, 78.52759, "Ala-Kul lake, 3,532 m")
+SIROTA = (42.35581, 78.47238, "Sirota camp")
+KARAKOL_GORGE = (42.44497, 78.41599, "Karakol gorge")
 JETI_OGUZ = (42.3283, 78.2350, "Jeti-Oguz")
 CHOLPON_ATA = (42.6495, 77.0855, "Cholpon-Ata")
 SKAZKA = (42.1530, 77.3570, "Skazka canyon")
@@ -41,9 +46,9 @@ TOURS = [
         "color": (46, 74, 62),
         "days": [
             ("Bishkek — Karakol", [BISHKEK, CHOLPON_ATA, KARAKOL], "road"),
-            ("Up to Altyn-Arashan valley", [KARAKOL, ALTYN_ARASHAN], "hiking"),
-            ("Ala-Kul lake and the pass", [ALTYN_ARASHAN, ALA_KUL], "hiking"),
-            ("Down to Karakol", [ALA_KUL, KARAKOL], "hiking"),
+            ("Up to Altyn-Arashan valley", [AK_SUU, ALTYN_ARASHAN], "hiking"),
+            ("Ala-Kul lake and the pass", [ALTYN_ARASHAN, ALA_KUL_PASS, ALA_KUL], "hiking"),
+            ("Down to Karakol", [ALA_KUL, SIROTA, KARAKOL_GORGE], "hiking"),
         ],
     },
     {

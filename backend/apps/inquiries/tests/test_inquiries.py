@@ -55,6 +55,24 @@ def test_honeypot_marks_spam_without_email(api, django_capture_on_commit_callbac
     assert mail.outbox == []
 
 
+def test_whatsapp_instead_of_email(api, django_capture_on_commit_callbacks):
+    data = payload(email="", contact="+996 555 000 000", travel_when="mid-July")
+    with django_capture_on_commit_callbacks(execute=True):
+        resp = api.post(URL, data, format="json")
+
+    assert resp.status_code == 201
+    inquiry = Inquiry.objects.get()
+    assert inquiry.travel_when == "mid-July"
+    assert mail.outbox[0].reply_to == []
+    assert "mid-July" in mail.outbox[0].body
+
+
+def test_needs_email_or_contact(api):
+    resp = api.post(URL, payload(email="", contact=""), format="json")
+    assert resp.status_code == 400
+    assert "contact" in resp.json()
+
+
 def test_rejects_end_date_before_start(api):
     resp = api.post(URL, payload(date_from="2027-07-10", date_to="2027-07-01"), format="json")
     assert resp.status_code == 400

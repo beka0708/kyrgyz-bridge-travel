@@ -13,7 +13,7 @@ class InquiryStatus(models.TextChoices):
 
 class Inquiry(TimeStampedModel):
     name = models.CharField("имя", max_length=100)
-    email = models.EmailField("email")
+    email = models.EmailField("email", blank=True)
     contact = models.CharField(
         "телефон / мессенджер", max_length=100, blank=True, help_text="WhatsApp, Telegram, телефон"
     )
@@ -27,6 +27,12 @@ class Inquiry(TimeStampedModel):
     )
     # Snapshot, so the inquiry stays readable if the tour is renamed or deleted.
     tour_title = models.CharField("тур (на момент заявки)", max_length=150, blank=True)
+    travel_when = models.CharField(
+        "когда примерно",
+        max_length=100,
+        blank=True,
+        help_text="Как написал турист: «mid-July 2027»",
+    )
     date_from = models.DateField("даты с", null=True, blank=True)
     date_to = models.DateField("даты по", null=True, blank=True)
     people = models.PositiveSmallIntegerField(

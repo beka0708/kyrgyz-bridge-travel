@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 def card_titles(html):
     """Titles of tour cards only (the request form below also lists every tour)."""
-    return re.findall(r'<h3 class="line-clamp-2 font-display[^"]*">([^<]+)</h3>', html)
+    return re.findall(r'<h3 class="line-clamp-2 text-lg[^"]*">([^<]+)</h3>', html)
 
 
 def test_list_filters_by_type(client):

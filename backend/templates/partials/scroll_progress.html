@@ -1,4 +1,7 @@
-{# Thin line at the right edge that fills while scrolling (mockup «scroll progress»). #}
-<div aria-hidden="true" class="pointer-events-none fixed top-[280px] right-[18px] z-20 hidden h-[180px] w-1 overflow-hidden rounded bg-line-strong md:block">
-  <div data-scroll-progress class="h-full w-full origin-top scale-y-[0.04] bg-accent"></div>
+{% comment %}
+  Thin line at the right edge that fills while scrolling. Its scale is set by scroll.ts only:
+  a Tailwind scale-* class would add a second CSS `scale` and keep the bar tiny.
+{% endcomment %}
+<div aria-hidden="true" class="pointer-events-none fixed top-1/2 right-[18px] z-20 hidden h-[180px] w-1 -translate-y-1/2 overflow-hidden rounded bg-line-strong md:block">
+  <div data-scroll-progress class="h-full w-full origin-top bg-accent" style="transform: scaleY(0)"></div>
 </div>

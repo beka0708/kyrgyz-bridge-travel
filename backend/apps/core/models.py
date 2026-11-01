@@ -130,6 +130,21 @@ class SiteSettings(SEOModel):
     about_text = models.TextField("текст «О нас»", blank=True)
     about_image = models.ImageField("фото «О нас»", upload_to="home/", blank=True)
 
+    trust_line = models.CharField(
+        "строка доверия под кнопками",
+        max_length=160,
+        blank=True,
+        default="Reply within 24 hours · No prepayment to ask · Local guides",
+        help_text="Коротко и только правда: рейтинг, срок ответа, «без предоплаты». "
+        "Разделитель « · ».",
+    )
+    reply_time = models.CharField(
+        "срок ответа", max_length=40, default="within 24 hours", help_text="within 24 hours"
+    )
+    steps_image = models.ImageField("фото у блока «шаги»", upload_to="home/", blank=True)
+    faq_image = models.ImageField("фото у блока FAQ", upload_to="home/", blank=True)
+    request_image = models.ImageField("фото рядом с формой", upload_to="home/", blank=True)
+    footer_image = models.ImageField("панорама над подвалом", upload_to="home/", blank=True)
     privacy_policy = models.TextField(
         "политика конфиденциальности",
         default=default_privacy_policy,

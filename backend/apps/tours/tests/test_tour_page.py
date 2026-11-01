@@ -57,3 +57,17 @@ def test_tour_page_renders_sections(client):
     assert "How to get there" in html and "Transfer" in html
     assert "Not included" not in html  # empty tabs are hidden
     assert '<span class="text-accent">hike</span>' in html
+
+
+@pytest.mark.django_db
+def test_related_tours_same_type_first(client):
+    from apps.tours.views import related_tours
+
+    tour = TourFactory(title="Main", tour_type=TourType.GROUP)
+    solo = TourFactory(title="Solo", tour_type=TourType.SOLO, is_featured=True)
+    group = TourFactory(title="Group", tour_type=TourType.GROUP)
+    TourFactory(title="Hidden", tour_type=TourType.GROUP, is_published=False)
+
+    assert related_tours(tour) == [group, solo]
+    html = client.get(tour.get_absolute_url()).content.decode()
+    assert 'id="more-tours"' in html and "You may also like" in html

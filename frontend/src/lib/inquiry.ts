@@ -55,8 +55,10 @@ export function registerInquiry(Alpine: AlpineType) {
       });
 
       if (!data.name) this.errors.name = "Please tell us your name.";
-      if (!/^\S+@\S+\.\S+$/.test(data.email ?? "")) {
-        this.errors.email = "Please enter a valid email, e.g. anna@example.com.";
+      if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) {
+        this.errors.email = "Please check the email, e.g. anna@example.com.";
+      } else if (!data.email && !data.contact) {
+        this.errors.contact = "Leave an email or a WhatsApp number so we can reply.";
       }
       if (data.date_from && data.date_to && data.date_to < data.date_from) {
         this.errors.date_to = "The end date must be after the start date.";
@@ -71,9 +73,10 @@ export function registerInquiry(Alpine: AlpineType) {
           headers: { "Content-Type": "application/json", "X-CSRFToken": data.csrfmiddlewaretoken ?? "" },
           body: JSON.stringify({
             name: data.name,
-            email: data.email,
+            email: data.email ?? "",
             contact: data.contact ?? "",
             tour: data.tour || null,
+            travel_when: data.travel_when ?? "",
             date_from: data.date_from || null,
             date_to: data.date_to || null,
             people: Number(data.people) || 1,

@@ -33,6 +33,12 @@ def accent_title(title, css_class="text-accent"):
     return format_html('{} <span class="{}">{}</span>', head, css_class, tail)
 
 
+@register.filter
+def plain_title(title):
+    """Section headings are single-colour: drop the *accent* markers (only the hero keeps them)."""
+    return str(title or "").replace("*", "")
+
+
 @register.simple_tag
 def inquiry_tours():
     """Published tours for the «Which tour?» select of the inquiry form."""

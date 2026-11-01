@@ -20,13 +20,14 @@
     <nav id="mobile-menu" x-show="open" x-cloak x-transition.opacity @click="open = false"
          class="flex flex-col bg-night px-5 pt-2 pb-5 text-lg font-semibold" aria-label="Main">
       {% for link in nav_links %}
-        <a class="border-t-[1.5px] border-line py-3.5{% if forloop.last %} text-accent{% endif %}" href="{{ link.href }}">{{ link.label }}</a>
+        <a class="border-t-[1.5px] border-line py-3.5" href="{{ link.href }}">{{ link.label }}</a>
       {% empty %}
         <a class="border-t-[1.5px] border-line py-3.5" href="{% url 'tours:list' %}">Tours</a>
         <a class="border-t-[1.5px] border-line py-3.5" href="{% url 'core:home' %}#why">About</a>
         <a class="border-t-[1.5px] border-line py-3.5" href="{% url 'core:home' %}#faq">FAQ</a>
         <a class="border-t-[1.5px] border-line py-3.5 text-accent" href="#contacts">Contacts</a>
       {% endfor %}
+      {% if header_cta_href %}<a class="btn btn-accent mt-3 min-h-[52px] text-base" href="{{ header_cta_href }}">{{ header_cta_label }}</a>{% endif %}
     </nav>
   {% endif %}
 </div>

@@ -63,6 +63,18 @@ def _detail_tabs(tour):
     ]
 
 
+RELATED_LIMIT = 3
+
+
+def related_tours(tour, limit=RELATED_LIMIT):
+    """«You may also like»: same type first, then the rest, featured before others."""
+    others = list(
+        Tour.objects.published().exclude(pk=tour.pk).order_by("-is_featured", "order", "pk")
+    )
+    others.sort(key=lambda t: t.tour_type != tour.tour_type)  # stable: keeps the order above
+    return others[:limit]
+
+
 def tour_detail(request, slug):
     # Staff can preview unpublished tours from the admin («Смотреть на сайте»).
     tours = Tour.objects.all() if request.user.is_staff else Tour.objects.published()
@@ -99,6 +111,7 @@ def tour_detail(request, slug):
             "days": days,
             "tabs": _detail_tabs(tour),
             "gallery": list(tour.images.all()),
+            "related": related_tours(tour),
             "route_props": route_props,
             "meta": tour_meta(site, tour, days),
             "whatsapp_url": site.whatsapp_url(f"Hi! I'm interested in the tour “{tour.title}”."),
@@ -107,10 +120,10 @@ def tour_detail(request, slug):
                 {"href": "#program", "label": "Program"},
                 {"href": "#details", "label": "Details"},
                 {"href": "#gallery", "label": "Photos"},
-                {"href": "#inquiry", "label": "Request"},
+                {"href": "#more-tours", "label": "More tours"},
             ],
             "header_cta_href": "#inquiry",
-            "header_cta_label": "Book now",
+            "header_cta_label": "Check dates",
             "back_url": reverse("tours:list"),
         },
     )

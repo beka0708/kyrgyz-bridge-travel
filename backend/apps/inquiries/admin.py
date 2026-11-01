@@ -36,6 +36,7 @@ class InquiryAdmin(ModelAdmin):
         "contact",
         "tour",
         "tour_title",
+        "travel_when",
         "date_from",
         "date_to",
         "people",
@@ -56,7 +57,8 @@ class InquiryAdmin(ModelAdmin):
                 "fields": [
                     ("name", "email", "contact"),
                     ("tour", "tour_title"),
-                    ("date_from", "date_to", "people"),
+                    ("travel_when", "people"),
+                    ("date_from", "date_to"),
                     "comment",
                 ]
             },
@@ -79,8 +81,10 @@ class InquiryAdmin(ModelAdmin):
     def has_add_permission(self, request):
         return False  # inquiries only come from the website form
 
-    @display(description="даты")
+    @display(description="когда")
     def dates(self, obj):
+        if obj.travel_when:
+            return obj.travel_when
         if not obj.date_from:
             return "—"
         end = f" – {obj.date_to:%d.%m}" if obj.date_to else ""

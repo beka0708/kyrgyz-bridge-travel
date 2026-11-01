@@ -7,7 +7,7 @@ import Alpine from "alpinejs";
 import { initAnalytics, registerConsent } from "@/lib/analytics";
 import { registerHome } from "@/lib/home";
 import { registerInquiry } from "@/lib/inquiry";
-import { initReveal, initScrollProgress } from "@/lib/scroll";
+import { initCounters, initReveal, initScrollProgress } from "@/lib/scroll";
 import { registerTourPage } from "@/lib/tour-page";
 
 /** Alpine's collapse plugin ignores «reduce motion»: make accordions open instantly there. */
@@ -33,4 +33,5 @@ Alpine.start();
 
 initReveal();
 initScrollProgress();
+initCounters();
 initAnalytics();

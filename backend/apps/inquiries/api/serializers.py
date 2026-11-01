@@ -25,6 +25,7 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
             "email",
             "contact",
             "tour",
+            "travel_when",
             "date_from",
             "date_to",
             "people",
@@ -38,6 +39,10 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        if not attrs.get("email") and not (attrs.get("contact") or "").strip():
+            raise serializers.ValidationError(
+                {"contact": "Please leave an email or a WhatsApp/phone number so we can reply."}
+            )
         date_from, date_to = attrs.get("date_from"), attrs.get("date_to")
         if date_from and date_to and date_to < date_from:
             raise serializers.ValidationError({"date_to": "End date is before start date."})

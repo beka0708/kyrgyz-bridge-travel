@@ -1,15 +1,14 @@
 {% load site_tags %}
-{# «Choose your format» card: photo, dark overlay, title, text and an arrow. #}
-<a class="tour-card group relative block h-60 overflow-hidden rounded-[28px] bg-moss md:h-[460px] md:rounded-[36px]" href="{{ href }}" data-reveal>
+{# «Private / group» card: photo, title, text and a facts chip («4 tours · from $79»). #}
+<a class="tour-card group relative block h-72 overflow-hidden rounded-[28px] bg-moss md:h-[480px] md:rounded-[36px]" href="{{ href }}" data-reveal>
   {% img image sizes="(min-width: 768px) 50vw, 100vw" css="tour-card__photo absolute inset-0 h-full w-full object-cover" %}
-  <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(0deg,rgb(10_22_18/0.88)_0%,rgb(10_22_18/0.55)_45%,rgb(10_22_18/0.15)_100%)]"></div>
-  <div class="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 md:inset-x-9 md:bottom-9 md:gap-5">
-    <div class="flex flex-col gap-1 md:gap-2.5">
-      <span class="font-display text-[22px] leading-[1.15] font-semibold md:text-[34px] md:leading-[1.1] md:tracking-[-0.01em]">{{ title }}</span>
-      <span class="max-w-[400px] text-sm text-[#d5e0da] md:text-lg">{{ text }}</span>
-    </div>
-    <span class="tour-card__arrow flex size-11 flex-none items-center justify-center rounded-full bg-accent md:size-15">
-      <svg class="size-5 stroke-ink md:size-6" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(0deg,rgb(10_22_18/0.88)_0%,rgb(10_22_18/0.4)_45%,rgb(10_22_18/0)_100%)]"></div>
+  {% if facts %}<span class="absolute top-4 left-4 rounded-full bg-paper/95 px-3.5 py-1.5 text-xs font-bold text-ink md:top-6 md:left-6 md:text-sm">{{ facts }}</span>{% endif %}
+  <div class="absolute inset-x-5 bottom-5 flex flex-col gap-1.5 md:inset-x-9 md:bottom-9 md:gap-2.5">
+    <span class="flex items-center gap-2 font-display text-[24px] leading-[1.15] font-semibold md:text-[36px] md:leading-[1.1] md:tracking-[-0.01em]">
+      {{ title }}
+      <svg class="tour-card__arrow size-6 stroke-accent md:size-8" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </span>
+    {% if text %}<span class="max-w-[440px] text-sm text-[#d5e0da] md:text-lg">{{ text }}</span>{% endif %}
   </div>
 </a>

@@ -104,7 +104,8 @@ def notify_about_inquiry(inquiry: Inquiry) -> bool:
         body=render_to_string("emails/new_inquiry.txt", context),
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=recipients,
-        reply_to=[inquiry.email],  # «Reply» in the mail app goes straight to the traveller
+        # «Reply» in the mail app goes straight to the traveller (when they left an email)
+        reply_to=[inquiry.email] if inquiry.email else None,
     )
     try:
         message.send()

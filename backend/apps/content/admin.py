@@ -4,7 +4,7 @@ from unfold.decorators import display
 
 from apps.core.admin import thumbnail
 
-from .models import FAQ, GalleryPost, Guide, Partner, Review, Stat
+from .models import FAQ, Feature, GalleryPost, Guide, Partner, Review, Season, Stat
 
 
 class OrderedAdmin(ModelAdmin):
@@ -69,3 +69,24 @@ class GalleryPostAdmin(OrderedAdmin):
 class StatAdmin(OrderedAdmin):
     list_display = ["label", "value", "suffix", "is_published"]
     list_editable = ["value", "suffix", "is_published"]
+
+
+@admin.register(Feature)
+class FeatureAdmin(OrderedAdmin):
+    list_display = ["image_preview", "title", "is_published"]
+    list_display_links = ["image_preview", "title"]
+
+    @display(description="")
+    def image_preview(self, obj):
+        return thumbnail(obj.image)
+
+
+@admin.register(Season)
+class SeasonAdmin(OrderedAdmin):
+    list_display = ["image_preview", "months", "title", "tour", "is_published"]
+    list_display_links = ["image_preview", "months"]
+    autocomplete_fields = ["tour"]
+
+    @display(description="")
+    def image_preview(self, obj):
+        return thumbnail(obj.image)

@@ -36,7 +36,7 @@ export function initScrollProgress() {
   const update = () => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     const progress = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-    bar.style.transform = `scaleY(${Math.max(progress, 0.04)})`;
+    bar.style.transform = `scaleY(${progress})`;
     ticking = false;
   };
   window.addEventListener(
@@ -50,4 +50,34 @@ export function initScrollProgress() {
     { passive: true },
   );
   update();
+}
+
+
+/** Stats count up from 0 when they appear (`data-count="3000"`, suffix stays in the markup). */
+export function initCounters() {
+  const items = document.querySelectorAll<HTMLElement>("[data-count]");
+  if (!items.length || reducedMotion() || !("IntersectionObserver" in window)) return;
+  const format = new Intl.NumberFormat("en-US");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const el = entry.target as HTMLElement;
+        observer.unobserve(el);
+        const target = Number(el.dataset.count) || 0;
+        const start = performance.now();
+        const duration = 1400;
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 4); // strong ease-out: fast start, gentle landing
+          el.textContent = format.format(Math.round(target * eased));
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        el.textContent = "0";
+        requestAnimationFrame(tick);
+      }
+    },
+    { threshold: 0.6 },
+  );
+  items.forEach((el) => observer.observe(el));
 }

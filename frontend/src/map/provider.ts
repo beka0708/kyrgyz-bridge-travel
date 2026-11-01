@@ -35,7 +35,15 @@ const TOPO_LAYER = "base-topo";
 const HILLSHADE_LAYER = "relief-hillshade";
 const DESKTOP_QUERY = "(min-width: 1024px) and (pointer: fine)";
 
-maplibregl.setWorkerUrl(workerUrl);
+if (import.meta.env.DEV) {
+  // The dev server prepends `import … from "/@vite/client"` to the worker file, and that client
+  // touches `document`, which a worker does not have: the worker dies and tiles/routes go
+  // missing. A Blob of the untouched file avoids it. Production builds use the emitted file.
+  const { default: source } = await import("maplibre-gl/dist/maplibre-gl-worker.mjs?raw");
+  maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([source], { type: "text/javascript" })));
+} else {
+  maplibregl.setWorkerUrl(workerUrl);
+}
 
 // Resolves when relief/topo layers are added (style loaded), see whenReady().
 const ready = new WeakMap<maplibregl.Map, Promise<void>>();
@@ -75,6 +83,7 @@ export function createMap(
     map,
     new Promise((resolve) =>
       map.once("load", () => {
+        englishLabels(map);
         addRelief(map, config, enable3d);
         // Compact attribution starts expanded and covers a phone-sized map; keep it behind ⓘ.
         container.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
@@ -83,6 +92,21 @@ export function createMap(
     ),
   );
   return map;
+}
+
+/** Visitors are foreign tourists: «Karakol», not «Karakol Каракол». */
+function englishLabels(map: maplibregl.Map) {
+  const name: maplibregl.ExpressionSpecification = [
+    "coalesce",
+    ["get", "name:en"],
+    ["get", "name:latin"],
+    ["get", "name"],
+  ];
+  for (const layer of map.getStyle().layers) {
+    if (layer.type === "symbol" && map.getLayoutProperty(layer.id, "text-field")) {
+      map.setLayoutProperty(layer.id, "text-field", name);
+    }
+  }
 }
 
 function addRelief(map: maplibregl.Map, config: MapConfig, enable3d: boolean) {

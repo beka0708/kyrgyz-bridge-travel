@@ -31,8 +31,9 @@
         <span class="text-[13px] text-mist">Price</span>
         <span class="font-display text-[30px] font-semibold tabular-nums">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="font-sans text-base font-normal text-mist">{{ tour.price_note }}</span>{% endif %}</span>
       </div>
+      <a class="btn btn-accent min-h-[58px] px-[34px] text-base" href="#inquiry">Check dates</a>
       {% if whatsapp_url %}
-        <a class="btn btn-accent min-h-[58px] px-[34px] text-base" href="{{ whatsapp_url }}" target="_blank" rel="noopener">Message on WhatsApp</a>
+        <a class="btn min-h-[58px] gap-2.5 border-[1.5px] border-line-strong px-7 text-base" href="{{ whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="20" %}Ask on WhatsApp</a>
       {% endif %}
     </div>
   </div>
@@ -56,11 +57,7 @@
 <section id="program" class="lg:bg-paper lg:text-ink" x-data="tourRoute({{ days.0.day_number }})">
   <div class="container-page flex flex-col gap-4 pt-6 pb-4 lg:gap-12 lg:py-26">
     <div class="flex flex-col gap-3">
-      <div class="eyebrow text-accent lg:text-rust">Route</div>
-      <h2 class="h-section">
-        <span class="lg:hidden">Pick a day <span class="text-accent">and see the way</span></span>
-        <span class="hidden lg:inline">Day by day <span class="text-rust">on the map</span></span>
-      </h2>
+      <h2 class="h-section">Day by day</h2>
       <p class="hidden max-w-[560px] text-[17px] text-ink-muted lg:block">Click a day to highlight it on the map.</p>
     </div>
 
@@ -142,8 +139,7 @@
 {% if tabs %}
 <section id="details" class="container-page flex flex-col gap-[18px] pt-14 pb-6 md:gap-12 md:py-26" x-data="tabs('{{ tabs.0.key }}')">
   <div class="flex flex-col gap-3">
-    <div class="eyebrow text-accent">Details</div>
-    <h2 class="h-section">Good to know <span class="text-accent">before you go</span></h2>
+    <h2 class="h-section">Good to know before you go</h2>
   </div>
   <div class="flex flex-col gap-[18px] md:flex-row md:flex-wrap md:items-start md:gap-12">
     {# Phones: chips #}
@@ -187,14 +183,14 @@
 </section>
 {% endif %}
 
-{# ------------------------------------------------------------- GALLERY #}
+{# ------------------------------------------------------------- GALLERY: mosaic, first photo large #}
 {% if gallery %}
-<section id="gallery" class="container-page flex flex-col gap-[18px] py-8 md:gap-10 md:pt-0 md:pb-30">
-  <h2 class="h-section" data-reveal>What it <span class="text-accent">looks like</span></h2>
-  <div class="snap-row md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0">
-    {% for photo in gallery %}
-      <div class="pic h-80 w-[260px] rounded-3xl md:h-90 md:w-auto md:rounded-[28px]" data-reveal>
-        {% img photo.image alt=photo.alt|default:tour.title sizes="(min-width: 768px) 33vw, 260px" css="zoom" %}
+<section id="gallery" class="container-page flex flex-col gap-6 py-10 md:gap-10 md:pt-0 md:pb-28">
+  <h2 class="h-section">What it looks like</h2>
+  <div class="snap-row md:mx-0 md:grid md:auto-rows-[200px] md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:auto-rows-[240px]">
+    {% for photo in gallery|slice:":7" %}
+      <div class="pic h-80 w-[78vw] max-w-[300px] rounded-3xl md:h-auto md:w-auto md:max-w-none md:rounded-[24px] {% if forloop.first %}md:col-span-2 md:row-span-2{% endif %}" data-reveal="photo">
+        {% img photo.image alt=photo.alt|default:tour.title sizes="(min-width: 768px) 50vw, 78vw" css="zoom" %}
       </div>
     {% endfor %}
   </div>
@@ -204,24 +200,26 @@
 {# ------------------------------------------------------------- REQUEST #}
 {% include "partials/inquiry_section.html" with tour=tour %}
 
-{# ---------------------------------------------------------------- BOOK #}
-<section id="book" class="container-page pt-6 pb-10 md:pt-0 md:pb-40">
-  <div class="flex flex-col gap-4 rounded-[28px] bg-accent px-[22px] py-7 text-ink md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-8 md:rounded-[44px] md:p-16" data-reveal>
-    <div class="flex min-w-0 flex-col gap-3 md:flex-[1_1_380px]">
-      <h2 class="font-display text-2xl leading-[1.15] font-semibold md:text-[40px] md:leading-[1.12] md:tracking-[-0.01em]">Want to go to {{ tour.title }}?</h2>
-      <p class="max-w-[460px] text-base md:text-lg">Message us — we'll suggest available dates and answer any question about the route.</p>
+{# ------------------------------------------------------------- YOU MAY ALSO LIKE #}
+{% if related %}
+<section id="more-tours" class="bg-paper text-ink">
+  <div class="container-page flex flex-col gap-6 pt-16 pb-36 md:gap-10 md:pt-24 md:pb-40">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      {% include "partials/section_heading.html" with title="You may also like" lead="Other trips our guests often combine with this one." light=True %}
+      <a class="lnk hidden min-h-11 items-center gap-1.5 font-bold text-rust md:inline-flex" href="{% url 'tours:list' %}">
+        All tours
+        <svg class="size-4 stroke-rust" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
-    <div class="flex flex-col gap-4 md:flex-row md:flex-wrap">
-      {% if whatsapp_url %}
-        <a class="btn min-h-[54px] bg-ink px-9 text-base text-snow md:min-h-[60px] md:text-[17px]" href="{{ whatsapp_url }}" target="_blank" rel="noopener">WhatsApp</a>
-      {% endif %}
-      {% if site.telegram %}
-        <a class="btn min-h-[54px] border-2 border-ink px-9 text-base md:min-h-[60px] md:text-[17px]" href="{{ site.telegram_url }}" target="_blank" rel="noopener">Telegram</a>
-      {% endif %}
-      <a class="btn min-h-[54px] border-2 border-ink px-9 text-base md:min-h-[60px] md:text-[17px]" href="#inquiry">Send a request</a>
+    <div class="snap-row md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0">
+      {% for tour in related %}
+        <div class="flex w-[78vw] max-w-[300px] md:w-auto md:max-w-none" data-reveal>{% include "partials/tour_card.html" %}</div>
+      {% endfor %}
     </div>
+    <a class="btn min-h-[54px] w-full bg-ink text-base text-snow md:hidden" href="{% url 'tours:list' %}">See all tours</a>
   </div>
 </section>
+{% endif %}
 {% endblock %}
 
 {% block floating %}
@@ -233,13 +231,12 @@
       <span class="hidden font-display text-base font-medium md:inline">{{ tour.title }}</span>
       <span class="truncate font-display text-[clamp(14px,4.2vw,16px)] font-semibold tabular-nums md:font-sans md:text-[15px] md:font-normal md:text-mist">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="font-sans text-xs font-normal text-mist md:text-[15px]">{{ tour.price_note }}</span>{% endif %}</span>
     </div>
-    {% if whatsapp_url %}
-      <a class="btn btn-accent min-h-[52px] flex-none px-5 md:min-h-12 md:px-6" href="{{ whatsapp_url }}" target="_blank" rel="noopener">
-        {% include "partials/icon_whatsapp.html" with size="20" %}<span class="ml-2 sm:hidden">WhatsApp</span><span class="ml-2 hidden sm:inline">Message on WhatsApp</span>
-      </a>
-    {% else %}
-      <a class="btn btn-accent min-h-[52px] flex-none px-5 md:min-h-12 md:px-6" href="#inquiry">Send a request</a>
-    {% endif %}
+    <div class="flex flex-none items-center gap-2">
+      {% if whatsapp_url %}
+        <a class="btn size-[52px] flex-none !px-0 border-[1.5px] border-line-strong md:size-12" href="{{ whatsapp_url }}" target="_blank" rel="noopener" aria-label="Ask on WhatsApp" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="22" %}</a>
+      {% endif %}
+      <a class="btn btn-accent min-h-[52px] flex-none px-6 md:min-h-12" href="#inquiry">Check dates</a>
+    </div>
   </div>
 </div>
 {% endblock %}
