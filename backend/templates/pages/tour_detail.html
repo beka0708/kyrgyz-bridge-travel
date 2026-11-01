@@ -1,91 +1,137 @@
 {% extends "base.html" %}
 {% load django_vite site_tags %}
-{# Mockups: docs/design/source/desktop-tour-a.html (≥1024px) and mobile-tour-b.html (phones). #}
+{% comment %}
+Tour page, hybrid redesign (prototype/tour.html): photos first, then what it is at a glance, the
+route with every day visible, what is in the price, a guest's words. Desktop keeps a price card in
+view; phones get a bottom bar.
+{% endcomment %}
 
-
-{% block head %}{% preload_img tour.cover "(min-width: 768px) 50vw, 100vw" %}{% endblock %}
+{% block head %}{% preload_img tour.cover "(min-width: 768px) 46vw, 100vw" %}{% endblock %}
 {% block body_attrs %}data-tour="{{ tour.slug }}" data-tour-title="{{ tour.title }}" data-tour-price="{{ tour.price_from }}" data-tour-currency="{{ tour.currency }}"{% endblock %}
 
 {% block content %}
-{# ---------------------------------------------------------------- HERO #}
-<section class="container-page flex flex-col gap-[18px] pt-5 pb-8 md:flex-row md:flex-wrap md:items-center md:gap-14 md:pt-16 md:pb-24">
-  <div class="order-2 flex min-w-0 flex-col gap-[18px] md:order-1 md:flex-[1_1_460px] md:gap-[26px]">
-    <div class="rise hidden flex-wrap items-center gap-3 text-sm font-semibold text-mist md:flex">
-      <a class="lnk" href="{% url 'tours:list' %}">Tours</a><span aria-hidden="true">/</span><span class="text-snow">{{ tour.title }}</span>
-      <span class="rounded-full border-[1.5px] border-line bg-forest px-3.5 py-1 text-accent">{{ tour.type_label }}</span>
+{# ---------------------------------------------------------------- GALLERY (+ full-screen viewer) #}
+<div class="relative md:pt-6" x-data="gallery({{ gallery|length|add:1 }})" @keydown.escape.window="close()">
+  <div class="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] md:gap-4 md:px-[max(2rem,calc((100vw-1136px)/2))] md:[scroll-padding-inline:max(2rem,calc((100vw-1136px)/2))] [&::-webkit-scrollbar]:hidden"
+       x-ref="track" @scroll.throttle.80ms="onScroll()">
+    <button type="button" class="pic h-[320px] w-full flex-none snap-start md:h-[460px] md:w-[52%] md:rounded-[24px]" style="view-transition-name: tour-{{ tour.slug }}" @click="show(0)" aria-label="Open photo 1">
+      {% img tour.cover alt=tour.title sizes="(min-width: 768px) 52vw, 100vw" priority=True %}
+    </button>
+    {% for photo in gallery %}
+      <button type="button" class="pic h-[320px] w-full flex-none snap-start md:h-[460px] md:w-[34%] md:rounded-[24px]" @click="show({{ forloop.counter }})" aria-label="Open photo {{ forloop.counter|add:1 }}">
+        {% img photo.image alt=photo.alt|default:tour.title sizes="(min-width: 768px) 34vw, 100vw" %}
+      </button>
+    {% endfor %}
+  </div>
+  <span class="pointer-events-none absolute top-3.5 left-3.5 rounded-full bg-paper px-3 py-1.5 text-xs font-bold text-ink md:top-10 md:left-[max(2.75rem,calc((100vw-1136px)/2+0.75rem))]">{{ tour.type_label }}</span>
+  <span class="pointer-events-none absolute right-3.5 bottom-3.5 rounded-full bg-night/60 px-2.5 py-1 text-xs font-semibold text-snow tabular-nums md:hidden" x-text="`${index + 1} / ${count}`">1 / {{ gallery|length|add:1 }}</span>
+  {% if gallery %}
+    <div class="container-page mt-3 hidden items-center justify-end gap-2 md:flex">
+      <button type="button" class="btn size-11 !px-0 border border-ink/15" @click="step(-1)" aria-label="Previous photos">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button type="button" class="btn size-11 !px-0 border border-ink/15" @click="step(1)" aria-label="Next photos">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="btn min-h-11 border border-ink/15 px-5 text-sm" @click="show(0)">All {{ gallery|length|add:1 }} photos</button>
     </div>
-    <h1 class="rise-2 mt-1.5 font-display text-[30px] leading-[1.1] font-semibold tracking-[-0.02em] md:mt-0 md:text-[56px] md:leading-[1.06]">{{ tour.title|accent_title }}</h1>
-    <p class="rise-3 max-w-[520px] text-base text-mist md:text-[19px]">{{ tour.short_description }}</p>
+  {% endif %}
 
-    <dl class="rise-3 grid max-w-[520px] grid-cols-2 gap-2.5 md:gap-3.5">
-      {% include "pages/_tour_fact.html" with label="Duration" value=tour.duration_label %}
-      {% include "pages/_tour_fact.html" with label="Difficulty" value=tour.difficulty_label %}
-      {% if tour.group_label %}{% include "pages/_tour_fact.html" with label="Group" value=tour.group_label %}{% endif %}
-      {% if tour.season_label %}{% include "pages/_tour_fact.html" with label="Season" value=tour.season_label %}{% endif %}
-      {# phones: the floating «Next departure» card is desktop-only, so show it as a fact here #}
-      {% if tour.next_departure %}{% include "pages/_tour_fact.html" with label="Next departure" value=tour.next_departure css="col-span-2 md:hidden" %}{% endif %}
-    </dl>
-
-    <div class="rise-3 mt-1.5 hidden flex-wrap items-center gap-6 md:flex">
-      <div class="flex flex-col">
-        <span class="text-[13px] text-mist">Price</span>
-        <span class="font-display text-[30px] font-semibold tabular-nums">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="font-sans text-base font-normal text-mist">{{ tour.price_note }}</span>{% endif %}</span>
+  {# Full-screen viewer: swipe on phones, arrows and keys on desktop #}
+  <div x-show="open" x-cloak x-transition.opacity.duration.200ms class="fixed inset-0 z-[60] flex flex-col bg-black text-snow"
+       role="dialog" aria-modal="true" aria-label="Photos of {{ tour.title }}" @keydown.left="lightboxStep(-1)" @keydown.right="lightboxStep(1)">
+    <div class="flex h-14 flex-none items-center justify-between px-4">
+      <span class="text-sm font-semibold tabular-nums" x-text="`${lightboxIndex + 1} / ${count}`"></span>
+      <button type="button" class="flex size-11 items-center justify-center rounded-full" @click="close()" x-ref="close" aria-label="Close photos">
+        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="relative min-h-0 flex-1">
+      <div class="flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" x-ref="lightbox" @scroll.throttle.80ms="onLightboxScroll()">
+        <div class="flex h-full w-full flex-none snap-center items-center justify-center">{% img tour.cover alt=tour.title sizes="100vw" css="max-h-full max-w-full object-contain" %}</div>
+        {% for photo in gallery %}
+          <div class="flex h-full w-full flex-none snap-center items-center justify-center">{% img photo.image alt=photo.alt|default:tour.title sizes="100vw" css="max-h-full max-w-full object-contain" %}</div>
+        {% endfor %}
       </div>
-      <a class="btn btn-accent min-h-[58px] px-[34px] text-base" href="#inquiry">Check dates</a>
-      {% if whatsapp_url %}
-        <a class="btn min-h-[58px] gap-2.5 border-[1.5px] border-line-strong px-7 text-base" href="{{ whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="20" %}Ask on WhatsApp</a>
+      <button type="button" class="absolute top-1/2 left-4 hidden size-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 md:flex" @click="lightboxStep(-1)" aria-label="Previous photo">
+        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button type="button" class="absolute top-1/2 right-4 hidden size-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 md:flex" @click="lightboxStep(1)" aria-label="Next photo">
+        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container-page grid gap-x-14 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+  <div class="min-w-0">
+    {# ------------------------------------------------------------ WHAT IT IS #}
+    <section class="flex flex-col gap-4 pt-6 pb-2 md:pt-10">
+      <h1 class="rise font-display text-[30px] leading-[1.08] font-semibold tracking-[-0.02em] md:text-[48px]">{{ tour.title }}</h1>
+      <p class="rise-2 text-[17px] text-ink-muted md:text-xl">{{ tour.short_description }}</p>
+      <ul class="rise-3 flex flex-wrap gap-2 text-sm font-semibold">
+        <li class="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2"><svg class="size-4 text-rust" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{ tour.duration_label }}</li>
+        <li class="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2"><svg class="size-4 text-rust" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l6-10 4 6 3-4 5 8z"/></svg>{{ tour.difficulty_label }}</li>
+        {% if tour.group_label %}<li class="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2"><svg class="size-4 text-rust" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3 3 0 0 1 0 5M21 20c0-2.6-1.6-4.8-4-5.6"/></svg>{{ tour.group_label|capfirst }}</li>{% endif %}
+        {% if tour.season_label %}<li class="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2"><svg class="size-4 text-rust" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>{{ tour.season_label }}</li>{% endif %}
+      </ul>
+      {% if tour.next_departure %}
+        <p class="rise-3 flex w-fit items-center gap-2.5 rounded-2xl bg-[#fdeedf] px-4 py-3 text-[15px]">
+          <span class="relative flex size-2.5"><span class="absolute inline-flex size-full animate-ping rounded-full bg-[#2fa564] opacity-60 motion-reduce:hidden"></span><span class="relative inline-flex size-2.5 rounded-full bg-[#2fa564]"></span></span>
+          <span>Next departure: <b>{{ tour.next_departure }}</b></span>
+        </p>
       {% endif %}
-    </div>
+      {% if tour.description %}<div class="mt-3 flex flex-col gap-4 text-[17px] leading-relaxed md:text-lg">{{ tour.description|linebreaks }}</div>{% endif %}
+    </section>
+
   </div>
 
-  <div class="relative order-1 min-w-0 md:order-2 md:flex-[1_1_420px]">
-    <div class="pic h-[340px] rounded-[28px] md:h-[580px] md:rounded-[44px]">
-      {% img tour.cover alt=tour.title sizes="(min-width: 768px) 50vw, 100vw" priority=True %}
-      <span class="absolute top-3.5 left-3.5 rounded-full bg-paper px-3 py-1.5 text-xs font-bold text-ink md:hidden">{{ tour.type_label }}</span>
-    </div>
-    {% if tour.next_departure %}
-      <div class="float absolute right-[-20px] bottom-[70px] hidden flex-col rounded-[20px] bg-paper px-5 py-3.5 text-ink shadow-[0_16px_40px_rgba(0,0,0,0.4)] md:flex">
-        <span class="text-xs font-bold tracking-[0.08em] text-ink-muted uppercase">Next departure</span>
-        <span class="font-display text-[17px] font-semibold">{{ tour.next_departure }}</span>
+  {# ------------------------------------------------------------ PRICE CARD (desktop) #}
+  <aside class="hidden lg:block">
+    <div class="band-dark mt-10 flex flex-col gap-4 rounded-[24px] p-7">
+      <div>
+        <p class="text-sm text-mist">{% if tour.price_from %}from{% else %}Price{% endif %}</p>
+        <p class="font-display text-[40px] leading-tight font-semibold tabular-nums">{% if tour.price_from %}{{ tour.price_label }}{% else %}on request{% endif %}</p>
+        <p class="text-sm text-mist">{{ tour.price_note|default:"per person" }}</p>
       </div>
-    {% endif %}
-  </div>
-</section>
+      {% if tour.next_departure %}<p class="rounded-xl bg-white/6 px-4 py-3 text-sm">Next departure: <b>{{ tour.next_departure }}</b></p>{% endif %}
+      <a class="btn btn-accent min-h-[54px] text-base" href="#contact">Check dates</a>
+      {% if whatsapp_url %}<a class="btn btn-wa min-h-[54px] gap-2 text-base" href="{{ whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="20" %}Ask on WhatsApp</a>{% endif %}
+      <p class="text-center text-[13px] text-mist">No prepayment to ask · Free cancellation 30 days</p>
+    </div>
+  </aside>
+</div>
 
-{# ------------------------------------------------------------- PROGRAM #}
+{# ------------------------------------------------------------ ROUTE: day cards + sticky map (desktop), day chips (phones) #}
 {% if days %}
-<section id="program" class="lg:bg-paper lg:text-ink" x-data="tourRoute({{ days.0.day_number }})">
-  <div class="container-page flex flex-col gap-4 pt-6 pb-4 lg:gap-12 lg:py-26">
-    <div class="flex flex-col gap-3">
-      <h2 class="h-section">Day by day</h2>
+<section id="route" class="scroll-mt-20 lg:bg-white" x-data="tourRoute({{ days.0.day_number }})">
+  <div class="container-page flex flex-col gap-4 pt-12 lg:gap-10 lg:py-20">
+    <div class="flex flex-col gap-2">
+      <h2 class="h-section">Route, day by day</h2>
       <p class="hidden max-w-[560px] text-[17px] text-ink-muted lg:block">Click a day to highlight it on the map.</p>
     </div>
 
     <div class="flex flex-col gap-4 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
       <div class="flex min-w-0 flex-col gap-4 lg:col-span-7">
-        {# Phones and tablets: day chips + photos of the selected day (mockup B) #}
+        {# Phones and tablets: day chips #}
         <div class="snap-row lg:hidden" role="group" aria-label="Route days">
           {% for day in days %}
-            <button type="button" @click="select({{ day.day_number }})"
-                    :aria-pressed="day === {{ day.day_number }}"
-                    class="min-h-12 rounded-full border-[1.5px] px-6 text-[15px] font-bold whitespace-nowrap transition-colors"
-                    :class="day === {{ day.day_number }} ? 'border-accent bg-accent text-ink' : 'border-line-strong text-snow'">
-              Day {{ day.day_number }}
-            </button>
+            <button type="button" class="chip min-h-11 px-5" @click="select({{ day.day_number }})"
+                    :aria-pressed="day === {{ day.day_number }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">Day {{ day.day_number }}</button>
           {% endfor %}
         </div>
-        {# Desktop: day cards (mockup A); the map on the right follows the selection #}
+        {# Desktop: day cards; the map on the right follows the selection #}
         <div class="hidden flex-col gap-4 lg:flex">
           {% for day in days %}
             <button type="button" @click="select({{ day.day_number }})" :aria-pressed="day === {{ day.day_number }}"
-                    class="flex w-full cursor-pointer items-center gap-6 rounded-[28px] border-2 bg-white p-5 text-left text-ink transition-colors duration-150"
+                    class="flex w-full cursor-pointer items-center gap-6 rounded-[24px] border-2 bg-paper p-4 text-left transition-colors duration-150"
                     :class="day === {{ day.day_number }} ? 'border-ink' : 'border-transparent can-hover:hover:border-pebble'">
-              <span class="pic h-40 w-[220px] flex-none rounded-[20px]">
-                {% with photo=day.images.all.0 %}{% if photo %}{% img photo.image alt="" sizes="220px" %}{% endif %}{% endwith %}
+              <span class="pic h-36 w-[200px] flex-none rounded-[18px]">
+                {% with photo=day.images.all.0 %}{% if photo %}{% img photo.image alt="" sizes="200px" %}{% endif %}{% endwith %}
               </span>
-              <span class="flex min-w-0 flex-1 flex-col gap-2">
-                <span class="font-display text-[13px] font-semibold text-rust">DAY {{ day.day_number }}</span>
-                <span class="font-display text-xl leading-tight font-medium">{{ day.title }}</span>
+              <span class="flex min-w-0 flex-1 flex-col gap-1.5">
+                <span class="text-[13px] font-bold tracking-[0.08em] text-rust uppercase">Day {{ day.day_number }}</span>
+                <span class="font-display text-xl leading-tight font-semibold">{{ day.title }}</span>
                 {% if day.meta_label %}<span class="text-sm font-semibold text-ink-muted">{{ day.meta_label }}</span>{% endif %}
                 {% if day.description %}<span class="line-clamp-3 text-[15px] text-ink-muted [overflow-wrap:anywhere]">{{ day.description }}</span>{% endif %}
               </span>
@@ -94,148 +140,134 @@
         </div>
       </div>
 
-      {# One map for both layouts: under the photos on phones, sticky on the right on desktop #}
-      <div class="min-w-0 lg:sticky lg:top-6 lg:col-span-5">
-        <div class="h-[300px] overflow-hidden rounded-3xl bg-pine md:h-[420px] lg:h-[620px] lg:rounded-[32px]">
+      {# One map for both layouts: under the chips on phones, sticky on the right on desktop #}
+      <div class="min-w-0 lg:sticky lg:top-24 lg:col-span-5">
+        <div class="h-[300px] overflow-hidden rounded-[22px] bg-pine md:h-[420px] lg:h-[620px] lg:rounded-[28px]">
           {{ route_props|json_script:"route-props" }}
           <div data-island="route-map" data-props-id="route-props" class="h-full"></div>
         </div>
       </div>
 
-      {# Phones and tablets: text of the selected day right under the map #}
+      {# Phones and tablets: the selected day under the map, then its photos #}
       {% for day in days %}
-        <article class="glass flex flex-col gap-1.5 rounded-3xl p-[22px] lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
-          <span class="font-display text-xs font-semibold text-accent">DAY {{ day.day_number }}</span>
-          <h3 class="font-display text-lg leading-tight font-medium">{{ day.title }}</h3>
-          {% if day.meta_label %}<span class="text-[13px] font-semibold text-mist">{{ day.meta_label }}</span>{% endif %}
-          {% if day.description %}<p class="text-[15px] text-mist [overflow-wrap:anywhere]">{{ day.description|urlize|linebreaksbr }}</p>{% endif %}
+        <article class="flex flex-col gap-1.5 rounded-[22px] bg-white p-5 lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
+          <span class="text-xs font-bold tracking-[0.08em] text-rust uppercase">Day {{ day.day_number }}</span>
+          <h3 class="font-display text-lg leading-tight font-semibold">{{ day.title }}</h3>
+          {% if day.meta_label %}<span class="text-[13px] font-semibold text-ink-muted">{{ day.meta_label }}</span>{% endif %}
+          {% if day.description %}<p class="text-[15px] text-ink-muted [overflow-wrap:anywhere]">{{ day.description|urlize|linebreaksbr }}</p>{% endif %}
         </article>
-      {% endfor %}
-
-      {# Phones and tablets: photos of the selected day, after its text #}
-        {% for day in days %}
-          {% with photos=day.images.all %}
-            {% if photos %}
-              <div class="flex flex-col gap-2.5 lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
-                <div class="pic h-60 rounded-3xl">{% img photos.0.image alt=photos.0.alt|default:day.title sizes="100vw" %}</div>
-                {% if photos|length > 1 %}
-                  <div class="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2.5">
-                    {% for photo in photos|slice:"1:3" %}
-                      <div class="pic h-[110px] rounded-[18px]">{% img photo.image alt=photo.alt|default:day.title sizes="50vw" %}</div>
-                    {% endfor %}
-                  </div>
-                {% endif %}
+        {% with photos=day.images.all %}{% if photos %}
+          <div class="flex flex-col gap-2.5 lg:hidden" x-show="day === {{ day.day_number }}"{% if not forloop.first %} x-cloak{% endif %}>
+            <div class="pic h-56 rounded-[22px]">{% img photos.0.image alt=photos.0.alt|default:day.title sizes="100vw" %}</div>
+            {% if photos|length > 1 %}
+              <div class="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2.5">
+                {% for photo in photos|slice:"1:3" %}<div class="pic h-[110px] rounded-[16px]">{% img photo.image alt=photo.alt|default:day.title sizes="50vw" %}</div>{% endfor %}
               </div>
             {% endif %}
-          {% endwith %}
-        {% endfor %}
-
-    </div>
-  </div>
-</section>
-{% endif %}
-
-{# ------------------------------------------------------------- DETAILS #}
-{% if tabs %}
-<section id="details" class="container-page flex flex-col gap-[18px] pt-14 pb-6 md:gap-12 md:py-26" x-data="tabs('{{ tabs.0.key }}')">
-  <div class="flex flex-col gap-3">
-    <h2 class="h-section">Good to know before you go</h2>
-  </div>
-  <div class="flex flex-col gap-[18px] md:flex-row md:flex-wrap md:items-start md:gap-12">
-    {# Phones: chips #}
-    <div class="snap-row md:hidden" role="tablist" aria-label="Tour details" @keydown="onKey($event)">
-      {% for t in tabs %}
-        <button type="button" role="tab" id="tab-m-{{ t.key }}" aria-controls="panel-{{ t.key }}" data-tab="{{ t.key }}"
-                @click="tab = '{{ t.key }}'" :aria-selected="tab === '{{ t.key }}'" :tabindex="tab === '{{ t.key }}' ? 0 : -1"
-                class="min-h-12 rounded-full border-[1.5px] px-5 text-[15px] font-bold whitespace-nowrap"
-                :class="tab === '{{ t.key }}' ? 'border-accent bg-accent text-ink' : 'border-line-strong text-snow'">{{ t.label }}</button>
+          </div>
+        {% endif %}{% endwith %}
       {% endfor %}
     </div>
-    {# Desktop: vertical tabs with a marker #}
-    <div class="hidden min-w-0 flex-[1_1_260px] flex-col gap-1 md:flex" role="tablist" aria-label="Tour details" aria-orientation="vertical" @keydown="onKey($event)">
-      {% for t in tabs %}
-        <button type="button" role="tab" id="tab-d-{{ t.key }}" aria-controls="panel-{{ t.key }}" data-tab="{{ t.key }}"
-                @click="tab = '{{ t.key }}'" :aria-selected="tab === '{{ t.key }}'" :tabindex="tab === '{{ t.key }}' ? 0 : -1"
-                class="group flex min-h-14 cursor-pointer items-center gap-4 text-left font-display text-xl font-medium transition-colors duration-150"
-                :class="tab === '{{ t.key }}' ? 'text-snow' : 'text-sage can-hover:hover:text-mist'">
-          <span class="h-7 w-1 flex-none rounded transition-colors duration-150" :class="tab === '{{ t.key }}' ? 'bg-accent' : 'bg-transparent'"></span>
-          {# hover nudge with transform, not padding: no text reflow #}
-          <span class="transition-transform duration-200 ease-[var(--ease-out)] can-hover:group-hover:translate-x-1.5">{{ t.label }}</span>
-        </button>
+  </div>
+</section>
+{% endif %}
+
+<div class="container-page">
+  <div class="max-w-[820px]">
+    {# ------------------------------------------------------------ WHAT'S IN THE PRICE #}
+    {% if tabs %}
+    <section id="included" class="flex scroll-mt-20 flex-col gap-5 pt-12 md:pt-16">
+      <h2 class="h-section">What's in the price</h2>
+      {% if included or excluded %}
+        <div class="grid gap-3 sm:grid-cols-2">
+          {% if included %}
+            <div class="rounded-[20px] bg-white p-5 md:p-6">
+              <h3 class="mb-3 font-bold">Included</h3>
+              <ul class="flex flex-col gap-2.5 text-[15px]">
+                {% for item in included %}<li class="flex gap-2.5"><span class="font-bold text-[#2fa564]" aria-hidden="true">✓</span><span class="min-w-0 [overflow-wrap:anywhere]">{{ item }}</span></li>{% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          {% if excluded %}
+            <div class="rounded-[20px] bg-white p-5 md:p-6">
+              <h3 class="mb-3 font-bold">Not included</h3>
+              <ul class="flex flex-col gap-2.5 text-[15px]">
+                {% for item in excluded %}<li class="flex gap-2.5"><span class="font-bold text-[#b5463b]" aria-hidden="true">✕</span><span class="min-w-0 [overflow-wrap:anywhere]">{{ item }}</span></li>{% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if gear or way %}
+        <div class="border-t border-pebble">
+          {% if gear %}
+            <details class="qa"><summary>What to bring</summary>
+              <ul class="flex list-disc flex-col gap-1.5 pl-5">{% for item in gear %}<li>{{ item }}</li>{% endfor %}</ul>
+            </details>
+          {% endif %}
+          {% if way %}
+            <details class="qa"><summary>Getting there</summary>
+              <ul class="flex list-disc flex-col gap-1.5 pl-5">{% for item in way %}<li>{{ item|urlize }}</li>{% endfor %}</ul>
+            </details>
+          {% endif %}
+        </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# ------------------------------------------------------------ A GUEST'S WORDS #}
+    {% if tour_reviews %}
+    <section class="flex flex-col gap-5 pt-12 md:pt-16">
+      <h2 class="h-section">From our guests</h2>
+      {% for review in tour_reviews %}
+        <figure class="flex flex-col gap-3 rounded-[22px] bg-white p-6 md:p-7">
+          <span class="tracking-[2px] text-rust" role="img" aria-label="{{ review.rating }} out of 5 stars">{% for _ in "x"|rjust:review.rating %}★{% endfor %}</span>
+          <blockquote class="text-[17px] leading-relaxed [overflow-wrap:anywhere]">“{{ review.text }}”</blockquote>
+          <figcaption class="flex items-center gap-3 text-sm">
+            {% if review.photo %}<span class="pic size-11 flex-none rounded-full">{% img review.photo sizes="48px" %}</span>{% endif %}
+            <span class="flex flex-col"><b>{{ review.author_name }}{% if review.country %}, {{ review.country }}{% endif %}</b>
+              <span class="text-ink-muted">{% if review.travel_date %}{{ review.travel_date|date:"F Y" }}{% endif %}{% if review.travel_date and review.source != "direct" %} · {% endif %}{% if review.source != "direct" %}{{ review.get_source_display }}{% endif %}</span></span>
+          </figcaption>
+        </figure>
       {% endfor %}
-    </div>
-    {% for t in tabs %}
-      <div class="glass flex min-h-0 min-w-0 flex-col gap-4 rounded-3xl p-6 md:min-h-[340px] md:flex-[2_1_520px] md:gap-[22px] md:rounded-[32px] md:p-10"
-           role="tabpanel" id="panel-{{ t.key }}" :aria-labelledby="window.innerWidth < 768 ? 'tab-m-{{ t.key }}' : 'tab-d-{{ t.key }}'" tabindex="0"
-           x-show="tab === '{{ t.key }}'"{% if not forloop.first %} x-cloak{% endif %}>
-        <h3 class="font-display text-lg font-medium md:text-2xl">{{ t.title }}</h3>
-        <ul class="flex flex-col gap-3 md:gap-3.5">
-          {% for item in t.items %}
-            <li class="flex items-start gap-3 text-base md:items-center md:gap-3.5 md:text-lg">
-              <svg class="mt-0.5 size-5 flex-none stroke-accent md:mt-0 md:size-[22px]" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-              <span class="min-w-0 [overflow-wrap:anywhere]">{{ item|urlize }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endfor %}
+    </section>
+    {% endif %}
   </div>
-</section>
-{% endif %}
+</div>
 
-{# ------------------------------------------------------------- GALLERY: mosaic, first photo large #}
-{% if gallery %}
-<section id="gallery" class="container-page flex flex-col gap-6 py-10 md:gap-10 md:pt-0 md:pb-28">
-  <h2 class="h-section">What it looks like</h2>
-  <div class="snap-row md:mx-0 md:grid md:auto-rows-[200px] md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:auto-rows-[240px]">
-    {% for photo in gallery|slice:":7" %}
-      <div class="pic h-80 w-[78vw] max-w-[300px] rounded-3xl md:h-auto md:w-auto md:max-w-none md:rounded-[24px] {% if forloop.first %}md:col-span-2 md:row-span-2{% endif %}" data-reveal="photo">
-        {% img photo.image alt=photo.alt|default:tour.title sizes="(min-width: 768px) 50vw, 78vw" css="zoom" %}
-      </div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
+{# ------------------------------------------------------------ REQUEST #}
+<div class="mt-16 md:mt-24">{% include "partials/inquiry_section.html" with tour=tour %}</div>
 
-{# ------------------------------------------------------------- REQUEST #}
-{% include "partials/inquiry_section.html" with tour=tour %}
-
-{# ------------------------------------------------------------- YOU MAY ALSO LIKE #}
+{# ------------------------------------------------------------ SIMILAR TOURS #}
 {% if related %}
-<section id="more-tours" class="bg-paper text-ink">
-  <div class="container-page flex flex-col gap-6 pt-16 pb-36 md:gap-10 md:pt-24 md:pb-40">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      {% include "partials/section_heading.html" with title="You may also like" lead="Other trips our guests often combine with this one." light=True %}
-      <a class="lnk hidden min-h-11 items-center gap-1.5 font-bold text-rust md:inline-flex" href="{% url 'tours:list' %}">
-        All tours
-        <svg class="size-4 stroke-rust" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
+<section id="more-tours">
+  <div class="container-page flex flex-col gap-5 pt-14 pb-32 md:gap-8 md:pt-20 md:pb-24">
+    <div class="flex items-end justify-between gap-4">
+      <h2 class="h-section">You may also like</h2>
+      <a class="lnk inline-flex min-h-11 items-center gap-1.5 font-bold text-rust" href="{% url 'tours:list' %}">All <span aria-hidden="true">→</span></a>
     </div>
-    <div class="snap-row md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0">
-      {% for tour in related %}
-        <div class="flex w-[78vw] max-w-[300px] md:w-auto md:max-w-none" data-reveal>{% include "partials/tour_card.html" %}</div>
-      {% endfor %}
+    <div class="flex flex-col gap-2.5 md:hidden">
+      {% for tour in related %}{% include "partials/tour_row.html" %}{% endfor %}
     </div>
-    <a class="btn min-h-[54px] w-full bg-ink text-base text-snow md:hidden" href="{% url 'tours:list' %}">See all tours</a>
+    <div class="hidden gap-6 md:grid md:grid-cols-3">
+      {% for tour in related %}<div class="flex" data-reveal>{% include "partials/tour_card.html" %}</div>{% endfor %}
+    </div>
   </div>
 </section>
 {% endif %}
 {% endblock %}
 
 {% block floating %}
-{# Booking bar: full-width on phones, floating pill on desktop (replaces the WhatsApp button) #}
-<div class="booking-bar fixed inset-x-0 bottom-0 z-30 md:bottom-6">
-  <div class="flex items-center justify-between gap-3 border-t-[1.5px] border-line-strong bg-forest px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:mx-auto md:w-[min(880px,calc(100%-48px))] md:rounded-full md:border-[1.5px] md:py-2.5 md:pb-2.5 md:pr-2.5 md:pl-7 md:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-    <div class="flex min-w-0 flex-col leading-tight md:flex-row md:items-baseline md:gap-3.5">
-      <span class="text-xs text-mist md:hidden">Price</span>
-      <span class="hidden font-display text-base font-medium md:inline">{{ tour.title }}</span>
-      <span class="truncate font-display text-[clamp(14px,4.2vw,16px)] font-semibold tabular-nums md:font-sans md:text-[15px] md:font-normal md:text-mist">{{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="font-sans text-xs font-normal text-mist md:text-[15px]">{{ tour.price_note }}</span>{% endif %}</span>
+{# Phones: price + WhatsApp + «Check dates», always at hand. Desktop has the price card. #}
+<div class="booking-bar fixed inset-x-0 bottom-0 z-30 border-t border-pebble/70 bg-paper/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex min-w-0 flex-col leading-tight">
+      <span class="text-xs text-ink-muted">{% if tour.price_from %}from{% else %}Price{% endif %}</span>
+      <span class="truncate font-display text-lg font-semibold tabular-nums">{% if tour.price_from %}{{ tour.price_label }} <span class="font-sans text-xs font-normal text-ink-muted">/ person</span>{% else %}on request{% endif %}</span>
     </div>
     <div class="flex flex-none items-center gap-2">
-      {% if whatsapp_url %}
-        <a class="btn size-[52px] flex-none !px-0 border-[1.5px] border-line-strong md:size-12" href="{{ whatsapp_url }}" target="_blank" rel="noopener" aria-label="Ask on WhatsApp" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="22" %}</a>
-      {% endif %}
-      <a class="btn btn-accent min-h-[52px] flex-none px-6 md:min-h-12" href="#inquiry">Check dates</a>
+      {% if whatsapp_url %}<a class="btn btn-wa size-[52px] !px-0" href="{{ whatsapp_url }}" target="_blank" rel="noopener" aria-label="Ask on WhatsApp" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="22" %}</a>{% endif %}
+      <a class="btn btn-accent min-h-[52px] px-6 text-base" href="#contact">Check dates</a>
     </div>
   </div>
 </div>

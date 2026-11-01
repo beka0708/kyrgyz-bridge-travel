@@ -1,0 +1,6 @@
+{% load site_tags %}
+{# Plain, single-colour section heading with an optional lead line. light=True on paper sections. #}
+<div class="flex max-w-[640px] flex-col gap-3 {{ class }}">
+  {% if title %}<h2 class="h-section">{{ title|plain_title }}</h2>{% endif %}
+  {% if lead %}<p class="text-base md:text-lg {% if light %}text-ink-muted{% else %}text-mist{% endif %}">{{ lead }}</p>{% endif %}
+</div>

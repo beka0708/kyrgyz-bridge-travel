@@ -130,6 +130,21 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
         return f"{days}\u00a0day{'' if days == 1 else 's'}"  # nbsp: never «4 / days»
 
     @property
+    def is_winter(self):
+        """Season starts in Nov–Feb: shown under the «Winter» filter."""
+        return bool(self.season_start) and (self.season_start >= 11 or self.season_start <= 2)
+
+    @property
+    def filter_tags(self):
+        """Space-separated tags for the home filter chips."""
+        tags = [self.tour_type]
+        if self.duration_days <= 2:
+            tags.append("short")
+        if self.is_winter:
+            tags.append("winter")
+        return " ".join(tags)
+
+    @property
     def season_label(self):
         if not self.season_start:
             return ""

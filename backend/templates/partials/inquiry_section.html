@@ -1,23 +1,22 @@
-{# Request form section. Pass `tour` to fix the tour (tour page); `side_image` adds a photo (home). #}
-{% load site_tags %}
-<section id="inquiry" class="container-page scroll-mt-20 py-16 md:py-28">
-  <div class="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:items-start md:gap-14">
-    <div class="flex min-w-0 flex-col gap-5 md:sticky md:top-8">
-      {% if tour %}
-        {% include "partials/section_heading.html" with title="Check dates for this tour" %}
-        <p class="text-base text-mist md:text-lg">Tell us roughly when — we'll reply {{ site.reply_time }} with free dates and the full price for “{{ tour.title }}”.</p>
-      {% else %}
-        {% include "partials/section_heading.html" with title="Check dates and price" %}
-        <p class="text-base text-mist md:text-lg">Tell us roughly when and how many of you — we'll reply {{ site.reply_time }} with a route, dates and the full price.</p>
-      {% endif %}
-      {% if side_image %}<div class="pic hidden aspect-[4/3] rounded-[24px] md:block" data-reveal="photo">{% img side_image alt="" sizes="440px" %}</div>{% endif %}
+{# Contact band: messengers first, a short form second. Pass `tour` on a tour page. #}
+<section id="contact" class="band-dark scroll-mt-4">
+  <div class="container-page grid gap-10 py-16 md:grid-cols-2 md:items-start md:gap-16 md:py-24">
+    <div class="flex flex-col gap-4 md:sticky md:top-8">
+      <h2 class="h-section">{% if tour %}Check dates for this tour{% else %}Check dates and price{% endif %}</h2>
+      <p class="text-base text-[#d5e0da] md:text-lg">Free dates and the full price {{ site.reply_time }}. A real person replies, not a bot.</p>
       {% if site.whatsapp or site.telegram %}
-        <p class="text-sm text-sage">Prefer a messenger?
-          {% if site.whatsapp %}<a class="font-semibold text-accent underline-offset-4 can-hover:hover:underline" href="{{ whatsapp_url|default:site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">WhatsApp</a>{% endif %}{% if site.whatsapp and site.telegram %} or {% endif %}{% if site.telegram %}<a class="font-semibold text-accent underline-offset-4 can-hover:hover:underline" href="{{ site.telegram_url }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
-        </p>
+        <div class="mt-2 grid gap-3 sm:grid-cols-2">
+          {% if site.whatsapp %}<a class="btn btn-wa min-h-[54px] gap-2 text-base" href="{{ whatsapp_url|default:site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="20" %}WhatsApp</a>{% endif %}
+          {% if site.telegram %}<a class="btn min-h-[54px] gap-2 bg-[#2aabee] text-base text-ink" href="{{ site.telegram_url }}" target="_blank" rel="noopener" data-track="telegram">Telegram</a>{% endif %}
+        </div>
       {% endif %}
+      <ul class="mt-2 flex flex-col gap-1.5 text-sm text-mist">
+        <li><span class="text-accent" aria-hidden="true">✓</span> No prepayment to ask</li>
+        <li><span class="text-accent" aria-hidden="true">✓</span> Free cancellation up to 30 days</li>
+      </ul>
     </div>
-    <div class="min-w-0">
+    <div class="flex min-w-0 flex-col gap-3">
+      {% if site.whatsapp or site.telegram %}<p class="text-center text-sm text-mist md:text-left">or leave a request</p>{% endif %}
       {% include "partials/inquiry_form.html" %}
     </div>
   </div>

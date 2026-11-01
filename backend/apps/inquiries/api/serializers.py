@@ -1,5 +1,7 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
+from apps.inquiries.contact import normalize_contact
 from apps.inquiries.models import Inquiry
 from apps.tours.models import Tour
 
@@ -39,10 +41,12 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        if not attrs.get("email") and not (attrs.get("contact") or "").strip():
-            raise serializers.ValidationError(
-                {"contact": "Please leave an email or a WhatsApp/phone number so we can reply."}
+        try:
+            attrs["email"], attrs["contact"] = normalize_contact(
+                attrs.get("email", ""), attrs.get("contact", "")
             )
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"contact": exc.messages[0]}) from None
         date_from, date_to = attrs.get("date_from"), attrs.get("date_to")
         if date_from and date_to and date_to < date_from:
             raise serializers.ValidationError({"date_to": "End date is before start date."})

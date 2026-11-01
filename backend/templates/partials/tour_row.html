@@ -1,0 +1,11 @@
+{% load site_tags %}
+{# Compact tour row (phones, «Similar tours»): everything a tourist compares, without opening the tour. #}
+<a class="tour-card flex items-center gap-3.5 rounded-[20px] bg-white p-2 pr-4 text-ink shadow-[0_1px_2px_rgb(17_32_26/0.06)]" href="{{ tour.get_absolute_url }}">
+  <span class="pic size-[104px] flex-none rounded-[14px]" style="view-transition-name: tour-{{ tour.slug }}">{% img tour.cover alt="" sizes="112px" css="tour-card__photo" %}</span>
+  <span class="flex min-w-0 flex-col gap-0.5">
+    <span class="text-[11px] font-bold tracking-[0.08em] text-rust uppercase">{{ tour.type_label }}</span>
+    <span class="line-clamp-2 text-[15px] leading-snug font-bold">{{ tour.title }}</span>
+    <span class="text-[13px] text-ink-muted">{{ tour.duration_label }} · {{ tour.difficulty_label }}{% if tour.season_label %} · {{ tour.season_label }}{% endif %}</span>
+    <span class="mt-1 text-[13px] text-ink-muted">{% if tour.price_from %}from <b class="text-base text-ink tabular-nums">{{ tour.price_label }}</b> / person{% else %}<b class="text-ink">Price on request</b>{% endif %}</span>
+  </span>
+</a>

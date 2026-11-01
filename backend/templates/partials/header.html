@@ -1,2 +1,72 @@
-{% include "partials/header_mobile.html" %}
-{% include "partials/header_desktop.html" %}
+{% comment %}
+Site header. `overlay=True` (home): transparent over the hero photo. Otherwise a sticky paper bar.
+Phones: logo (or a back link on tour pages) + burger with a full-screen menu.
+{% endcomment %}
+{% url 'core:home' as home_url %}
+{% if overlay %}
+<header x-data="{ open: false, solid: false }" @keydown.escape.window="open = false"
+        x-init="const s = document.querySelector('[data-header-sentinel]'); s && new IntersectionObserver(([e]) => solid = !e.isIntersecting).observe(s)"
+        class="fixed inset-x-0 top-0 z-40 border-b transition-[background-color,color,border-color] duration-300 ease-[var(--ease-out)]"
+        :class="solid ? 'border-pebble/70 bg-paper/90 text-ink backdrop-blur-md' : 'border-transparent text-snow'">
+{% else %}
+<header x-data="{ open: false }" @keydown.escape.window="open = false"
+        class="sticky top-0 z-40 border-b border-pebble/70 bg-paper/90 text-ink backdrop-blur-md">
+{% endif %}
+  <div class="container-page flex h-16 items-center justify-between gap-4 md:h-20">
+    {% if back_url %}
+      <a href="{{ back_url }}" class="flex min-h-12 items-center gap-2 text-[15px] font-bold md:hidden">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        {{ back_label|default:"All tours" }}
+      </a>
+      <span class="hidden md:block">{% include "partials/logo.html" %}</span>
+    {% else %}
+      {% include "partials/logo.html" %}
+    {% endif %}
+
+    <nav class="hidden items-center gap-1 text-[15px] font-semibold md:flex" aria-label="Main">
+      {% for link in nav_links %}
+        <a class="lnk rounded-full px-3.5 py-2.5 opacity-85 can-hover:hover:opacity-100" href="{{ link.href }}">{{ link.label }}</a>
+      {% empty %}
+        <a class="lnk rounded-full px-3.5 py-2.5 opacity-85 can-hover:hover:opacity-100" href="{% url 'tours:list' %}">Tours</a>
+        <a class="lnk rounded-full px-3.5 py-2.5 opacity-85 can-hover:hover:opacity-100" href="{{ home_url }}#reviews">Reviews</a>
+        <a class="lnk rounded-full px-3.5 py-2.5 opacity-85 can-hover:hover:opacity-100" href="{{ home_url }}#faq">FAQ</a>
+        <a class="lnk rounded-full px-3.5 py-2.5 opacity-85 can-hover:hover:opacity-100" href="#contact">Contact</a>
+      {% endfor %}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      {% include "partials/lang_switch.html" %}
+      <a class="btn btn-accent hidden md:inline-flex" href="{{ header_cta_href|default:'#contact' }}">{{ header_cta_label|default:"Check dates" }}</a>
+      <button type="button" class="flex size-11 items-center justify-center rounded-full md:hidden" @click="open = true"
+              :aria-expanded="open" aria-controls="site-menu" aria-label="Menu">
+        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+
+  {# Phones: full-screen menu #}
+  <div id="site-menu" x-show="open" x-cloak x-transition.opacity.duration.200ms
+       class="fixed inset-0 z-50 flex flex-col bg-night px-5 pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-snow md:hidden"
+       role="dialog" aria-modal="true" aria-label="Menu" @click.self="open = false">
+    <div class="flex h-16 items-center justify-between">
+      {% include "partials/logo.html" %}
+      <button type="button" class="flex size-11 items-center justify-center rounded-full" @click="open = false" aria-label="Close menu">
+        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <nav class="mt-6 flex flex-col font-display text-2xl font-semibold" aria-label="Main" @click="open = false">
+      {% for link in nav_links %}
+        <a class="border-b border-line py-4" href="{{ link.href }}" style="--i: {{ forloop.counter0 }}">{{ link.label }}</a>
+      {% empty %}
+        <a class="border-b border-line py-4" href="{% url 'tours:list' %}">Tours</a>
+        <a class="border-b border-line py-4" href="{{ home_url }}#reviews">Reviews</a>
+        <a class="border-b border-line py-4" href="{{ home_url }}#faq">FAQ</a>
+        <a class="border-b border-line py-4" href="#contact">Contact</a>
+      {% endfor %}
+    </nav>
+    <div class="mt-auto flex flex-col gap-3" @click="open = false">
+      <a class="menu-cta btn btn-accent min-h-[54px] text-base" style="--i: 5" href="{{ header_cta_href|default:'#contact' }}">{{ header_cta_label|default:"Check dates" }}</a>
+      {% if site.whatsapp %}<a class="menu-cta btn btn-wa min-h-[54px] gap-2 text-base" style="--i: 6" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="20" %}Ask on WhatsApp</a>{% endif %}
+    </div>
+  </div>
+</header>

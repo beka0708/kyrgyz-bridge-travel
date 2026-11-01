@@ -55,10 +55,11 @@ export function registerInquiry(Alpine: AlpineType) {
       });
 
       if (!data.name) this.errors.name = "Please tell us your name.";
-      if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) {
-        this.errors.email = "Please check the email, e.g. anna@example.com.";
-      } else if (!data.email && !data.contact) {
-        this.errors.contact = "Leave an email or a WhatsApp number so we can reply.";
+      // One «Email or WhatsApp» field (`contact`); the server moves an email into `email`.
+      const reach = data.contact || data.email || "";
+      if (!reach) this.errors.contact = "Leave an email or a WhatsApp number so we can reply.";
+      else if (reach.includes("@") && !/^\S+@\S+\.\S+$/.test(reach)) {
+        this.errors.contact = "Please check the email, e.g. anna@example.com.";
       }
       if (data.date_from && data.date_to && data.date_to < data.date_from) {
         this.errors.date_to = "The end date must be after the start date.";

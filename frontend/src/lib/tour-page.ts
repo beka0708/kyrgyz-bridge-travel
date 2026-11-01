@@ -10,6 +10,52 @@ export function registerTourPage(Alpine: AlpineType) {
     },
   }));
 
+  /** Photo strip (swipe on phones, arrows on desktop) and a full-screen viewer. */
+  Alpine.data("gallery", (count: number) => ({
+    count,
+    index: 0,
+    lightboxIndex: 0,
+    open: false,
+    opener: null as HTMLElement | null,
+    track() {
+      return this.$refs.track as HTMLElement;
+    },
+    onScroll() {
+      const el = this.track();
+      this.index = Math.round(el.scrollLeft / el.clientWidth);
+    },
+    step(direction: number) {
+      const el = this.track();
+      el.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: "smooth" });
+    },
+    show(i: number) {
+      this.opener = document.activeElement as HTMLElement | null;
+      this.open = true;
+      document.documentElement.style.overflow = "hidden";
+      this.$nextTick(() => {
+        const box = this.$refs.lightbox as HTMLElement;
+        box.scrollTo({ left: i * box.clientWidth, behavior: "instant" });
+        this.lightboxIndex = i;
+        (this.$refs.close as HTMLElement).focus();
+      });
+    },
+    close() {
+      if (!this.open) return;
+      this.open = false;
+      document.documentElement.style.overflow = "";
+      this.opener?.focus();
+    },
+    onLightboxScroll() {
+      const box = this.$refs.lightbox as HTMLElement;
+      this.lightboxIndex = Math.round(box.scrollLeft / box.clientWidth);
+    },
+    lightboxStep(direction: number) {
+      const box = this.$refs.lightbox as HTMLElement;
+      const next = Math.min(this.count - 1, Math.max(0, this.lightboxIndex + direction));
+      box.scrollTo({ left: next * box.clientWidth, behavior: "smooth" });
+    },
+  }));
+
   // WAI-ARIA tabs: arrows move between tabs (and select them), Home/End jump to the ends.
   Alpine.data("tabs", (first: string) => ({
     tab: first,

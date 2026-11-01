@@ -6,8 +6,8 @@
   <h1 class="h-section">Please check <span class="text-accent">your request</span></h1>
   {% if error %}<p class="text-lg text-[#ff8a80]" role="alert">{{ error }}</p>{% endif %}
   {% if form.errors %}
-    <ul class="flex flex-col gap-2 text-mist" role="alert">
-      {% for field, errors in form.errors.items %}<li><strong class="text-snow">{{ field|capfirst }}:</strong> {{ errors|join:" " }}</li>{% endfor %}
+    <ul class="flex flex-col gap-2 text-ink-muted" role="alert">
+      {% for field, errors in form.errors.items %}<li><strong class="text-ink">{{ field|capfirst }}:</strong> {{ errors|join:" " }}</li>{% endfor %}
     </ul>
   {% endif %}
   <p><a class="btn btn-accent" href="javascript:history.back()">Back to the form</a></p>

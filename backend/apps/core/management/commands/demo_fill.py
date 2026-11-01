@@ -491,9 +491,8 @@ PARTNERS = [
 ]
 
 HOME_TEXT = {
-    "hero_title": "Kyrgyzstan on foot, on horseback and *in a yurt*",
-    "hero_subtitle": "Trek to Ala-Kul lake, sleep in a yurt on Song-Kul or take it easy around "
-    "Issyk-Kul. Small groups, local guides, from $79.",
+    "hero_title": "Kyrgyzstan with *local guides*",
+    "hero_subtitle": "Treks, yurts and mountain lakes. Small groups or private trips, from $79.",
     "solo_text": "Your own guide, car and driver. You pick the dates and the pace. "
     "Good for couples, families and friends.",
     "group_text": "Fixed dates, up to 10 travellers and a lower price per person. "
@@ -502,7 +501,11 @@ HOME_TEXT = {
     "about_text": "We are guides from Bishkek, Karakol and Song-Kul. We started by taking friends "
     "to our favourite places and still lead every trip ourselves — so you travel with people "
     "who live here, not with a call centre.",
-    "trust_line": "Reply within 24 hours · No prepayment to ask · Free cancellation up to 30 days",
+    "trust_line": "No prepayment · Free cancellation 30 days · Reply within 24 hours",
+    # demo only: the client fills in the real rating (or leaves it empty)
+    "rating_value": "4.9",
+    "rating_count": 126,
+    "rating_url": "https://www.google.com/maps",
 }
 
 

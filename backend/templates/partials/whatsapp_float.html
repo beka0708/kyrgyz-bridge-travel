@@ -1,8 +1,18 @@
-{# Round button on phones, "Message us" pill on desktop. Clears the iPhone home bar. #}
+{% comment %}
+Phones: a bottom bar «Check dates» + WhatsApp that slides in once the page is scrolled past the
+first screen. Desktop: a WhatsApp pill in the corner (the header already has «Check dates»).
+{% endcomment %}
+<div class="booking-bar fixed inset-x-0 bottom-0 z-30 translate-y-full border-t border-pebble/70 bg-paper/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md transition-transform duration-300 ease-[var(--ease-out)] md:hidden"
+     x-data="{ shown: false }" @scroll.window.throttle.100ms="shown = window.scrollY > window.innerHeight * 0.6"
+     :class="shown && '!translate-y-0'" :inert="!shown">
+  <div class="flex gap-2.5">
+    <a class="btn btn-accent min-h-[52px] flex-1 text-base" href="{{ header_cta_href|default:'#contact' }}">{{ header_cta_label|default:"Check dates" }}</a>
+    {% if site.whatsapp %}<a class="btn btn-wa size-[52px] flex-none !px-0" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" aria-label="Ask on WhatsApp" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="24" %}</a>{% endif %}
+  </div>
+</div>
 {% if site.whatsapp %}
-  <a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" aria-label="Write to us on WhatsApp"
-     class="wa-float btn btn-accent fixed right-[calc(1rem+env(safe-area-inset-right))] bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 size-[58px] !px-0 shadow-[0_16px_40px_rgba(0,0,0,0.45)] md:right-7 md:bottom-7 md:size-auto md:min-h-14 md:gap-2.5 md:!px-6">
-    {% include "partials/icon_whatsapp.html" with size="24" %}
-    <span class="hidden md:inline">Message us</span>
+  <a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp"
+     class="wa-float btn btn-wa fixed right-7 bottom-7 z-30 hidden min-h-14 gap-2.5 px-6 shadow-[0_16px_40px_rgb(17_32_26/0.25)] md:inline-flex">
+    {% include "partials/icon_whatsapp.html" with size="22" %}Ask on WhatsApp
   </a>
 {% endif %}

@@ -75,6 +75,19 @@ def related_tours(tour, limit=RELATED_LIMIT):
     return others[:limit]
 
 
+def _price_lists(tour):
+    """Included / not included side by side; what to bring and how to get there as accordions."""
+    items = {kind: [] for kind in ListKind}
+    for item in tour.list_items.all():
+        items[item.kind].append(item.text)
+    return {
+        "included": items[ListKind.INCLUDED],
+        "excluded": items[ListKind.EXCLUDED],
+        "gear": items[ListKind.GEAR],
+        "way": [line.strip(" -•\t") for line in tour.how_to_get_there.splitlines() if line.strip()],
+    }
+
+
 def tour_detail(request, slug):
     # Staff can preview unpublished tours from the admin («Смотреть на сайте»).
     tours = Tour.objects.all() if request.user.is_staff else Tour.objects.published()
@@ -110,19 +123,21 @@ def tour_detail(request, slug):
             "tour": tour,
             "days": days,
             "tabs": _detail_tabs(tour),
+            **_price_lists(tour),
             "gallery": list(tour.images.all()),
+            "tour_reviews": list(tour.reviews.filter(is_published=True)[:2]),
             "related": related_tours(tour),
             "route_props": route_props,
             "meta": tour_meta(site, tour, days),
             "whatsapp_url": site.whatsapp_url(f"Hi! I'm interested in the tour “{tour.title}”."),
             # header (desktop pill nav and phone back link)
             "nav_links": [
-                {"href": "#program", "label": "Program"},
-                {"href": "#details", "label": "Details"},
-                {"href": "#gallery", "label": "Photos"},
-                {"href": "#more-tours", "label": "More tours"},
+                {"href": reverse("tours:list"), "label": "Tours"},
+                {"href": "#route", "label": "Route"},
+                {"href": "#included", "label": "What's included"},
+                {"href": "#contact", "label": "Contact"},
             ],
-            "header_cta_href": "#inquiry",
+            "header_cta_href": "#contact",
             "header_cta_label": "Check dates",
             "back_url": reverse("tours:list"),
         },

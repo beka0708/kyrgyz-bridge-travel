@@ -11,6 +11,8 @@ environ.Env.read_env(REPO_DIR / ".env")
 
 SECRET_KEY = env("SECRET_KEY", default="dev-insecure-change-me")
 DEBUG = env.bool("DEBUG", default=False)
+# Demo for the client: /classic/ (the previous home design) and a «New / Classic» switcher.
+DESIGN_SWITCH = env.bool("DESIGN_SWITCH", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Public origin without a trailing slash; used for links in emails, sitemap, Open Graph.

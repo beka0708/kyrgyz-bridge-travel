@@ -1,45 +1,38 @@
 {% extends "base.html" %}
 {% load site_tags %}
-{# No mockup for this page: built from the home «Popular tours» section and the tour hero. #}
-
+{# All tours: the same rows (phones) and photo cards (desktop) as on the home page. #}
 
 {% block content %}
-<section class="container-page flex flex-col gap-5 pt-8 pb-10 md:gap-7 md:pt-20 md:pb-16">
-  <div class="rise hidden items-center gap-3 text-sm font-semibold text-mist md:flex">
-    <a class="lnk" href="{% url 'core:home' %}">Home</a><span aria-hidden="true">/</span><span class="text-snow">Tours</span>
+<section class="container-page flex flex-col gap-5 pt-8 pb-14 md:gap-8 md:pt-14 md:pb-24">
+  <div class="flex flex-col gap-3">
+    <h1 class="rise font-display text-[34px] leading-[1.06] font-semibold tracking-[-0.02em] md:text-[56px]">
+      {% if tour_type == "solo" %}Private tours{% elif tour_type == "group" %}Small-group tours{% else %}All tours{% endif %}
+    </h1>
+    <p class="rise-2 max-w-[600px] text-ink-muted md:text-lg">
+      {% if tour_type == "solo" %}{{ site.solo_text }}{% elif tour_type == "group" %}{{ site.group_text }}{% else %}Prices per person. Open a tour for the route, day by day.{% endif %}
+    </p>
   </div>
-  <h1 class="rise-2 font-display text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] md:text-[64px] md:leading-[1.04]">
-    {% if tour_type == "solo" %}{{ "Private *tours*"|accent_title }}{% elif tour_type == "group" %}{{ "Group *tours*"|accent_title }}{% else %}{{ "All *tours*"|accent_title }}{% endif %}
-  </h1>
-  <p class="rise-3 max-w-[560px] text-base text-mist md:text-xl">
-    {% if tour_type == "solo" %}{{ site.solo_text }}{% elif tour_type == "group" %}{{ site.group_text }}{% else %}{{ site.hero_subtitle }}{% endif %}
-  </p>
-  <nav class="rise-3 snap-row md:mx-0 md:flex-wrap md:overflow-visible md:px-0" aria-label="Tour type">
+  <nav class="rise-3 snap-row md:mx-0 md:flex-wrap md:px-0" aria-label="Tour type">
     {% for f in filters %}
-      <a href="{{ f.query }}" {% if f.active %}aria-current="page"{% endif %}
-         class="btn min-h-12 border-[1.5px] px-6 text-[15px] {% if f.active %}border-accent bg-accent text-ink{% else %}border-line-strong text-snow{% endif %}">{{ f.label }}</a>
+      <a href="{{ f.query }}" class="chip" aria-pressed="{% if f.active %}true{% else %}false{% endif %}" {% if f.active %}aria-current="page"{% endif %}>{{ f.label }}</a>
     {% endfor %}
   </nav>
-</section>
 
-<section class="bg-paper text-ink">
-  <div class="container-page flex flex-col gap-6 py-10 md:gap-10 md:py-20">
-    {% if tours %}
-      <h2 class="sr-only">Tour list</h2>
-      <p class="text-sm font-semibold text-ink-muted">{{ tours|length }} tour{{ tours|length|pluralize }}</p>
-      <div class="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-        {% for tour in tours %}
-          <div class="flex" data-reveal>{% include "partials/tour_card.html" %}</div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="flex flex-col items-start gap-4 rounded-[28px] bg-white p-8 md:p-12">
-        <h2 class="font-display text-xl font-medium md:text-2xl">No tours here yet</h2>
-        <p class="text-ink-muted">Tell us what you'd like to see — we'll put together a route for you.</p>
-        <a class="btn bg-ink text-snow" href="#inquiry">Send a request</a>
-      </div>
-    {% endif %}
-  </div>
+  {% if tours %}
+    <h2 class="sr-only">Tour list</h2>
+    <div class="flex flex-col gap-2.5 md:hidden">
+      {% for tour in tours %}<div data-reveal>{% include "partials/tour_row.html" %}</div>{% endfor %}
+    </div>
+    <div class="hidden gap-6 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {% for tour in tours %}<div class="flex" data-reveal>{% include "partials/tour_card.html" %}</div>{% endfor %}
+    </div>
+  {% else %}
+    <div class="flex flex-col items-start gap-4 rounded-[24px] bg-white p-8 md:p-12">
+      <h2 class="font-display text-xl font-semibold md:text-2xl">No tours here yet</h2>
+      <p class="text-ink-muted">Tell us what you'd like to see and we'll put together a route for you.</p>
+      <a class="btn bg-ink text-snow" href="#contact">Send a request</a>
+    </div>
+  {% endif %}
 </section>
 
 {% include "partials/inquiry_section.html" %}

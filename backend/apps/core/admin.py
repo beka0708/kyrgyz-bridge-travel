@@ -48,6 +48,7 @@ class SiteSettingsAdmin(ModelAdmin):
                     "about_text",
                     "about_image",
                     "trust_line",
+                    ("rating_value", "rating_count", "rating_url"),
                     "reply_time",
                     ("steps_image", "faq_image"),
                     ("request_image", "footer_image"),

@@ -49,8 +49,9 @@
 
 @layer base {
   html {
-    @apply bg-night text-snow font-sans antialiased;
-    color-scheme: dark; /* dark scrollbars and native controls */
+    /* Light pages; hero, about, request and footer are dark bands (bg-night text-snow). */
+    @apply bg-paper text-ink font-sans antialiased;
+    color-scheme: light;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
     /* anchors and focused fields stay clear of the sticky phone header */
@@ -82,15 +83,17 @@
   [x-cloak] {
     display: none !important;
   }
+  /* Ink ring on light pages; orange on dark bands (orange is faint on paper, lost on orange). */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-accent;
+    @apply outline-2 outline-offset-2 outline-ink;
   }
-  /* an orange ring is invisible on orange and faint on light: use ink there */
-  .bg-paper :focus-visible,
-  .bg-white :focus-visible,
-  .bg-accent :focus-visible,
-  .btn-accent:focus-visible {
-    @apply outline-ink;
+  .band-dark :focus-visible,
+  .bg-night :focus-visible {
+    @apply outline-accent;
+  }
+  .band-dark .btn-accent:focus-visible,
+  .band-dark .bg-white :focus-visible {
+    @apply outline-snow;
   }
   .btn-accent:focus-visible {
     outline-offset: 3px;
@@ -128,6 +131,46 @@
   .btn-accent {
     @apply bg-accent text-ink;
   }
+  /* WhatsApp green with ink text: white on #25d366 fails contrast. */
+  .btn-wa {
+    @apply bg-[#25d366] text-ink;
+  }
+  /* Dark bands: everything inside inherits light text and dark native controls. */
+  .band-dark {
+    @apply bg-night text-snow;
+    color-scheme: dark;
+  }
+  .chip {
+    @apply inline-flex h-10 flex-none items-center rounded-full border border-pebble bg-white px-4 text-sm font-semibold text-ink;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+  .chip[aria-pressed="true"] {
+    @apply border-ink bg-ink text-snow;
+  }
+  /* FAQ and tour accordions on native <details> (work without JS). */
+  .qa {
+    @apply border-b border-pebble;
+  }
+  .qa > summary {
+    @apply flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-bold md:text-lg;
+  }
+  .qa > summary::-webkit-details-marker {
+    display: none;
+  }
+  .qa > summary::after {
+    content: "+";
+    @apply flex-none text-2xl leading-none font-normal text-rust;
+    transition: transform 200ms var(--ease-out);
+  }
+  .qa[open] > summary::after {
+    transform: rotate(45deg);
+  }
+  .qa > :not(summary) {
+    @apply pb-5 text-[15px] text-ink-muted md:text-base;
+  }
   .glass {
     @apply border-[1.5px] border-white/12 bg-white/4;
     transition: border-color 200ms ease;
@@ -159,16 +202,16 @@
   }
   /* Editable legal text (Privacy Policy) */
   .legal h2 {
-    @apply mt-10 mb-3 font-display text-xl font-medium text-snow md:text-2xl;
+    @apply mt-10 mb-3 font-display text-xl font-semibold text-ink md:text-2xl;
   }
   .legal p {
     @apply mb-4 leading-relaxed;
   }
   .legal ul {
-    @apply mb-4 flex list-disc flex-col gap-2 pl-5 marker:text-accent;
+    @apply mb-4 flex list-disc flex-col gap-2 pl-5 marker:text-rust;
   }
   .legal strong {
-    @apply text-snow;
+    @apply text-ink;
   }
   /* Form fields on dark backgrounds */
   .kt-input {
@@ -196,8 +239,12 @@
   /* Tour cards (home grid, tour list) */
   .tour-card {
     transition:
-      transform 250ms var(--ease-out),
-      box-shadow 250ms ease;
+      transform 300ms var(--ease-out),
+      filter 300ms var(--ease-out);
+  }
+  .btn-icon,
+  .btn-icon-down {
+    transition: transform 200ms var(--ease-out);
   }
   .tour-card:active {
     transform: scale(0.98);
@@ -224,14 +271,24 @@
       @apply border-accent;
     }
     .lnk:hover {
+      @apply text-rust;
+    }
+    .band-dark .lnk:hover {
       @apply text-snow;
     }
     .pic:hover img.zoom {
       transform: scale(1.04);
     }
+    /* lift + soft shadow; drop-shadow is composited, an animated box-shadow repaints */
     .tour-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 24px 48px rgb(17 32 26 / 0.18);
+      filter: drop-shadow(0 18px 28px rgb(17 32 26 / 0.16));
+    }
+    .btn:hover .btn-icon {
+      transform: translateX(3px);
+    }
+    .btn:hover .btn-icon-down {
+      transform: translateY(3px);
     }
     .tour-card:hover .tour-card__photo {
       transform: scale(1.05);
@@ -393,6 +450,118 @@
   }
 }
 
+/* --- Hybrid redesign motion ------------------------------------------------------ */
+
+/* Page-to-page: a short crossfade, and a tour photo morphs from its card into the tour page. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+}
+::view-transition-group(*) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out);
+}
+
+/* Hero headline: words rise out of a mask one after another (split in scroll.ts). */
+.js [data-split]:not(.is-split) {
+  opacity: 0;
+}
+[data-split] .w {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+  vertical-align: top;
+}
+[data-split] .w > span {
+  display: inline-block;
+  transform: translateY(105%);
+  animation: word-up 900ms var(--ease-out) forwards;
+  animation-delay: calc(var(--i) * 70ms + 80ms);
+}
+@keyframes word-up {
+  to {
+    transform: none;
+  }
+}
+/* Hero photo settles in once (transform only: the LCP paint is not delayed). */
+.hero-photo {
+  animation: hero-settle 1800ms var(--ease-out) both;
+}
+@keyframes hero-settle {
+  from {
+    transform: scale(1.08);
+  }
+}
+.rise-4 {
+  animation: fade-up 600ms 700ms var(--ease-out) both;
+}
+.rise-5 {
+  animation: fade-up 600ms 820ms var(--ease-out) both;
+}
+
+/* Section titles slide up out of a mask as they enter (data-reveal="title"). */
+.js [data-reveal="title"] {
+  opacity: 1;
+  transform: translateY(0.5em);
+  clip-path: inset(0 0 100% 0);
+  transition:
+    transform 800ms var(--ease-out),
+    clip-path 800ms var(--ease-out);
+}
+.js [data-reveal="title"].is-visible {
+  transform: none;
+  clip-path: inset(0 0 -0.2em 0);
+}
+
+/* Photos fade in when they finish loading instead of popping in (scroll.ts adds the class). */
+.pic img.img-loading {
+  opacity: 0;
+}
+.pic img.img-loaded {
+  transition:
+    opacity 500ms ease,
+    transform 600ms var(--ease-out);
+}
+
+/* Phone menu: links slide up one after another each time it opens. */
+#site-menu nav a,
+#site-menu .menu-cta {
+  animation: fade-up 450ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+}
+
+/* Guide details: the dialog rises in, the page dims behind it (no JS needed for the motion). */
+.guide-dialog {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 250ms var(--ease-out),
+    transform 350ms var(--ease-out),
+    overlay 250ms allow-discrete,
+    display 250ms allow-discrete;
+}
+@starting-style {
+  .guide-dialog[open] {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+}
+.guide-dialog:not([open]) {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+.guide-dialog::backdrop {
+  background: rgb(10 22 18 / 0.6);
+  backdrop-filter: blur(4px);
+}
+html:has(.guide-dialog[open]) {
+  overflow: hidden;
+}
+
 /* Reduced motion: no movement; content just appears, short fades only. */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -408,6 +577,22 @@
   .js [data-reveal] {
     transform: none;
     transition: opacity 200ms ease;
+  }
+  .js [data-reveal="title"] {
+    clip-path: none;
+  }
+  [data-split] .w > span,
+  .hero-photo,
+  .rise-4,
+  .rise-5,
+  #site-menu nav a,
+  #site-menu .menu-cta,
+  .guide-dialog {
+    animation: none;
+    transform: none;
+  }
+  @view-transition {
+    navigation: none;
   }
   .btn,
   .btn:hover,

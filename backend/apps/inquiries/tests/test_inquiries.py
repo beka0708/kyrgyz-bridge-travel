@@ -67,6 +67,22 @@ def test_whatsapp_instead_of_email(api, django_capture_on_commit_callbacks):
     assert "mid-July" in mail.outbox[0].body
 
 
+def test_one_field_email_goes_to_email(api, django_capture_on_commit_callbacks):
+    with django_capture_on_commit_callbacks(execute=True):
+        resp = api.post(URL, payload(email="", contact="Leo@Example.com"), format="json")
+
+    assert resp.status_code == 201
+    inquiry = Inquiry.objects.get()
+    assert (inquiry.email, inquiry.contact) == ("Leo@Example.com", "")
+    assert mail.outbox[0].reply_to == ["Leo@Example.com"]
+
+
+def test_one_field_bad_email(api):
+    resp = api.post(URL, payload(email="", contact="leo@"), format="json")
+    assert resp.status_code == 400
+    assert "email" in resp.json()["contact"][0]
+
+
 def test_needs_email_or_contact(api):
     resp = api.post(URL, payload(email="", contact=""), format="json")
     assert resp.status_code == 400

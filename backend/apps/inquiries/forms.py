@@ -1,7 +1,9 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from apps.tours.models import Tour
 
+from .contact import normalize_contact
 from .models import Inquiry
 
 
@@ -33,8 +35,12 @@ class InquiryForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        if not cleaned.get("email") and not (cleaned.get("contact") or "").strip():
-            self.add_error("contact", "Please leave an email or a WhatsApp/phone number.")
+        try:
+            cleaned["email"], cleaned["contact"] = normalize_contact(
+                cleaned.get("email", ""), cleaned.get("contact", "")
+            )
+        except ValidationError as exc:
+            self.add_error("contact", exc.messages[0])
         date_from, date_to = cleaned.get("date_from"), cleaned.get("date_to")
         if date_from and date_to and date_to < date_from:
             self.add_error("date_to", "End date is before start date.")

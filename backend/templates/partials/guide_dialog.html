@@ -1,0 +1,26 @@
+{% load site_tags %}
+{# Guide details in a native <dialog>: Esc and the close button work without JS; a click outside closes it. #}
+<dialog id="guide-{{ guide.pk }}" class="guide-dialog m-auto border-0 outline-none w-[min(92vw,820px)] overflow-hidden rounded-[28px] bg-white p-0 text-ink"
+        aria-labelledby="guide-{{ guide.pk }}-name" onclick="if (event.target === this) this.close()">
+  <div class="grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+    <div class="pic aspect-[4/3] md:aspect-auto md:min-h-[460px]">{% img guide.photo alt=guide.name sizes="(min-width: 768px) 380px, 92vw" %}</div>
+    <div class="flex max-h-[60vh] flex-col gap-4 overflow-y-auto p-6 md:max-h-[80vh] md:p-9">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col gap-1">
+          <h3 id="guide-{{ guide.pk }}-name" class="font-display text-2xl leading-tight font-semibold md:text-3xl">{{ guide.name }}</h3>
+          {% if guide.role %}<p class="text-ink-muted">{{ guide.role }}</p>{% endif %}
+        </div>
+        <form method="dialog"><button class="flex size-11 flex-none items-center justify-center rounded-full bg-paper can-hover:hover:bg-pebble/50" aria-label="Close">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button></form>
+      </div>
+      <ul class="flex flex-wrap gap-2 text-sm font-semibold">
+        {% if guide.experience_years %}<li class="rounded-full bg-paper px-3.5 py-2">{{ guide.experience_years }} year{{ guide.experience_years|pluralize }} guiding</li>{% endif %}
+        {% if guide.languages %}<li class="rounded-full bg-paper px-3.5 py-2">Speaks {{ guide.languages }}</li>{% endif %}
+      </ul>
+      {% if guide.quote %}<blockquote class="border-l-[3px] border-accent pl-4 font-display text-lg leading-snug">“{{ guide.quote }}”</blockquote>{% endif %}
+      {% if guide.bio %}<div class="flex flex-col gap-3 text-[15px] leading-relaxed text-ink-muted md:text-base">{{ guide.bio|linebreaks }}</div>{% endif %}
+      <a class="btn btn-accent mt-auto min-h-[52px] w-full text-base sm:w-fit sm:px-8" href="#contact" onclick="this.closest('dialog').close()">Travel with {{ guide.name|truncatewords:1|cut:"…" }}</a>
+    </div>
+  </div>
+</dialog>

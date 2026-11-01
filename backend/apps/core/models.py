@@ -138,6 +138,18 @@ class SiteSettings(SEOModel):
         help_text="Коротко и только правда: рейтинг, срок ответа, «без предоплаты». "
         "Разделитель « · ».",
     )
+    rating_value = models.DecimalField(
+        "рейтинг",
+        max_digits=2,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Только настоящий, например 4.9 с Google. Пусто — блок рейтинга не показывается.",
+    )
+    rating_count = models.PositiveIntegerField("число отзывов", null=True, blank=True)
+    rating_url = models.URLField(
+        "ссылка на отзывы", blank=True, help_text="Страница с отзывами в Google или TripAdvisor"
+    )
     reply_time = models.CharField(
         "срок ответа", max_length=40, default="within 24 hours", help_text="within 24 hours"
     )

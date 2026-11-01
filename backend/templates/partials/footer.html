@@ -1,22 +1,12 @@
 {% load site_tags %}
-{# Panorama strip, then columns: brand + contacts, tours, company. #}
-<footer id="contacts" class="pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
-  {% with pano=site.footer_image %}
-    {% if pano %}
-      <div class="pic h-40 md:h-72" aria-hidden="true">
-        <div class="absolute inset-0 band-parallax">{% img pano alt="" sizes="100vw" css="h-full w-full object-cover" %}</div>
-        <div class="absolute inset-0 bg-[linear-gradient(180deg,rgb(14_27_23/0.1)_0%,var(--color-night)_100%)]"></div>
-      </div>
-    {% else %}
-      <div class="border-t-[1.5px] border-line"></div>
-    {% endif %}
-  {% endwith %}
-  <div class="container-page grid gap-10 pt-10 text-sm text-mist md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:pt-14">
+{# Columns: brand + messengers, tours, contact. #}
+<footer id="contacts" class="band-dark border-t border-line pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
+  <div class="container-page grid gap-10 pt-12 text-sm text-mist md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:pt-14">
     <div class="flex flex-col gap-4">
       <span class="font-display text-xl font-semibold text-snow" translate="no">{{ site.brand_name }}</span>
       {% if site.trust_line %}<p class="max-w-[340px]">{{ site.trust_line }}</p>{% endif %}
       <div class="flex flex-wrap gap-3">
-        {% if site.whatsapp %}<a class="btn btn-accent gap-2" href="{{ site.whatsapp_url }}" rel="noopener" target="_blank" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}WhatsApp</a>{% endif %}
+        {% if site.whatsapp %}<a class="btn btn-wa gap-2" href="{{ site.whatsapp_url }}" rel="noopener" target="_blank" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}WhatsApp</a>{% endif %}
         {% if site.telegram %}<a class="btn border-[1.5px] border-line-strong text-snow" href="{{ site.telegram_url }}" rel="noopener" target="_blank">Telegram</a>{% endif %}
       </div>
     </div>

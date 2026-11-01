@@ -1,20 +1,14 @@
 {% load site_tags %}
-{# Tour card: tall 4:5 photo with facts on it, title, season, price. The whole card is the link. #}
-<a class="tour-card group flex h-full w-full flex-col overflow-hidden rounded-[20px] bg-white text-ink shadow-[0_1px_2px_rgb(17_32_26/0.06)]" href="{{ tour.get_absolute_url }}">
+{# Photo card (tablets and desktop): tall photo with the type, then title, facts and price. #}
+<a class="tour-card group flex h-full w-full flex-col overflow-hidden rounded-[22px] bg-white text-ink shadow-[0_1px_2px_rgb(17_32_26/0.06)]" href="{{ tour.get_absolute_url }}">
   <div class="pic aspect-[4/5] w-full">
-    {% img tour.cover alt="" sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 82vw" css="tour-card__photo" %}
-    <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[rgb(10_22_18/0.75)] to-transparent"></div>
+    <span class="absolute inset-0" style="view-transition-name: tour-{{ tour.slug }}">{% img tour.cover alt="" sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 90vw" css="tour-card__photo" %}</span>
     <span class="absolute top-3 left-3 rounded-full bg-paper/95 px-3 py-1.5 text-xs font-bold text-ink">{{ tour.type_label }}</span>
-    <span class="absolute bottom-3 left-3 flex flex-wrap gap-1.5 text-xs font-semibold text-snow">
-      <span class="rounded-full bg-night/60 px-2.5 py-1 backdrop-blur-sm">{{ tour.duration_label }}</span>
-      <span class="rounded-full bg-night/60 px-2.5 py-1 backdrop-blur-sm">{{ tour.difficulty_label }}</span>
-    </span>
+    {% if tour.next_departure %}<span class="absolute right-3 bottom-3 left-3 truncate rounded-full bg-night/70 px-3 py-1.5 text-xs font-semibold text-snow backdrop-blur-sm">Next: {{ tour.next_departure }}</span>{% endif %}
   </div>
-  <div class="flex flex-1 flex-col gap-1.5 p-4 md:p-5">
+  <div class="flex flex-1 flex-col gap-1 p-4 md:p-5">
     <h3 class="line-clamp-2 text-lg leading-snug font-bold">{{ tour.title }}</h3>
-    {% if tour.season_label %}<p class="text-sm text-ink-muted">Best {{ tour.season_label }}</p>{% endif %}
-    <p class="mt-auto pt-3 text-base font-extrabold tabular-nums">
-      {{ tour.price_display }}{% if tour.price_note and tour.price_from %} <span class="text-xs font-semibold text-ink-muted">{{ tour.price_note }}</span>{% endif %}
-    </p>
+    <p class="text-sm text-ink-muted">{{ tour.duration_label }} · {{ tour.difficulty_label }}{% if tour.season_label %} · {{ tour.season_label }}{% endif %}</p>
+    <p class="mt-auto pt-3 text-sm text-ink-muted">{% if tour.price_from %}from <b class="text-lg text-ink tabular-nums">{{ tour.price_label }}</b> / person{% else %}<b class="text-ink">Price on request</b>{% endif %}</p>
   </div>
 </a>

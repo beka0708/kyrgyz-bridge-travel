@@ -7,7 +7,14 @@ import Alpine from "alpinejs";
 import { initAnalytics, registerConsent } from "@/lib/analytics";
 import { registerHome } from "@/lib/home";
 import { registerInquiry } from "@/lib/inquiry";
-import { initCounters, initReveal, initScrollProgress } from "@/lib/scroll";
+import {
+  initCounters,
+  initImageFade,
+  initReveal,
+  initScrollProgress,
+  initSplitHeadings,
+  markTitles,
+} from "@/lib/scroll";
 import { registerTourPage } from "@/lib/tour-page";
 
 /** Alpine's collapse plugin ignores «reduce motion»: make accordions open instantly there. */
@@ -31,7 +38,13 @@ registerTourPage(Alpine);
 window.Alpine = Alpine;
 Alpine.start();
 
+initSplitHeadings();
+markTitles();
+initImageFade();
 initReveal();
 initScrollProgress();
+// A link like /#guide-3 opens that guide's details.
+const linked = location.hash && document.getElementById(location.hash.slice(1));
+if (linked instanceof HTMLDialogElement) linked.showModal();
 initCounters();
 initAnalytics();

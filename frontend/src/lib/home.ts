@@ -1,11 +1,11 @@
 import type { Alpine as AlpineType } from "alpinejs";
 
-/** Home page widgets: the tour type filter. */
+/** Tour filter chips: a tour shows when its tags («solo short») include the chosen one. */
 export function registerHome(Alpine: AlpineType) {
   Alpine.data("tourFilter", () => ({
-    type: "all",
-    shows(tourType: string) {
-      return this.type === "all" || this.type === tourType;
+    filter: "all",
+    shows(tags: string) {
+      return this.filter === "all" || tags.split(" ").includes(this.filter);
     },
   }));
 }

@@ -34,4 +34,4 @@ def test_unknown_type_shows_all(client):
 def test_empty_list_offers_request(client):
     html = client.get("/tours/").content.decode()
     assert "No tours here yet" in html
-    assert 'id="inquiry"' in html
+    assert 'id="contact"' in html

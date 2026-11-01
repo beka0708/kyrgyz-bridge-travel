@@ -52,11 +52,10 @@ def test_tour_page_renders_sections(client):
 
     html = client.get(day.tour.get_absolute_url()).content.decode()
 
-    assert 'id="program"' in html
+    assert 'id="route"' in html
     assert "What to bring" in html and "Boots" in html
-    assert "How to get there" in html and "Transfer" in html
-    assert "Not included" not in html  # empty tabs are hidden
-    assert '<span class="text-accent">hike</span>' in html
+    assert "Getting there" in html and "Transfer" in html
+    assert "Not included" not in html  # empty lists are hidden
 
 
 @pytest.mark.django_db
