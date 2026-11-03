@@ -33,3 +33,6 @@ docs/design/photos/
 
 # Demo photos (downloaded from Unsplash by manage.py fetch_demo_photos)
 demo/photos/
+
+# local credentials (preview password, admin login)
+.secrets/

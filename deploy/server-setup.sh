@@ -51,8 +51,11 @@ dpkg-reconfigure -f noninteractive unattended-upgrades
 
 echo "==> ssh: keys only"
 if [ -s /home/deploy/.ssh/authorized_keys ]; then
-  sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
-  systemctl reload ssh || systemctl reload sshd
+  # A drop-in read before cloud-init's 50-*.conf (the first value wins in sshd).
+  printf 'PasswordAuthentication no\nKbdInteractiveAuthentication no\n' > /etc/ssh/sshd_config.d/00-keys-only.conf
+  sshd -t
+  # Ubuntu 24.04+ starts sshd per connection (ssh.socket): new logins read the file anyway.
+  systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || true
 else
   echo "   (skipped: no SSH key found for root, password login stays on)"
 fi
