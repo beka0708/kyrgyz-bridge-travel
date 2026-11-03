@@ -90,7 +90,7 @@ class TourAdmin(ModelAdmin):
                 "classes": ["tab"],
                 "fields": [
                     ("price_from", "currency", "price_note"),
-                    ("duration_days", "difficulty"),
+                    ("duration_days", "difficulty", "max_altitude_m"),
                     ("group_size_min", "group_size_max"),
                     ("season_start", "season_end"),
                 ],

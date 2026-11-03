@@ -1,0 +1,6 @@
+{# Three bars, as many filled as the level (1 easy, 2 moderate, 3 challenging). #}
+<span class="flex items-end gap-[3px]" aria-hidden="true">
+  <span class="h-2 w-[4px] rounded-full {% if tour.difficulty_level >= 1 %}bg-rust{% else %}bg-pebble{% endif %}"></span>
+  <span class="h-[11px] w-[4px] rounded-full {% if tour.difficulty_level >= 2 %}bg-rust{% else %}bg-pebble{% endif %}"></span>
+  <span class="h-[14px] w-[4px] rounded-full {% if tour.difficulty_level >= 3 %}bg-rust{% else %}bg-pebble{% endif %}"></span>
+</span>

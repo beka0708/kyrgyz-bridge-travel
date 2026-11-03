@@ -1,8 +1,0 @@
-{# Round button on phones, "Message us" pill on desktop. Clears the iPhone home bar. #}
-{% if site.whatsapp %}
-  <a href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" aria-label="Write to us on WhatsApp"
-     class="wa-float btn btn-accent fixed right-[calc(1rem+env(safe-area-inset-right))] bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 size-[58px] !px-0 shadow-[0_16px_40px_rgba(0,0,0,0.45)] md:right-7 md:bottom-7 md:size-auto md:min-h-14 md:gap-2.5 md:!px-6">
-    {% include "partials/icon_whatsapp.html" with size="24" %}
-    <span class="hidden md:inline">Message us</span>
-  </a>
-{% endif %}

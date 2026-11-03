@@ -23,7 +23,6 @@
   <main id="top" tabindex="-1" class="outline-none">{% block content %}{% endblock %}</main>
   {% block footer %}{% include "partials/footer.html" %}{% endblock %}
   {% block floating %}{% include "partials/whatsapp_float.html" %}{% endblock %}
-  {% if request.resolver_match.url_name == "home" or request.resolver_match.url_name == "home_classic" %}{% include "partials/design_switch.html" %}{% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

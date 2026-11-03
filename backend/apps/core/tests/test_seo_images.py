@@ -45,14 +45,14 @@ def open_url(url):
 
 
 def test_target_widths_never_upscale():
-    assert images.target_widths(3000) == [160, 480, 960, 1600]
+    assert images.target_widths(3000) == [160, 480, 960, 1600, 2560]
     assert images.target_widths(700) == [160, 480, 700]
     assert images.target_widths(100) == [100]
 
 
 def test_variants_are_webp_and_resized():
     found = images.variants(stub(2000, 1000))
-    assert [v.width for v in found] == [160, 480, 960, 1600]
+    assert [v.width for v in found] == [160, 480, 960, 1600, 2000]
     with open_url(found[1].url) as fh:
         variant = Image.open(fh)
         assert variant.format == "WEBP" and variant.size == (480, 240)

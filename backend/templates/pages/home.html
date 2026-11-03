@@ -2,8 +2,7 @@
 {% load humanize site_tags %}
 {% comment %}
 Home, hybrid redesign (prototype/ structure + our photos and motion). One path to a booking:
-hero → tours → proof (rating, reviews, guides) → who we are and how it works → when to go → FAQ →
-contact. Empty sections are hidden.
+hero → tours → proof (rating, reviews) → who we are and how it works → guides → FAQ → contact. Empty sections are hidden.
 {% endcomment %}
 
 {% block head %}{% preload_img hero_image "100vw" %}{% endblock %}
@@ -18,14 +17,14 @@ contact. Empty sections are hidden.
       {% img hero_image sizes="100vw" css="hero-photo h-full w-full object-cover object-[center_40%]" priority=True %}
     </div>
   {% endif %}
-  <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_22_18/0.5)_0%,rgb(10_22_18/0)_28%,rgb(10_22_18/0.15)_50%,rgb(10_22_18/0.88)_100%)]"></div>
+  <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_22_18/0.45)_0%,rgb(10_22_18/0)_24%,rgb(10_22_18/0.3)_45%,rgb(10_22_18/0.78)_70%,rgb(10_22_18/0.92)_100%)]"></div>
 
   {# the header turns into a solid bar once this point scrolls out of view #}
   <span data-header-sentinel class="pointer-events-none absolute top-[55%] left-0 h-px w-px" aria-hidden="true"></span>
   {% include "partials/header.html" with overlay=True %}
 
   <section class="container-page relative mt-auto flex flex-col items-start gap-5 pt-28 pb-10 md:gap-6 md:pb-20">
-    <h1 data-split class="max-w-[860px] font-display text-[clamp(36px,11vw,48px)] leading-[1.02] font-semibold tracking-[-0.02em] md:text-[88px]">{{ site.hero_title|accent_title }}</h1>
+    <h1 data-split class="max-w-[860px] [text-shadow:0_2px_24px_rgb(10_22_18/0.35)] font-display text-[clamp(36px,11vw,48px)] leading-[1.02] font-semibold tracking-[-0.02em] md:text-[88px]">{{ site.hero_title|accent_title }}</h1>
     {% if site.hero_subtitle %}<p class="rise-4 max-w-[520px] text-[17px] text-[#e2ebe6] md:text-xl">{{ site.hero_subtitle }}</p>{% endif %}
     <div class="rise-5 mt-1 flex w-full gap-3 sm:w-auto" data-hero-ctas>
       <a class="btn btn-accent min-h-[54px] flex-1 gap-2 px-8 text-base sm:flex-none" href="#tours">
@@ -118,30 +117,6 @@ contact. Empty sections are hidden.
 </section>
 {% endif %}
 
-{# ------------------------------------------------------------------ GUIDES #}
-{% if guides %}
-<section id="guides" class="scroll-mt-4 bg-white">
-  <div class="container-page flex flex-col gap-6 pb-14 md:gap-10 md:pb-24">
-    <div class="flex flex-col gap-2">
-      <h2 class="h-section">Your guides</h2>
-      <p class="text-ink-muted md:text-lg">Born in these mountains. They speak your language and know every trail.</p>
-    </div>
-    <div class="snap-row md:mx-0 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible md:px-0">
-      {% for guide in guides %}
-        <button type="button" class="guide-card group flex w-32 flex-col items-center gap-1 rounded-[20px] pb-2 text-center md:w-auto"
-                onclick="document.getElementById('guide-{{ guide.pk }}').showModal()" aria-haspopup="dialog" data-reveal>
-          <span class="pic mb-2 size-24 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-white transition-shadow duration-200 can-hover:group-hover:ring-accent md:size-32">{% img guide.photo alt="" sizes="128px" css="zoom" %}</span>
-          <b class="text-[15px]">{{ guide.name }}</b>
-          <span class="text-[13px] text-ink-muted">{{ guide.role }}{% if guide.experience_years %} · {{ guide.experience_years }}&nbsp;yrs{% endif %}</span>
-          <span class="mt-1 text-xs font-bold text-rust">About {{ guide.name|truncatewords:1|cut:"…" }} →</span>
-        </button>
-      {% endfor %}
-    </div>
-  </div>
-  {% for guide in guides %}{% include "partials/guide_dialog.html" %}{% endfor %}
-</section>
-{% endif %}
-
 {# ------------------------------------------------------------------ ABOUT + HOW IT WORKS #}
 <section id="about" class="band-dark">
   <div class="container-page grid gap-10 py-16 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-16 md:py-28">
@@ -180,30 +155,27 @@ contact. Empty sections are hidden.
   </div>
 </section>
 
-{# ------------------------------------------------------------------ WHEN TO GO #}
-{% if seasons %}
-<section id="seasons">
+{# ------------------------------------------------------------------ GUIDES #}
+{% if guides %}
+<section id="guides" class="scroll-mt-4 bg-white">
   <div class="container-page flex flex-col gap-6 py-14 md:gap-10 md:py-24">
     <div class="flex flex-col gap-2">
-      <h2 class="h-section">When to go</h2>
-      <p class="text-ink-muted md:text-lg">Each season shows a different Kyrgyzstan.</p>
+      <h2 class="h-section">Your guides</h2>
+      <p class="text-ink-muted md:text-lg">Born in these mountains. They speak your language and know every trail.</p>
     </div>
-    <div class="snap-row md:mx-0 md:grid md:grid-cols-4 md:gap-5 md:overflow-visible md:px-0">
-      {% for season in seasons %}
-        <article class="group relative w-[70vw] max-w-[280px] overflow-hidden rounded-[22px] text-snow md:w-auto md:max-w-none" data-reveal>
-          <div class="pic aspect-[4/5]">
-            <div class="absolute inset-0 settle">{% img season.image alt="" sizes="(min-width: 768px) 25vw, 70vw" css="zoom" %}</div>
-            <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_22_18/0)_35%,rgb(10_22_18/0.88)_100%)]"></div>
-          </div>
-          <div class="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-5">
-            <span class="text-xs font-bold tracking-[0.08em] text-accent uppercase">{{ season.months }}</span>
-            <h3 class="font-display text-lg leading-tight font-semibold">{{ season.title }}</h3>
-            {% if season.tour %}<a class="mt-1 text-sm font-semibold text-[#d5e0da] after:absolute after:inset-0 can-hover:group-hover:text-snow" href="{{ season.tour.get_absolute_url }}">{{ season.tour.title }} →</a>{% else %}<p class="text-sm text-[#d5e0da]">{{ season.text }}</p>{% endif %}
-          </div>
-        </article>
+    <div class="snap-row md:mx-0 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible md:px-0">
+      {% for guide in guides %}
+        <button type="button" class="guide-card group flex w-32 flex-col items-center gap-1 rounded-[20px] pb-2 text-center md:w-auto"
+                onclick="document.getElementById('guide-{{ guide.pk }}').showModal()" aria-haspopup="dialog" data-reveal>
+          <span class="pic mb-2 size-24 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-white transition-shadow duration-200 can-hover:group-hover:ring-accent md:size-32">{% img guide.photo alt="" sizes="128px" css="zoom" %}</span>
+          <b class="text-[15px]">{{ guide.name }}</b>
+          <span class="text-[13px] text-ink-muted">{{ guide.role }}{% if guide.experience_years %} · {{ guide.experience_years }}&nbsp;yrs{% endif %}</span>
+          <span class="mt-1 text-xs font-bold text-rust">About {{ guide.name|truncatewords:1|cut:"…" }} →</span>
+        </button>
       {% endfor %}
     </div>
   </div>
+  {% for guide in guides %}{% include "partials/guide_dialog.html" %}{% endfor %}
 </section>
 {% endif %}
 

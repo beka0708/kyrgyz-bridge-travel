@@ -16,7 +16,7 @@ TYPE_FILTERS = [
 
 
 def tour_list(request):
-    tours = Tour.objects.published()
+    tours = Tour.objects.for_cards()
     tour_type = request.GET.get("type", "")
     if tour_type not in TourType.values:
         tour_type = ""
@@ -69,7 +69,7 @@ RELATED_LIMIT = 3
 def related_tours(tour, limit=RELATED_LIMIT):
     """«You may also like»: same type first, then the rest, featured before others."""
     others = list(
-        Tour.objects.published().exclude(pk=tour.pk).order_by("-is_featured", "order", "pk")
+        Tour.objects.for_cards().exclude(pk=tour.pk).order_by("-is_featured", "order", "pk")
     )
     others.sort(key=lambda t: t.tour_type != tour.tour_type)  # stable: keeps the order above
     return others[:limit]

@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
-from apps.content.models import FAQ, Guide, Review, Season, Stat
+from apps.content.models import FAQ, Guide, Review, Stat
 from apps.tours.models import Tour, TourType
 
 from .models import SiteSettings
@@ -50,7 +50,10 @@ def tour_filters(tours):
 
 def home(request):
     site = SiteSettings.load()
-    tours = list(Tour.objects.published()[:HOME_TOURS_LIMIT])
+    # bestsellers first: the strongest offer is the first thing a visitor sees
+    tours = list(
+        Tour.objects.for_cards().order_by("-is_featured", "order", "pk")[:HOME_TOURS_LIMIT]
+    )
     reviews = list(Review.objects.published().select_related("tour")[:3])
     featured = [t for t in tours if t.is_featured] or tours[:4]
     context = {
@@ -58,7 +61,6 @@ def home(request):
         "filters": tour_filters(tours),
         "reviews": reviews,
         "guides": Guide.objects.published(),
-        "seasons": Season.objects.published().select_related("tour"),
         "faqs": FAQ.objects.published()[:HOME_FAQ_LIMIT],
         "stats": Stat.objects.published()[:3],
         "steps": [(title.format(reply_time=site.reply_time), text) for title, text in STEPS],

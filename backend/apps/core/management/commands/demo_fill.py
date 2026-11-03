@@ -24,7 +24,7 @@ from apps.core.models import SiteSettings
 from apps.tours.models import Difficulty, Tour, TourType
 
 REPO = Path(settings.REPO_DIR)
-PHOTOS = REPO / "demo" / "photos"
+PHOTOS = Path(settings.DEMO_DIR) / "photos"
 FALLBACK = sorted((REPO / "docs" / "design" / "photos").glob("*.jp*g"))
 
 # slug → photo group in demo/photos.json
@@ -269,13 +269,19 @@ NEXT_DEPARTURE = {
     "song-kul-yurts": "3 August 2027",
     "arslanbob-walnut-forest": "20 September 2027",
 }
-FEATURED = {
-    "ala-kul-trek",
-    "song-kul-yurts",
-    "song-kul-horse-trek",
-    "issyk-kul-canyons",
-    "winter-karakol",
+# Highest point of each route (passes, the waterfall, the ski lift top), metres.
+MAX_ALTITUDE = {
+    "ala-kul-trek": 3920,
+    "issyk-kul-canyons": 2200,
+    "song-kul-yurts": 3446,
+    "arslanbob-walnut-forest": 2000,
+    "ala-archa-day-hike": 3300,
+    "song-kul-horse-trek": 3400,
+    "karakol-jeti-oguz": 2500,
+    "winter-karakol": 3040,
 }
+
+FEATURED = {"ala-kul-trek", "song-kul-yurts"}  # a badge on 2 of 8: scarce enough to mean something
 
 FEATURES = [
     (
@@ -530,7 +536,8 @@ def photo(key: str, portrait: bool = False) -> ContentFile | None:
         data = _resize_jpeg(pool[pick].read_bytes(), 1000 if portrait else 2000)
     else:
         return None
-    return ContentFile(data, name=f"{key}.jpg")
+    # A content hash in the name: a new photo gets a new name, so no stale WebP variants are served.
+    return ContentFile(data, name=f"{key}-{hashlib.md5(data).hexdigest()[:8]}.jpg")
 
 
 def set_image(obj, field: str, key: str, portrait: bool = False):
@@ -634,6 +641,7 @@ class Command(BaseCommand):
             keys = group_keys(group)
             set_image(tour, "cover", keys[0])
             tour.is_featured = tour.slug in FEATURED
+            tour.max_altitude_m = MAX_ALTITUDE.get(tour.slug)
             if tour.slug in NEXT_DEPARTURE:
                 tour.next_departure = NEXT_DEPARTURE[tour.slug]
             tour.save()

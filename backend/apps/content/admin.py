@@ -4,7 +4,10 @@ from unfold.decorators import display
 
 from apps.core.admin import thumbnail
 
-from .models import FAQ, Feature, GalleryPost, Guide, Partner, Review, Season, Stat
+from .models import FAQ, Guide, Review, Stat
+
+# Not on the site since the redesign (kept in the database, hidden from the admin):
+# Feature («Почему мы»), Season («Когда ехать»), Partner, GalleryPost («Живые кадры»).
 
 
 class OrderedAdmin(ModelAdmin):
@@ -45,48 +48,7 @@ class FAQAdmin(OrderedAdmin):
     search_fields = ["question", "answer"]
 
 
-@admin.register(Partner)
-class PartnerAdmin(OrderedAdmin):
-    list_display = ["logo_preview", "name", "url", "is_published"]
-    list_display_links = ["logo_preview", "name"]
-
-    @display(description="")
-    def logo_preview(self, obj):
-        return thumbnail(obj.logo)
-
-
-@admin.register(GalleryPost)
-class GalleryPostAdmin(OrderedAdmin):
-    list_display = ["image_preview", "caption", "is_published"]
-    list_display_links = ["image_preview", "caption"]
-
-    @display(description="")
-    def image_preview(self, obj):
-        return thumbnail(obj.image)
-
-
 @admin.register(Stat)
 class StatAdmin(OrderedAdmin):
     list_display = ["label", "value", "suffix", "is_published"]
     list_editable = ["value", "suffix", "is_published"]
-
-
-@admin.register(Feature)
-class FeatureAdmin(OrderedAdmin):
-    list_display = ["image_preview", "title", "is_published"]
-    list_display_links = ["image_preview", "title"]
-
-    @display(description="")
-    def image_preview(self, obj):
-        return thumbnail(obj.image)
-
-
-@admin.register(Season)
-class SeasonAdmin(OrderedAdmin):
-    list_display = ["image_preview", "months", "title", "tour", "is_published"]
-    list_display_links = ["image_preview", "months"]
-    autocomplete_fields = ["tour"]
-
-    @display(description="")
-    def image_preview(self, obj):
-        return thumbnail(obj.image)

@@ -3,11 +3,13 @@ import calendar
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
+from django.db.models import Avg, Count, Q
 from django.urls import reverse
 
 from apps.core.models import (
     OrderableModel,
     PublishableModel,
+    PublishableQuerySet,
     SEOModel,
     TimeStampedModel,
 )
@@ -43,6 +45,20 @@ class Currency(models.TextChoices):
     KGS = "KGS", "KGS"
 
 
+class TourQuerySet(PublishableQuerySet):
+    def for_cards(self):
+        """Published tours with what a card shows: guest rating and the gallery (hover photo)."""
+        published_reviews = Q(reviews__is_published=True)
+        return (
+            self.published()
+            .annotate(
+                rating_avg=Avg("reviews__rating", filter=published_reviews),
+                rating_count=Count("reviews", filter=published_reviews),
+            )
+            .prefetch_related("images")
+        )
+
+
 class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
     title = models.CharField("название", max_length=150)
     slug = models.SlugField("адрес страницы", max_length=160, unique=True)
@@ -64,6 +80,12 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
         "длительность, дней", validators=[MinValueValidator(1)]
     )
     difficulty = models.CharField("сложность", max_length=10, choices=Difficulty.choices)
+    max_altitude_m = models.PositiveIntegerField(
+        "макс. высота, м",
+        null=True,
+        blank=True,
+        help_text="Самая высокая точка маршрута, например 3920. Показывается на карточке тура.",
+    )
     group_size_min = models.PositiveSmallIntegerField("группа от", default=1)
     group_size_max = models.PositiveSmallIntegerField("группа до", null=True, blank=True)
     season_start = models.PositiveSmallIntegerField(
@@ -81,6 +103,8 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
         help_text="Показывается на фото тура, например: June 14. Пусто — не показывать.",
     )
     is_featured = models.BooleanField("хит сезона", default=False)
+
+    objects = TourQuerySet.as_manager()
 
     class Meta(OrderableModel.Meta):
         verbose_name = "тур"
@@ -128,6 +152,23 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
     def duration_label(self):
         days = self.duration_days
         return f"{days}\u00a0day{'' if days == 1 else 's'}"  # nbsp: never «4 / days»
+
+    @property
+    def altitude_label(self):
+        return f"↑\u00a0{self.max_altitude_m:,}\u00a0m" if self.max_altitude_m else ""
+
+    @property
+    def difficulty_level(self):
+        """1–3 for the difficulty meter on cards."""
+        return {Difficulty.EASY: 1, Difficulty.MODERATE: 2, Difficulty.HARD: 3}.get(
+            self.difficulty, 0
+        )
+
+    @property
+    def hover_photo(self):
+        """First gallery photo, shown on card hover (use with prefetch_related("images"))."""
+        images = list(self.images.all())
+        return images[0].image if images else None
 
     @property
     def is_winter(self):

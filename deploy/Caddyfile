@@ -3,6 +3,9 @@
 {$DOMAIN} {
 	encode zstd gzip
 
+	# Open site or password-protected preview (SITE_ACCESS in .env): access/<mode>.caddy
+	import access/{$SITE_ACCESS:public}.caddy
+
 	# Uploaded photos: served directly from the shared volume.
 	handle_path /media/* {
 		root * /srv/media

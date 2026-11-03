@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from apps.content.models import FAQ, Guide, Review, Season, Stat
+from apps.content.models import FAQ, Guide, Review, Stat
 from apps.core.models import SiteSettings
 from apps.core.templatetags.site_tags import accent_title
 from conftest import TourFactory, image_file
@@ -22,9 +22,6 @@ def test_home_shows_filled_sections(client):
     Review.objects.create(author_name="Anna", text="Great trip")
     FAQ.objects.create(question="Do I need a visa?", answer="No")
     Stat.objects.create(value=3000, suffix="+", label="happy guests")
-    Season.objects.create(
-        months="June – July", title="Green pastures", text="Yurts", image=image_file()
-    )
     s = SiteSettings.load()
     s.hero_title = "Mountains *and yurts*"
     s.whatsapp = "996555000000"
@@ -32,16 +29,10 @@ def test_home_shows_filled_sections(client):
 
     html = client.get("/").content.decode()
 
-    for section in (
-        "tours",
-        "reviews",
-        "guides",
-        "about",
-        "seasons",
-        "faq",
-        "contact",
-    ):
-        assert f'id="{section}"' in html, section
+    order = ["tours", "reviews", "about", "guides", "faq", "contact"]
+    positions = [html.index(f'id="{section}"') for section in order]
+    assert positions == sorted(positions)  # guides come after «about»
+    assert 'id="seasons"' not in html
     assert 'Mountains <span class="text-accent">and yurts</span>' in html
     assert "Aibek" in html
     assert 'id="guide-' in html and "I love these hills" in html  # details dialog
@@ -53,7 +44,7 @@ def test_home_shows_filled_sections(client):
 def test_home_hides_empty_sections(client):
     html = client.get("/").content.decode()
     assert "marquee" not in html
-    for section in ("tours", "seasons", "guides", "reviews", "faq"):
+    for section in ("tours", "guides", "reviews", "faq"):
         assert f'id="{section}"' not in html, section
     assert 'id="contact"' in html  # the request form is always there
     assert "on Google" not in html  # no rating until the client enters a real one
@@ -72,3 +63,22 @@ def test_rating_and_filters(client):
     assert "4.8 on Google (57 reviews)" in html
     assert "All · 2" in html and ">1–2 days<" in html
     assert ">Winter<" not in html  # chips without tours are hidden
+
+
+def test_tour_card_badges(client):
+    hit = TourFactory(title="Lake trek", is_featured=True, max_altitude_m=3920)
+    TourFactory(title="Day hike", is_featured=False)
+    Review.objects.create(author_name="Anna", text="Great", rating=5, tour=hit)
+    Review.objects.create(author_name="Hidden", text="Meh", rating=1, tour=hit, is_published=False)
+
+    html = client.get("/").content.decode()
+
+    assert html.count("Bestseller") >= 1
+    assert "↑ 3,920 m" in html
+    assert "5.0" in html and "1 review" in html  # unpublished reviews do not count
+    assert html.index("Lake trek") < html.index("Day hike")  # bestsellers first
+
+
+def test_classic_design_is_gone(client):
+    assert client.get("/classic/").status_code == 404
+    assert "Design version" not in client.get("/").content.decode()

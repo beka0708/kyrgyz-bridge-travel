@@ -16,13 +16,15 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from PIL import Image
 
-DEMO_DIR = Path(settings.REPO_DIR) / "demo"
+DEMO_DIR = Path(settings.DEMO_DIR)
 MANIFEST = DEMO_DIR / "photos.json"
 PHOTOS_DIR = DEMO_DIR / "photos"
 API = "https://api.unsplash.com"
 
-# People and avatars are shown small; landscapes may fill a wide screen.
+# People and avatars are shown small; landscapes may fill a wide screen; the hero and the footer
+# band are full-width on large retina screens.
 PORTRAIT_PREFIXES = ("guide-", "review-")
+FULL_BLEED = ("hero", "footer")
 
 
 def _get(url: str, key: str, as_json: bool = True):
@@ -56,13 +58,15 @@ class Command(BaseCommand):
                 continue
             uid = item["unsplash_id"]
             width = 900 if name.startswith(PORTRAIT_PREFIXES) else 2000
+            if name in FULL_BLEED:
+                width = 3200
             try:
                 meta = meta_cache.get(uid) or _get(f"{API}/photos/{uid}", key)
                 meta_cache[uid] = meta
                 raw = meta["urls"]["raw"]
                 sep = "&" if "?" in raw else "?"
                 image_url = f"{raw}{sep}" + urllib.parse.urlencode(
-                    {"w": width, "q": 82, "fm": "jpg", "fit": "max"}
+                    {"w": width, "q": 88 if name in FULL_BLEED else 82, "fm": "jpg", "fit": "max"}
                 )
                 with urllib.request.urlopen(image_url, timeout=60) as resp:
                     target.write_bytes(resp.read())

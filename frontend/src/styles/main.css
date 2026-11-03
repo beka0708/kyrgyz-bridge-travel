@@ -253,7 +253,15 @@
     transition: transform 500ms var(--ease-out);
   }
   .tour-card__arrow {
-    transition: transform 200ms var(--ease-out);
+    transition:
+      transform 250ms var(--ease-out),
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+  /* second photo for the hover crossfade */
+  .tour-card__alt {
+    opacity: 0;
+    transition: opacity 500ms var(--ease-out);
   }
   .tile {
     transition: border-color 200ms ease;
@@ -294,7 +302,11 @@
       transform: scale(1.05);
     }
     .tour-card:hover .tour-card__arrow {
-      transform: translateX(6px);
+      @apply bg-accent text-ink;
+      transform: rotate(45deg);
+    }
+    .tour-card:hover .tour-card__alt {
+      opacity: 1;
     }
     /* tiles are not clickable: only the border reacts, no lift */
     .tile:hover {

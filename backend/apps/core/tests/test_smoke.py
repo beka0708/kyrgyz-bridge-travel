@@ -14,8 +14,6 @@ ADMIN_LISTS = [
     "content_guide",
     "content_review",
     "content_faq",
-    "content_partner",
-    "content_gallerypost",
     "content_stat",
     "inquiries_inquiry",
     "auth_user",

@@ -1,5 +1,40 @@
 # Запуск на сервере
 
+## Быстрый путь: закрытый предпросмотр на kyrgyzbridgetravel.com
+
+Сайт под паролем и скрыт от поисковиков, с демо-данными.
+Команды `make` запускаются на ноутбуке из папки проекта, кроме отмеченных «на сервере».
+
+1. **Hetzner:** сервер CX22, Ubuntu 24.04, Германия, ваш SSH-ключ. Записать IP.
+2. **Cloudflare → DNS → Records:** `A @ → IP` и `A www → IP`, оба «DNS only» (серое облако).
+3. **Настройка сервера** (один раз, от root): `make server-setup IP=<ip>`
+4. **Доступ сервера к репозиторию** (если он приватный):
+   `ssh deploy@<ip> 'ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519 && cat ~/.ssh/id_ed25519.pub'`
+   → GitHub → репозиторий → Settings → Deploy keys → Add (только чтение).
+5. **Код:** `make server-clone SERVER=deploy@<ip> REPO=git@github.com:<org>/<repo>.git`
+6. **Настройки на сервере:** `ssh deploy@<ip>`, затем `cd /opt/kg-tours && make prod-env && nano .env`
+   - `make secrets` (на ноутбуке) → вставить SECRET_KEY, POSTGRES_PASSWORD, ADMIN_URL;
+   - `make preview-password PASSWORD=<пароль для заказчика>` (на ноутбуке) → вставить строку
+     PREVIEW_PASSWORD_HASH. Логин — PREVIEW_USER.
+7. **Запуск** (на сервере): `make prod-up` — первый раз 5–10 минут (сборка). HTTPS выдаётся сам.
+8. **Демо-данные:** `make deploy-photos SERVER=deploy@<ip>` (на ноутбуке), затем на сервере
+   `make prod-demo` и `make prod-superuser`.
+9. **Бэкапы** (на сервере): `make prod-cron`.
+
+Обновить сайт после изменений в коде: `git push`, затем `make deploy SERVER=deploy@<ip>`
+(когда домен заработает, `SERVER=` можно не указывать: по умолчанию `deploy@kyrgyzbridgetravel.com`).
+
+### Из предпросмотра в боевой запуск
+
+- [ ] Демо-данные заменены настоящими (туры, цены, фото, отзывы, рейтинг или пустые поля рейтинга)
+- [ ] Brevo настроен: `EMAIL_URL`, `INQUIRY_NOTIFY_EMAIL`, записи SPF/DKIM в Cloudflare
+- [ ] В `.env`: `SITE_ACCESS=public`, `ROBOTS_DISALLOW_ALL=false`, затем `make prod-restart`
+- [ ] Пройти «Проверку после запуска» ниже (раздел 6)
+
+---
+
+Подробно, по шагам:
+
 Всё, что здесь описано, проверено локально в Docker (`DOMAIN=localhost`): сборка, HTTPS, сжатие,
 кеш, `/healthz/`, скрытая админка, бэкап и проверка дампа. На сервере остаётся пройти шаги ниже.
 

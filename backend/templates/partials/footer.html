@@ -1,7 +1,14 @@
 {% load site_tags %}
-{# Columns: brand + messengers, tours, contact. #}
-<footer id="contacts" class="band-dark border-t border-line pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
-  <div class="container-page grid gap-10 pt-12 text-sm text-mist md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:pt-14">
+{# A wide photo band that fades into the page, then columns: brand + messengers, tours, contact. #}
+<footer id="contacts" class="band-dark {% if not site.footer_image %}border-t border-line {% endif %}pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
+  {% if site.footer_image %}
+    <div class="relative h-64 overflow-hidden md:h-[440px]">
+      <div class="absolute inset-0 band-parallax">{% img site.footer_image alt="" sizes="100vw" css="h-full w-full object-cover object-[center_60%]" %}</div>
+      <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(14_27_23/0.15)_0%,rgb(14_27_23/0)_35%,rgb(14_27_23/0.55)_75%,var(--color-night)_100%)]"></div>
+      <p class="container-page absolute inset-x-0 bottom-6 font-display text-[28px] leading-[1.05] font-semibold tracking-[-0.02em] text-snow md:bottom-12 md:text-[56px]" data-reveal>See you in the mountains</p>
+    </div>
+  {% endif %}
+  <div class="container-page grid gap-10 pt-10 text-sm text-mist md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:pt-14">
     <div class="flex flex-col gap-4">
       <span class="font-display text-xl font-semibold text-snow" translate="no">{{ site.brand_name }}</span>
       {% if site.trust_line %}<p class="max-w-[340px]">{{ site.trust_line }}</p>{% endif %}

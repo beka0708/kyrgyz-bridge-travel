@@ -18,7 +18,7 @@ from PIL import Image, ImageOps
 
 logger = logging.getLogger(__name__)
 
-WIDTHS = (160, 480, 960, 1600)  # 160 is for avatars and logos
+WIDTHS = (160, 480, 960, 1600, 2560)  # 160: avatars and logos; 2560: full-width on retina
 WEBP_QUALITY = 80
 OG_SIZE = (1200, 630)
 CACHE_DIR = "cache"

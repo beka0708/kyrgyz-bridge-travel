@@ -11,8 +11,6 @@ environ.Env.read_env(REPO_DIR / ".env")
 
 SECRET_KEY = env("SECRET_KEY", default="dev-insecure-change-me")
 DEBUG = env.bool("DEBUG", default=False)
-# Demo for the client: /classic/ (the previous home design) and a «New / Classic» switcher.
-DESIGN_SWITCH = env.bool("DESIGN_SWITCH", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Public origin without a trailing slash; used for links in emails, sitemap, Open Graph.
@@ -177,6 +175,8 @@ MAP = {
 ORS_API_KEY = env("ORS_API_KEY", default="")
 # Only for `manage.py fetch_demo_photos` (demo content); not used by the site itself.
 UNSPLASH_ACCESS_KEY = env("UNSPLASH_ACCESS_KEY", default="")
+# Demo photos (demo/photos.json + demo/photos/). In Docker the folder is mounted at /demo.
+DEMO_DIR = Path(env("DEMO_DIR", default=str(REPO_DIR / "demo")))
 ORS_BASE_URL = env("ORS_BASE_URL", default="https://api.heigit.org/openrouteservice").rstrip("/")
 ORS_TIMEOUT = env.int("ORS_TIMEOUT", default=15)
 
@@ -268,16 +268,6 @@ UNFOLD = {
                 "title": "Контент",
                 "items": [
                     {
-                        "title": "Почему мы",
-                        "icon": "verified",
-                        "link": reverse_lazy("admin:content_feature_changelist"),
-                    },
-                    {
-                        "title": "Когда ехать",
-                        "icon": "calendar_month",
-                        "link": reverse_lazy("admin:content_season_changelist"),
-                    },
-                    {
                         "title": "Гиды",
                         "icon": "badge",
                         "link": reverse_lazy("admin:content_guide_changelist"),
@@ -291,16 +281,6 @@ UNFOLD = {
                         "title": "Частые вопросы",
                         "icon": "help",
                         "link": reverse_lazy("admin:content_faq_changelist"),
-                    },
-                    {
-                        "title": "Партнёры",
-                        "icon": "handshake",
-                        "link": reverse_lazy("admin:content_partner_changelist"),
-                    },
-                    {
-                        "title": "Живые кадры",
-                        "icon": "photo_library",
-                        "link": reverse_lazy("admin:content_gallerypost_changelist"),
                     },
                     {
                         "title": "Счётчики",

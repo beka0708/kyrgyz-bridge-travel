@@ -6,6 +6,10 @@ SECRET_KEY = env("SECRET_KEY")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+# The container health check calls http://127.0.0.1:8000/healthz/ from inside the container.
+# Outside traffic only reaches Django through Caddy, which serves just the real domain.
+ALLOWED_HOSTS = [*ALLOWED_HOSTS, "127.0.0.1"]  # noqa: F405
+SECURE_REDIRECT_EXEMPT = [r"^healthz/$"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=60 * 60 * 24 * 30)
