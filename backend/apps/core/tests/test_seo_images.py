@@ -190,3 +190,8 @@ def test_analytics_only_with_ga_id(client):
     assert "gtag/js?id=G-TEST123" in html
     assert 'analytics_storage: "denied"' in html  # EEA default
     assert 'x-data="cookieBanner"' in html and "Cookie settings" in html
+
+
+def test_root_favicon_redirects_to_static(client):
+    response = client.get("/favicon.ico")
+    assert response.status_code == 301 and response["Location"].endswith("favicon.ico")
