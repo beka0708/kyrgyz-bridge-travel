@@ -1,0 +1,12 @@
+{% autoescape off %}Новый отзыв с сайта — ждёт проверки
+
+{{ review.author_name }}{% if review.country %}, {{ review.country }}{% endif %}
+Оценка: {{ stars }} ({{ review.rating }} из 5)
+Тур: {% if review.tour %}{{ review.tour.title }}{% else %}не указан{% endif %}{% if review.travel_date %}, {{ review.travel_date|date:"F Y" }}{% endif %}
+{% if review.highlights %}{% if review.rating >= 4 %}Понравилось{% else %}Улучшить{% endif %}: {{ review.highlights_ru }}
+{% endif %}{% if review.email %}Email: {{ review.email }}
+{% endif %}
+{{ review.text }}
+
+Проверить и опубликовать: {{ admin_url }}
+{% endautoescape %}

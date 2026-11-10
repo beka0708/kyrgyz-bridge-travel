@@ -107,57 +107,105 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
             {% if review.photo %}<span class="pic size-11 flex-none rounded-full">{% img review.photo sizes="48px" %}</span>{% else %}<span class="flex size-11 flex-none items-center justify-center rounded-full bg-ink font-bold text-snow" aria-hidden="true">{{ review.author_name|make_list|first|upper }}</span>{% endif %}
             <span class="flex min-w-0 flex-col text-sm">
               <b>{{ review.author_name }}{% if review.country %}, {{ review.country }}{% endif %}</b>
-              <span class="text-ink-muted">{% if review.tour %}{{ review.tour.title }}{% endif %}{% if review.tour and review.source != "direct" %} · {% endif %}{% if review.source != "direct" %}{% if review.source_url %}<a class="underline underline-offset-2" href="{{ review.source_url }}" target="_blank" rel="noopener">{{ review.get_source_display }}</a>{% else %}{{ review.get_source_display }}{% endif %}{% endif %}</span>
+              <span class="text-ink-muted">{% if review.tour %}{{ review.tour.title }}{% endif %}{% if review.tour and review.public_source %} · {% endif %}{% if review.public_source %}{% if review.source_url %}<a class="underline underline-offset-2" href="{{ review.source_url }}" target="_blank" rel="noopener">{{ review.public_source }}</a>{% else %}{{ review.public_source }}{% endif %}{% endif %}</span>
             </span>
           </figcaption>
         </figure>
       {% endfor %}
     </div>
+    <p class="text-ink-muted">Travelled with us? <a class="font-bold text-rust underline-offset-4 can-hover:hover:underline" href="{% url 'content:review_submit' %}">Share your experience →</a></p>
   </div>
 </section>
 {% endif %}
 
-{# ------------------------------------------------------------------ ABOUT + HOW IT WORKS #}
-<section id="about" class="band-dark">
-  <div class="container-page grid gap-10 py-16 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-16 md:py-28">
-    {% if about_image %}
-      <div class="pic aspect-[4/3] rounded-[24px] md:aspect-[4/5] md:rounded-[32px]" data-reveal="photo">
-        {% img about_image alt="" sizes="(min-width: 768px) 520px, 100vw" %}
-      </div>
+{# ------------------------------------------------------------------ ABOUT: one full screen #}
+<section id="about" class="band-dark relative flex min-h-[100svh] flex-col overflow-hidden">
+  {% if about_image %}
+    <div class="absolute inset-0 band-parallax">{% img about_image alt="" sizes="100vw" css="h-full w-full object-cover object-[center_60%]" %}</div>
+  {% endif %}
+  {# readability: dark on the left (text) and at the bottom (numbers), the mountains stay bright #}
+  <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_22_18/0.55)_0%,rgb(10_22_18/0.15)_35%,rgb(10_22_18/0.35)_60%,rgb(10_22_18/0.92)_100%)] md:bg-[linear-gradient(90deg,rgb(10_22_18/0.82)_0%,rgb(10_22_18/0.5)_38%,rgb(10_22_18/0)_70%)]"></div>
+  <div aria-hidden="true" class="absolute inset-x-0 bottom-0 hidden h-1/2 bg-[linear-gradient(0deg,rgb(10_22_18/0.92)_0%,rgb(10_22_18/0)_100%)] md:block"></div>
+
+  <div class="container-page relative flex flex-1 flex-col justify-between gap-16 py-20 md:py-28">
+    <div class="flex max-w-[620px] flex-col gap-5 [text-shadow:0_2px_18px_rgb(10_22_18/0.45)]">
+      <h2 class="font-display text-[clamp(34px,9vw,44px)] leading-[1.04] font-semibold tracking-[-0.02em] md:text-[64px]">{{ site.about_title|plain_title|default:"Who we are" }}</h2>
+      {% if site.about_text %}<p class="text-[17px] leading-relaxed text-[#eef3f0] md:text-xl">{{ site.about_text|linebreaksbr }}</p>{% endif %}
+    </div>
+    {% if stats %}
+      <dl class="grid grid-cols-3 gap-3 border-t border-white/25 pt-6 md:gap-10 md:pt-10">
+        {% for stat in stats %}
+          <div class="flex flex-col-reverse justify-end gap-2" data-reveal>
+            <dt class="text-xs font-semibold text-[#e2ebe6] md:text-base">{{ stat.label }}</dt>
+            <dd class="font-display text-[clamp(20px,6.2vw,34px)] leading-none font-semibold tracking-[-0.02em] text-snow tabular-nums md:text-[88px]"><span data-count="{{ stat.value }}">{{ stat.value|intcomma }}</span><span class="text-accent">{{ stat.suffix }}</span></dd>
+          </div>
+        {% endfor %}
+      </dl>
     {% endif %}
-    <div class="flex flex-col gap-8 md:gap-10">
-      <div class="flex flex-col gap-4">
-        <h2 class="h-section">{{ site.about_title|plain_title|default:"Who we are" }}</h2>
-        {% if site.about_text %}<p class="text-base text-[#d5e0da] md:text-lg">{{ site.about_text|linebreaksbr }}</p>{% endif %}
-        {% if stats %}
-          <dl class="mt-2 grid grid-cols-3 gap-4">
-            {% for stat in stats %}
-              <div class="flex flex-col-reverse gap-1">
-                <dt class="text-xs text-mist md:text-sm">{{ stat.label }}</dt>
-                <dd class="font-display text-[26px] leading-none font-semibold text-accent tabular-nums md:text-[40px]"><span data-count="{{ stat.value }}">{{ stat.value|intcomma }}</span>{{ stat.suffix }}</dd>
-              </div>
-            {% endfor %}
-          </dl>
-        {% endif %}
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ HOW IT WORKS #}
+<section id="how" class="bg-paper">
+  <div class="container-page flex flex-col gap-8 py-16 md:gap-12 md:py-24">
+    <div class="flex flex-col gap-2">
+      <h2 class="h-section">How it works</h2>
+      <p class="text-ink-muted md:text-lg">Three steps from an idea to the mountains.</p>
+    </div>
+    <ol class="grid gap-4 md:grid-cols-3 md:gap-6">
+      {% for title, text in steps %}
+        <li class="relative flex flex-col gap-3 rounded-[24px] bg-white p-6 ring-1 ring-ink/5 md:p-8" data-reveal>
+          <span class="font-display text-[44px] leading-none font-semibold text-accent tabular-nums md:text-[56px]">0{{ forloop.counter }}</span>
+          <b class="text-lg leading-snug">{{ title }}</b>
+          <span class="text-[15px] text-ink-muted">{{ text }}</span>
+          {% if not forloop.last %}<span aria-hidden="true" class="absolute top-1/2 -right-[18px] z-10 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-paper text-ink-muted md:flex">→</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ FOUNDER #}
+{% if site.founder_story %}
+<section id="founder" class="bg-white">
+  <div class="container-page grid gap-10 pt-16 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center md:gap-16 md:pt-24">
+    <div class="relative">
+      <div class="pic aspect-[4/5] rounded-[28px] md:rounded-[36px]" data-reveal="photo">
+        {% if site.founder_photo %}{% img site.founder_photo alt=site.founder_name sizes="(min-width: 768px) 520px, 100vw" css="object-[center_35%]" %}{% endif %}
       </div>
-      <div class="flex flex-col gap-5 border-t border-line pt-8">
-        <h3 class="font-display text-xl font-semibold">How it works</h3>
-        <ol class="flex flex-col gap-5">
-          {% for title, text in steps %}
-            <li class="grid grid-cols-[40px_1fr] gap-4" data-reveal>
-              <span class="flex size-10 items-center justify-center rounded-full border border-line-strong font-display font-semibold text-accent">{{ forloop.counter }}</span>
-              <span class="flex flex-col gap-0.5"><b>{{ title }}</b><span class="text-[15px] text-mist">{{ text }}</span></span>
-            </li>
-          {% endfor %}
-        </ol>
+      {% if site.founder_since %}
+        <span class="absolute -bottom-5 left-6 flex flex-col rounded-2xl bg-ink px-5 py-3 text-snow shadow-[0_16px_40px_rgb(17_32_26/0.25)] md:left-auto md:-right-6 md:bottom-10">
+          <span class="text-xs text-mist">Leading trips since</span>
+          <span class="font-display text-2xl font-semibold text-accent tabular-nums">{{ site.founder_since }}</span>
+        </span>
+      {% endif %}
+    </div>
+    <div class="flex flex-col gap-6">
+      <p class="text-xs font-bold tracking-[0.12em] text-rust uppercase">Meet the founder</p>
+      {% if site.founder_quote %}
+        <blockquote class="relative font-display text-[26px] leading-[1.2] font-semibold tracking-[-0.01em] md:text-[38px]">
+          <span aria-hidden="true" class="absolute -top-6 -left-1 font-display text-[72px] leading-none text-accent/40 md:-top-9 md:text-[110px]">“</span>
+          <span class="relative">{{ site.founder_quote }}</span>
+        </blockquote>
+      {% endif %}
+      <div class="flex flex-col gap-4 text-[16px] leading-relaxed text-ink-muted md:text-[17px]">{{ site.founder_story|linebreaks }}</div>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-pebble/60 pt-6">
+        <div class="flex flex-col">
+          <span class="font-display text-xl font-semibold">{{ site.founder_name }}</span>
+          {% if site.founder_role %}<span class="text-sm text-ink-muted">{{ site.founder_role }}</span>{% endif %}
+        </div>
+        {% if site.whatsapp %}
+          <a class="btn btn-wa gap-2 sm:ml-auto" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}Write to {{ site.founder_name|truncatewords:1|cut:"…"|cut:" " }}</a>
+        {% endif %}
       </div>
     </div>
   </div>
 </section>
+{% endif %}
 
 {# ------------------------------------------------------------------ GUIDES #}
 {% if guides %}
-<section id="guides" class="scroll-mt-4 bg-white">
+<section id="guides" class="scroll-mt-4 bg-white" x-data>
   <div class="container-page flex flex-col gap-6 py-14 md:gap-10 md:py-24">
     <div class="flex flex-col gap-2">
       <h2 class="h-section">Your guides</h2>
@@ -166,7 +214,7 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
     <div class="snap-row md:mx-0 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible md:px-0">
       {% for guide in guides %}
         <button type="button" class="guide-card group flex w-32 flex-col items-center gap-1 rounded-[20px] pb-2 text-center md:w-auto"
-                onclick="document.getElementById('guide-{{ guide.pk }}').showModal()" aria-haspopup="dialog" data-reveal>
+                @click="document.getElementById('guide-{{ guide.pk }}').showModal()" aria-haspopup="dialog" data-reveal>
           <span class="pic mb-2 size-24 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-white transition-shadow duration-200 can-hover:group-hover:ring-accent md:size-32">{% img guide.photo alt="" sizes="128px" css="zoom" %}</span>
           <b class="text-[15px]">{{ guide.name }}</b>
           <span class="text-[13px] text-ink-muted">{{ guide.role }}{% if guide.experience_years %} · {{ guide.experience_years }}&nbsp;yrs{% endif %}</span>

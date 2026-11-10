@@ -1,5 +1,7 @@
 import type { Alpine as AlpineType } from "alpinejs";
 
+import { readPhone, type PhoneInput } from "@/lib/phone";
+
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign"] as const;
 const UTM_STORAGE = "kt-utm";
 
@@ -55,11 +57,17 @@ export function registerInquiry(Alpine: AlpineType) {
       });
 
       if (!data.name) this.errors.name = "Please tell us your name.";
-      // One «Email or WhatsApp» field (`contact`); the server moves an email into `email`.
-      const reach = data.contact || data.email || "";
-      if (!reach) this.errors.contact = "Leave an email or a WhatsApp number so we can reply.";
-      else if (reach.includes("@") && !/^\S+@\S+\.\S+$/.test(reach)) {
-        this.errors.contact = "Please check the email, e.g. anna@example.com.";
+      // Email and phone are both optional, but one of them is needed to reply.
+      const phone = readPhone(form.querySelector<PhoneInput>("input[data-phone]"));
+      data.contact = phone.value;
+      if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) {
+        this.errors.email = "Please check the email, e.g. anna@example.com.";
+      }
+      if (phone.value && !phone.valid) {
+        this.errors.contact = "This number looks incomplete. Check the country and the digits.";
+      }
+      if (!data.email && !phone.value) {
+        this.errors.contact = "Leave an email or a phone number so we can reply.";
       }
       if (data.date_from && data.date_to && data.date_to < data.date_from) {
         this.errors.date_to = "The end date must be after the start date.";

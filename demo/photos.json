@@ -232,9 +232,9 @@
    "about": "turquoise Ala-Kul lake under snowy peaks"
   },
   "about": {
-   "unsplash_id": "6HHULHF6_qQ",
-   "author": "Isakov Eldiiar",
-   "about": "mountain range over water"
+   "unsplash_id": "i9EgXyiiAxs",
+   "author": "Xiaolong Wong",
+   "about": "green valley with a river under the Tien Shan"
   },
   "format-solo": {
    "unsplash_id": "gVG1nv7WBko",
@@ -400,6 +400,10 @@
    "unsplash_id": "CjvZYvH6f4M",
    "author": "Thomas Evans",
    "about": "yurt camp"
+  },
+  "founder": {
+   "client_photo": true,
+   "about": "Zhakshylyk Aitaliev, founder (photo from the client, not from Unsplash)"
   }
  }
 }

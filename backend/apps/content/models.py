@@ -28,6 +28,30 @@ class ReviewSource(models.TextChoices):
     GOOGLE = "google", "Google"
     TRIPADVISOR = "tripadvisor", "TripAdvisor"
     INSTAGRAM = "instagram", "Instagram"
+    SITE = "site", "Форма на сайте"
+
+
+# Chips on the review form: what a guest liked (rating 4–5) or wants improved (rating 1–3).
+REVIEW_HIGHLIGHTS = [
+    ("guides", "Guides"),
+    ("scenery", "Scenery"),
+    ("food", "Food"),
+    ("stays", "Yurts & stays"),
+    ("organisation", "Organisation"),
+    ("transport", "Transport"),
+    ("value", "Value for money"),
+    ("group", "Group"),
+]
+HIGHLIGHT_LABELS_RU = {
+    "guides": "гиды",
+    "scenery": "природа",
+    "food": "еда",
+    "stays": "юрты и ночёвки",
+    "organisation": "организация",
+    "transport": "транспорт",
+    "value": "цена",
+    "group": "группа",
+}
 
 
 class Review(TimeStampedModel, OrderableModel, PublishableModel):
@@ -51,6 +75,17 @@ class Review(TimeStampedModel, OrderableModel, PublishableModel):
     )
     source_url = models.URLField("ссылка на оригинал", blank=True)
     travel_date = models.DateField("дата поездки", null=True, blank=True)
+    highlights = models.CharField(
+        "отметил(а)",
+        max_length=200,
+        blank=True,
+        help_text="Что понравилось (оценка 4–5) или что улучшить (1–3) — чипы на форме отзыва.",
+    )
+    email = models.EmailField(
+        "email автора",
+        blank=True,
+        help_text="Только для связи с автором, на сайте не показывается.",
+    )
 
     class Meta(OrderableModel.Meta):
         verbose_name = "отзыв"
@@ -58,6 +93,19 @@ class Review(TimeStampedModel, OrderableModel, PublishableModel):
 
     def __str__(self):
         return f"{self.author_name} ({self.rating}★)"
+
+    @property
+    def highlights_ru(self):
+        return ", ".join(
+            HIGHLIGHT_LABELS_RU.get(key, key) for key in self.highlights.split(",") if key
+        )
+
+    @property
+    def public_source(self):
+        """«Google», «TripAdvisor», «Instagram» for the site; nothing for direct or site reviews."""
+        return {"google": "Google", "tripadvisor": "TripAdvisor", "instagram": "Instagram"}.get(
+            self.source, ""
+        )
 
 
 class FAQ(OrderableModel, PublishableModel):

@@ -1,6 +1,6 @@
-{% load site_tags %}
+{% load site_tags static %}
 {# A wide photo band that fades into the page, then columns: brand + messengers, tours, contact. #}
-<footer id="contacts" class="band-dark {% if not site.footer_image %}border-t border-line {% endif %}pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
+<footer id="contacts" x-data class="band-dark {% if not site.footer_image %}border-t border-line {% endif %}pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
   {% if site.footer_image %}
     <div class="relative h-64 overflow-hidden md:h-[440px]">
       <div class="absolute inset-0 band-parallax">{% img site.footer_image alt="" sizes="100vw" css="h-full w-full object-cover object-[center_60%]" %}</div>
@@ -10,11 +10,10 @@
   {% endif %}
   <div class="container-page grid gap-10 pt-10 text-sm text-mist md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:pt-14">
     <div class="flex flex-col gap-4">
-      <span class="font-display text-xl font-semibold text-snow" translate="no">{{ site.brand_name }}</span>
+      <span class="flex items-center gap-3 font-display text-xl font-semibold text-snow" translate="no"><img src="{% static 'brand/logo-128.png' %}" alt="" width="40" height="40" class="size-10" loading="lazy">{{ site.brand_name }}</span>
       {% if site.trust_line %}<p class="max-w-[340px]">{{ site.trust_line }}</p>{% endif %}
       <div class="flex flex-wrap gap-3">
         {% if site.whatsapp %}<a class="btn btn-wa gap-2" href="{{ site.whatsapp_url }}" rel="noopener" target="_blank" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}WhatsApp</a>{% endif %}
-        {% if site.telegram %}<a class="btn border-[1.5px] border-line-strong text-snow" href="{{ site.telegram_url }}" rel="noopener" target="_blank">Telegram</a>{% endif %}
       </div>
     </div>
     <nav class="flex flex-col gap-1" aria-label="Tours">
@@ -35,8 +34,10 @@
   <div class="container-page mt-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t-[1.5px] border-line pt-4 text-xs text-sage">
     <span>© {% now "Y" %} {{ site.brand_name }}</span>
     <span class="flex flex-wrap gap-x-5">
+      <a class="lnk py-3 can-hover:hover:text-snow" href="{% url 'content:review_submit' %}">Leave a review</a>
       <a class="lnk py-3 can-hover:hover:text-snow" href="{% url 'core:privacy' %}">Privacy</a>
-      {% if site.google_analytics_id %}<button type="button" class="lnk py-3 can-hover:hover:text-snow" onclick="window.dispatchEvent(new Event('cookie-settings'))">Cookie settings</button>{% endif %}
+      <a class="lnk py-3 can-hover:hover:text-snow" href="{% url 'core:terms' %}">Terms</a>
+      {% if site.google_analytics_id %}<button type="button" class="lnk py-3 can-hover:hover:text-snow" @click="window.dispatchEvent(new Event('cookie-settings'))">Cookie settings</button>{% endif %}
     </span>
   </div>
 </footer>

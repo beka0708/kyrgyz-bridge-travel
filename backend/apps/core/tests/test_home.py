@@ -29,14 +29,15 @@ def test_home_shows_filled_sections(client):
 
     html = client.get("/").content.decode()
 
-    order = ["tours", "reviews", "about", "guides", "faq", "contact"]
+    order = ["tours", "reviews", "about", "how", "guides", "faq", "contact"]
     positions = [html.index(f'id="{section}"') for section in order]
     assert positions == sorted(positions)  # guides come after «about»
     assert 'id="seasons"' not in html
     assert 'Mountains <span class="text-accent">and yurts</span>' in html
     assert "Aibek" in html
     assert 'id="guide-' in html and "I love these hills" in html  # details dialog
-    assert 'data-count="3000"' in html and "3,000</span>+" in html  # counts up, thousands separator
+    # counts up, thousands separator, the suffix in the accent colour
+    assert 'data-count="3000"' in html and '3,000</span><span class="text-accent">+</span>' in html
     assert not re.search(r'<h2[^>]*>[^<]*<span class="text-accent">', html)  # one accent: the hero
     assert "https://wa.me/996555000000" in html
 
@@ -75,10 +76,20 @@ def test_tour_card_badges(client):
 
     assert html.count("Bestseller") >= 1
     assert "↑ 3,920 m" in html
-    assert "5.0" in html and "1 review" in html  # unpublished reviews do not count
+    cards = html.split('id="tours"', 1)[1].split('id="reviews"', 1)[0]
+    assert (
+        "1 review" not in cards and "Challenging" not in cards
+    )  # no rating or difficulty on cards
     assert html.index("Lake trek") < html.index("Day hike")  # bestsellers first
 
 
 def test_classic_design_is_gone(client):
     assert client.get("/classic/").status_code == 404
     assert "Design version" not in client.get("/").content.decode()
+
+
+def test_phone_menu_is_outside_the_blurred_header(client):
+    html = client.get("/").content.decode()
+    assert 'x-teleport="body"' in html  # backdrop-filter would clip a fixed menu inside the header
+    assert "lang_switch" not in html and "Русский" not in html  # no language switch
+    assert "t.me/" not in html  # Telegram removed

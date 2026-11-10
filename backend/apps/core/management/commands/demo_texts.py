@@ -43,7 +43,19 @@ TOURS = {
                 "Yurt camp, Altyn-Arashan",
             ),
             (
-                "Early start to the pass, first view of the turquoise lake from above.",
+                (
+                    "Early start to the pass, first view of the turquoise lake from above. We leave "
+                    "the yurt camp at 6:00 with headlamps and climb steadily through the meadows above "
+                    "Altyn-Arashan; horses carry the tents and food, you carry a light day pack.\n\n"
+                    "The last 300 metres to the Ala-Kul pass (3,920 m) are steep scree. We take it slowly, "
+                    "with a break every 20 minutes, and the guide sets the pace for the slowest walker. "
+                    "From the top the whole lake opens below you: 2 km of turquoise water under the "
+                    "glaciers of Palatka peak.\n\n"
+                    "We descend to the shore for a late lunch and set up camp on a grassy terrace "
+                    "out of the wind. In the evening there is time to walk along the lake, photograph "
+                    "the sunset on the glaciers or simply rest. Nights at 3,500 m are cold even in "
+                    "August: bring a warm hat and a down jacket."
+                ),
                 "13",
                 1100,
                 "7–8 h",

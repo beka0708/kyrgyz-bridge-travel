@@ -94,8 +94,8 @@ def test_tour_page_meta_and_json_ld(client):
     TourDayFactory(tour=tour, day_number=1, title="Karakol")
     html = client.get(tour.get_absolute_url()).content.decode()
 
-    assert '<link rel="canonical" href="http://localhost:8010/tours/' in html
-    assert '<meta property="og:image" content="http://localhost:8010/media/cache/' in html
+    assert f'<link rel="canonical" href="{settings.SITE_URL}/tours/' in html
+    assert f'<meta property="og:image" content="{settings.SITE_URL}/media/cache/' in html
     assert "</script> Trek" not in html.split("<body")[0].replace("&lt;/script&gt;", "")
     trip, crumbs = ld_blocks(html)
     assert trip["@type"] == "TouristTrip"
@@ -105,19 +105,69 @@ def test_tour_page_meta_and_json_ld(client):
 
 
 def test_home_has_travel_agency_ld(client):
+    from apps.content.models import FAQ
+
     s = SiteSettings.load()
     s.phone = "+996 555 000 000"
+    s.founder_name = "Zhakshylyk Aitaliev"
     s.save()
-    (org,) = ld_blocks(client.get("/").content.decode())
+    FAQ.objects.create(question="Visa?", answer="<p>Not needed for <b>60 days</b>.</p>")
+    (block,) = ld_blocks(client.get("/").content.decode())
+    org, site, faq = block["@graph"]
     assert org["@type"] == "TravelAgency" and org["telephone"] == "+996 555 000 000"
+    assert org["logo"]["url"].endswith("/static/brand/logo-512.png")
+    assert org["founder"]["name"] == "Zhakshylyk Aitaliev"
+    assert site["@type"] == "WebSite"
+    assert faq["mainEntity"][0]["acceptedAnswer"]["text"] == "Not needed for 60 days."
+
+
+def test_tour_without_price_has_no_offer(client):
+    tour = TourFactory(price_from=0)
+    trip, _ = ld_blocks(client.get(tour.get_absolute_url()).content.decode())
+    assert "offers" not in trip
+
+
+def test_page_without_photo_shares_the_logo(client):
+    html = client.get("/privacy/").content.decode()
+    assert (
+        f'<meta property="og:image" content="{settings.SITE_URL}/static/brand/logo-512.png">'
+        in html
+    )
+    assert '<meta name="twitter:card" content="summary">' in html
+
+
+def test_search_verification_tags(client):
+    s = SiteSettings.load()
+    s.google_site_verification = "g-code"
+    s.bing_site_verification = "b-code"
+    s.save()
+    html = client.get("/").content.decode()
+    assert '<meta name="google-site-verification" content="g-code">' in html
+    assert '<meta name="msvalidate.01" content="b-code">' in html
+
+
+def test_llms_txt(client):
+    s = SiteSettings.load()
+    s.whatsapp = "996555000000"
+    s.save()
+    TourFactory(title="Song-Kul & Yurts", slug="song-kul", price_from=320)
+    TourFactory(slug="hidden", is_published=False)
+    response = client.get("/llms.txt")
+    body = response.content.decode()
+    assert response["Content-Type"].startswith("text/plain")
+    assert body.startswith(f"# {s.brand_name}")
+    assert f"[Song-Kul & Yurts]({settings.SITE_URL}/tours/song-kul/)" in body
+    assert "from $320" in body and "hidden" not in body
+    assert "https://wa.me/996555000000" in body
 
 
 def test_sitemap_lists_published_tours(client):
     TourFactory(slug="visible")
     TourFactory(slug="hidden", is_published=False)
     xml = client.get("/sitemap.xml").content.decode()
-    assert "http://localhost:8010/tours/visible/" in xml
+    assert f"{settings.SITE_URL}/tours/visible/" in xml
     assert "hidden" not in xml
+    assert f"{settings.SITE_URL}/privacy/" in xml
 
 
 @pytest.mark.parametrize(
@@ -128,6 +178,7 @@ def test_robots(client, settings, disallow_all, expected):
     body = client.get("/robots.txt").content.decode()
     assert expected in body
     assert ("Sitemap:" in body) is not disallow_all
+    assert ("User-agent: GPTBot" in body) is not disallow_all
 
 
 def test_analytics_only_with_ga_id(client):

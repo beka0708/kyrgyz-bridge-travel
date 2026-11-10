@@ -1,0 +1,15 @@
+{% comment %}
+Long text that opens smoothly. Shows `min` pixels with a soft fade; «Read more» appears only when
+the text is actually longer. Params: text (already filtered/escaped), min (px), fade (Tailwind
+"from-…" colour of the background behind it), css (classes for the text).
+{% endcomment %}
+<div class="relative" x-data="readMore">
+  <div x-ref="body" x-show="open" x-collapse.duration.450ms.min.{{ min|default:96 }}px class="{{ css }}">{{ text }}</div>
+  <div aria-hidden="true" x-show="!open && overflow" x-transition.opacity.duration.300ms
+       class="pointer-events-none absolute inset-x-0 bottom-11 h-14 bg-gradient-to-t {{ fade|default:'from-paper' }} to-transparent"></div>
+  <button type="button" x-show="overflow" x-cloak @click.stop="toggle()" :aria-expanded="open"
+          class="group/more mt-2 inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-rust">
+    <span x-text="open ? 'Show less' : 'Read more'">Read more</span>
+    <svg class="size-4 transition-transform duration-300 ease-[var(--ease-out)]" :class="open && 'rotate-180'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+  </button>
+</div>

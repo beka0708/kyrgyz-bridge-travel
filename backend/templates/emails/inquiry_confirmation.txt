@@ -1,0 +1,10 @@
+{% autoescape off %}Thank you, {{ inquiry.name }}!
+
+We have your request{% if inquiry.tour_title %} for {{ inquiry.tour_title }}{% endif %}. A real person from our team will reply {{ site.reply_time }} with free dates and the full price.
+
+{% for label, value in rows %}{% if value %}{{ label }}: {{ value }}
+{% endif %}{% endfor %}{% if site.whatsapp %}
+Can't wait? Write to us on WhatsApp: {{ whatsapp_url }}
+{% endif %}
+{{ site.brand_name }} · {{ site_url }}
+{% endautoescape %}

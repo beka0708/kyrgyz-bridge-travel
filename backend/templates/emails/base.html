@@ -1,0 +1,30 @@
+{% comment %}
+Shared email layout: table-based with inline styles, so it looks the same in Gmail, Outlook and
+phone mail apps. Blocks: preheader (preview line in the inbox), content.
+{% endcomment %}<!doctype html>
+<html lang="{% block lang %}en{% endblock %}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>{{ site.brand_name }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#11201a;">
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;">{% block preheader %}{% endblock %}</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f3ee;">
+  <tr><td align="center" style="padding:28px 12px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;">
+      <tr><td style="padding:0 4px 18px;font-size:18px;font-weight:800;letter-spacing:-0.01em;">
+        <span style="color:#f2994a;">&#9650;</span>&nbsp;{{ site.brand_name }}
+      </td></tr>
+      <tr><td style="background:#ffffff;border-radius:20px;padding:30px 28px;">
+        {% block content %}{% endblock %}
+      </td></tr>
+      <tr><td style="padding:18px 6px;font-size:12px;line-height:1.6;color:#4a5b53;">
+        {% block footer %}{{ site.brand_name }} · {{ site_url }}{% endblock %}
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

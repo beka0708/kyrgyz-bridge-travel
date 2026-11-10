@@ -6,6 +6,7 @@ v1 = [
     path("", include("apps.tours.api.urls")),
     path("", include("apps.content.api.urls")),
     path("", include("apps.inquiries.api.urls")),
+    path("", include("apps.stats.api.urls")),
 ]
 
 urlpatterns = [

@@ -21,7 +21,14 @@
     </div>
 
     {% include "partials/field.html" with name="name" label="Your name" type="text" autocomplete="name" %}
-    {% include "partials/field.html" with name="contact" label="Email or WhatsApp" type="text" autocomplete="email" spellcheck_off=True placeholder="you@mail.com or +49 …" %}
+    {% include "partials/field.html" with name="email" label="Email" type="email" autocomplete="email" spellcheck_off=True placeholder="you@mail.com" %}
+    <label class="flex flex-col gap-1.5">
+      <span class="text-sm font-semibold text-mist">Phone or WhatsApp</span>
+      <input type="tel" name="contact" class="kt-input" data-phone autocomplete="tel" inputmode="tel"
+             aria-describedby="contact-error" :aria-invalid="!!errors.contact" @input="delete errors.contact" @countrychange="delete errors.contact">
+      <span id="contact-error" class="text-sm text-danger" x-show="errors.contact" x-text="errors.contact" x-cloak></span>
+    </label>
+    <p class="-mt-2 text-xs text-sage">An email or a phone is enough. With both we can reply where it suits you.</p>
     <div class="grid grid-cols-[1fr_120px] gap-3">
       {% include "partials/field.html" with name="travel_when" label="When?" type="text" placeholder="mid-July" %}
       <label class="flex flex-col gap-1.5">

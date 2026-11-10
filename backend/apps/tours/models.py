@@ -165,10 +165,9 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
         )
 
     @property
-    def hover_photo(self):
-        """First gallery photo, shown on card hover (use with prefetch_related("images"))."""
-        images = list(self.images.all())
-        return images[0].image if images else None
+    def card_photos(self):
+        """Cover + up to 3 gallery photos for the card carousel (use prefetch_related("images"))."""
+        return [self.cover, *[image.image for image in list(self.images.all())[:3]]]
 
     @property
     def is_winter(self):
@@ -234,7 +233,7 @@ class TrackSource(models.TextChoices):
     MANUAL = "manual", "Прямые линии между точками"
     ROAD = "road", "По дорогам (машина)"
     HIKING = "hiking", "По пешим тропам"
-    GPX = "gpx", "Из GPX-трека"
+    GPX = "gpx", "Из файла (GPX, KML, KMZ)"
 
 
 def validate_waypoints(value):
@@ -292,10 +291,12 @@ class TourDay(models.Model):
     # when points, mode or GPX change, so saving a day does not spend routing quota.
     track_key = models.CharField(max_length=64, blank=True, editable=False)
     gpx_file = models.FileField(
-        "GPX-трек",
+        "файл маршрута (GPX / KML / KMZ)",
         upload_to="tours/gpx/",
         blank=True,
-        validators=[FileExtensionValidator(["gpx"])],
+        validators=[FileExtensionValidator(["gpx", "kml", "kmz"])],
+        help_text="Экспорт из maps.me, Organic Maps, Google My Maps, Wikiloc или GPS-часов. "
+        "Только метки без линии — станут точками дня.",
     )
 
     class Meta:

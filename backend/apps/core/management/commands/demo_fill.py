@@ -281,6 +281,50 @@ MAX_ALTITUDE = {
     "winter-karakol": 3040,
 }
 
+# Guest reviews sent through the site form: hidden until the agency publishes them (moderation demo).
+SITE_REVIEWS = [
+    (
+        "Charlotte B.",
+        "Belgium",
+        "ala-kul-trek",
+        5,
+        date(2026, 8, 1),
+        "charlotte@example.com",
+        "Best four days of our whole year. Aibek adjusted the pace for my mum (62!) and we all made "
+        "it over the pass. The lake is even more turquoise than in the photos.",
+    ),
+    (
+        "Tom H.",
+        "United States",
+        "song-kul-yurts",
+        4,
+        date(2026, 7, 1),
+        "",
+        "Wonderful yurt camp and the horses were great. Only minus: the transfer back took 8 hours "
+        "instead of 6 because of road works, a heads-up would have been nice.",
+    ),
+    (
+        "Marta K.",
+        "Poland",
+        "issyk-kul-canyons",
+        3,
+        date(2026, 9, 1),
+        "marta.k@example.com",
+        "Skazka canyon was beautiful, but the hotel on the north shore was noisy and the second day "
+        "felt rushed. Our driver was very kind though.",
+    ),
+    (
+        "Daniel R.",
+        "Germany",
+        "",
+        2,
+        date(2026, 10, 1),
+        "daniel.r@example.com",
+        "We waited 3 days for a reply to our first message and the price changed after we "
+        "confirmed. The trip itself was okay, but the communication needs work.",
+    ),
+]
+
 FEATURED = {"ala-kul-trek", "song-kul-yurts"}  # a badge on 2 of 8: scarce enough to mean something
 
 FEATURES = [
@@ -704,6 +748,19 @@ class Command(BaseCommand):
             )
             set_image(obj, "photo", key, portrait=True)
             obj.save()
+        for name, country, slug, rating, when, email, text in SITE_REVIEWS:
+            Review.objects.create(
+                author_name=name,
+                country=country,
+                tour=tours.get(slug),
+                source="site",
+                travel_date=when,
+                rating=rating,
+                text=text,
+                email=email,
+                is_published=False,
+                order=0,
+            )
         for i, (question, answer) in enumerate(FAQS):
             FAQ.objects.create(question=question, answer=answer, order=i)
         for i, name in enumerate(PARTNERS):
@@ -726,10 +783,31 @@ class Command(BaseCommand):
         site = SiteSettings.load()
         for field, value in HOME_TEXT.items():
             setattr(site, field, value)
-        site.telegram = site.telegram or "kyrgyztours_demo"
-        site.instagram_url = site.instagram_url or "https://instagram.com/"
-        site.address = site.address or "Chui Avenue 120, Bishkek"
+        site.brand_name = "Kyrgyz Bridge Travel"
+        # founder: real name and photo; the story is still a draft to be replaced in the admin
+        site.founder_name = "Zhakshylyk Aitaliev"
+        site.founder_role = "Founder & lead guide"
+        site.founder_since = 2014
+        site.founder_quote = "I want you to leave Kyrgyzstan feeling you have friends here."
+        site.founder_story = (
+            "I grew up in Karakol, at the foot of the Tien Shan. At 19 I led my first group of "
+            "friends to Ala-Kul, and a few years later strangers started asking to join.\n\n"
+            "Today our team is a dozen guides, drivers and shepherd families I have known for "
+            "years. I still lead several trips every summer myself, and I personally check every "
+            "new route before we offer it to you."
+        )
+        site.telegram = ""  # the agency works through WhatsApp only
+        site.whatsapp = "996704313147"
+        site.phone = "+996 704 313 147"
+        # real contacts only: these go into search results (JSON-LD, llms.txt)
+        if not site.email or site.email.endswith("@example.com"):
+            site.email = "kyrgyzbridgetravel@gmail.com"
+        if site.instagram_url == "https://instagram.com/":
+            site.instagram_url = ""
+        if site.address == "Chui Avenue 120, Bishkek":
+            site.address = ""  # the footer shows «Bishkek, Kyrgyzstan»
         for field, key in [
+            ("founder_photo", "founder"),
             ("hero_image", "hero"),
             ("about_image", "about"),
             ("solo_image", "format-solo"),

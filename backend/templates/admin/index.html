@@ -1,0 +1,185 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+{% comment %}
+Admin home: a dashboard of the last 30 days (apps/stats/dashboard.py). Own small stylesheet:
+unfold's CSS is prebuilt and does not include arbitrary utility classes.
+{% endcomment %}
+
+{% block title %}Обзор | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}{% include "unfold/helpers/site_branding.html" %}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .kd { --kd-line: rgb(0 0 0 / 0.08); --kd-muted: #6b7280; --kd-card: #fff; --kd-soft: rgb(0 0 0 / 0.04); display: flex; flex-direction: column; gap: 20px; padding-bottom: 32px; }
+  .dark .kd { --kd-line: rgb(255 255 255 / 0.1); --kd-muted: #9ca3af; --kd-card: rgb(17 24 39); --kd-soft: rgb(255 255 255 / 0.05); }
+  .kd-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px; }
+  .kd-head h1 { font-size: 22px; font-weight: 700; margin: 0; }
+  .kd-head p { color: var(--kd-muted); margin: 2px 0 0; font-size: 14px; }
+  .kd-grid { display: grid; gap: 16px; }
+  .kd-kpis { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .kd-two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .kd-card { background: var(--kd-card); border: 1px solid var(--kd-line); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  a.kd-card { text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; }
+  a.kd-card:hover { border-color: #f2994a; transform: translateY(-1px); }
+  .kd-card h2 { font-size: 15px; font-weight: 700; margin: 0; }
+  .kd-card .kd-sub { color: var(--kd-muted); font-size: 13px; margin: -6px 0 0; }
+  .kd-label { color: var(--kd-muted); font-size: 13px; font-weight: 600; }
+  .kd-value { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .kd-value small { font-size: 18px; font-weight: 700; }
+  .kd-delta { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; width: fit-content; }
+  .kd-up { background: rgb(47 165 100 / .12); color: #2fa564; }
+  .kd-down { background: rgb(220 38 38 / .1); color: #dc2626; }
+  .kd-flat { background: var(--kd-soft); color: var(--kd-muted); }
+  .kd-hint { color: var(--kd-muted); font-size: 12px; }
+  .kd-todo { display: flex; align-items: center; gap: 16px; flex-direction: row; border: 0; padding: 18px 20px; position: relative; overflow: hidden; }
+  .kd-todo .kd-icon { flex: none; width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+  .kd-todo .kd-icon svg { width: 22px; height: 22px; }
+  .kd-todo .kd-text { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .kd-todo .kd-title { font-size: 15px; font-weight: 700; }
+  .kd-todo .kd-go { font-size: 12px; font-weight: 600; opacity: .8; }
+  .kd-todo .kd-value { font-size: 34px; }
+  .kd-todo::after { content: ""; position: absolute; right: -30px; top: -40px; width: 140px; height: 140px; border-radius: 999px; background: rgb(255 255 255 / .14); pointer-events: none; }
+  .kd-todo > * { position: relative; z-index: 1; }
+  a.kd-todo:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgb(0 0 0 / .12); }
+  .kd-todo.kd-inquiries { background: linear-gradient(135deg, #f2994a, #f6b56f); color: #3b1d05; }
+  .kd-todo.kd-inquiries .kd-icon { background: rgb(255 255 255 / .35); color: #3b1d05; }
+  .kd-todo.kd-reviews { background: linear-gradient(135deg, #6d5dfc, #9b8bff); color: #fff; }
+  .kd-todo.kd-reviews .kd-icon { background: rgb(255 255 255 / .2); color: #fff; }
+  .kd-todo.kd-done { background: var(--kd-card); border: 1px solid var(--kd-line); color: inherit; }
+  .kd-todo.kd-done .kd-icon { background: rgb(47 165 100 / .12); color: #2fa564; }
+  .kd-todo.kd-done .kd-value { color: var(--kd-muted); }
+  .kd-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .kd-table th { text-align: left; color: var(--kd-muted); font-weight: 600; font-size: 12px; padding: 0 8px 8px; border-bottom: 1px solid var(--kd-line); }
+  .kd-table td { padding: 10px 8px; border-bottom: 1px solid var(--kd-line); vertical-align: middle; }
+  .kd-table tr:last-child td { border-bottom: 0; }
+  .kd-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .kd-table a { color: inherit; font-weight: 600; text-decoration: none; }
+  .kd-table a:hover { color: #f2994a; }
+  .kd-bar { height: 6px; border-radius: 99px; background: var(--kd-soft); overflow: hidden; margin-top: 6px; }
+  .kd-bar span { display: block; height: 100%; border-radius: 99px; background: #f2994a; }
+  .kd-pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--kd-soft); color: var(--kd-muted); }
+  .kd-good { color: #2fa564; } .kd-mid { color: #d08a1e; } .kd-bad { color: #dc2626; }
+  .kd-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .kd-stack { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--kd-soft); }
+  .kd-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+  .kd-dot { display: inline-block; width: 9px; height: 9px; border-radius: 99px; margin-right: 6px; }
+  .kd-review { border-top: 1px solid var(--kd-line); padding-top: 10px; font-size: 14px; }
+  .kd-review p { margin: 4px 0 0; color: var(--kd-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .kd-empty { color: var(--kd-muted); font-size: 14px; padding: 6px 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kd">
+  <div class="kd-head">
+    <div>
+      <h1>Обзор сайта</h1>
+      <p>Последние {{ period_days }} дней (с {{ period_start|date:"j E" }}). Стрелки — сравнение с предыдущими {{ period_days }} днями.</p>
+    </div>
+  </div>
+
+  <div class="kd-grid kd-kpis">
+    {% for item in todo %}
+      <a class="kd-card kd-todo kd-{{ item.kind }}" href="{{ item.href }}">
+        <span class="kd-icon">
+          {% if item.kind == "done" %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          {% elif item.icon == "inbox" %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 3h5L16 13h4"/><path d="M5.5 5h13L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5z"/></svg>
+          {% else %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>{% endif %}
+        </span>
+        <span class="kd-text">
+          <span class="kd-title">{{ item.title }}</span>
+          <span class="kd-go">{% if item.kind == "done" %}всё разобрано{% else %}открыть и ответить →{% endif %}</span>
+        </span>
+        <span class="kd-value">{{ item.value }}</span>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="kd-grid kd-kpis">
+    {% for k in kpis %}
+      <{% if k.href %}a href="{{ k.href }}"{% else %}div{% endif %} class="kd-card">
+        <span class="kd-label">{{ k.title }}</span>
+        <span class="kd-value">{{ k.value }}{% if k.suffix %}<small>{{ k.suffix }}</small>{% endif %}</span>
+        {% if k.delta is not None %}
+          <span class="kd-delta {% if k.delta > 0 %}kd-up{% elif k.delta < 0 %}kd-down{% else %}kd-flat{% endif %}">{% if k.delta > 0 %}▲ +{% elif k.delta < 0 %}▼ {% else %}= {% endif %}{{ k.delta }}%</span>
+        {% else %}
+          <span class="kd-delta kd-flat">нет данных для сравнения</span>
+        {% endif %}
+        {% if k.hint %}<span class="kd-hint">{{ k.hint }}</span>{% endif %}
+      </{% if k.href %}a{% else %}div{% endif %}>
+    {% endfor %}
+  </div>
+
+  <div class="kd-card">
+    <h2>По дням</h2>
+    <p class="kd-sub">Столбики — заявки и нажатия WhatsApp, линия — просмотры туров (правая шкала).</p>
+    {% include "unfold/components/chart/bar.html" with data=chart_data options=chart_options height=90 %}
+  </div>
+
+  <div class="kd-card">
+    <h2>Туры: интерес и обращения</h2>
+    <p class="kd-sub">Какие туры смотрят и какие превращаются в заявки. Для туров 1–3% — норма. Много просмотров и мало заявок — повод поправить цену, фото или текст.</p>
+    <table class="kd-table">
+      <thead><tr><th>Тур</th><th class="num">Просмотры</th><th class="num">Заявки</th><th class="num">Конверсия</th></tr></thead>
+      <tbody>
+        {% for row in tour_rows %}
+          <tr>
+            <td><a href="{{ row.href }}">{{ row.title }}</a> <span class="kd-pill">{{ row.type }}</span>
+              <div class="kd-bar"><span style="width: {{ row.bar }}%"></span></div></td>
+            <td class="num">{{ row.views }}</td>
+            <td class="num">{{ row.inquiries }}</td>
+            <td class="num"><b class="{% if row.conversion >= 3 %}kd-good{% elif row.conversion >= 1 %}kd-mid{% elif row.views %}kd-bad{% endif %}">{{ row.conversion }}%</b></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="kd-empty">Пока нет опубликованных туров.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if no_tour_inquiries %}<span class="kd-hint">Ещё {{ no_tour_inquiries }} заявок без выбранного тура («помогите выбрать»).</span>{% endif %}
+  </div>
+
+  <div class="kd-grid kd-two">
+    <div class="kd-card">
+      <h2>Статусы заявок</h2>
+      <p class="kd-sub">Всего {{ status_total }} за период, включая спам.</p>
+      <div class="kd-stack">{% for s in statuses %}{% if s.pct %}<span style="width: {{ s.pct }}%; background: {{ s.color }}" title="{{ s.label }}: {{ s.value }}"></span>{% endif %}{% endfor %}</div>
+      <div class="kd-legend">{% for s in statuses %}<span><span class="kd-dot" style="background: {{ s.color }}"></span>{{ s.label }} — <b>{{ s.value }}</b> ({{ s.pct }}%)</span>{% endfor %}</div>
+    </div>
+
+    <div class="kd-card">
+      <h2>Откуда приходят заявки</h2>
+      <p class="kd-sub">По UTM-меткам рекламы. Без метки — поиск и прямые заходы.</p>
+      {% for s in sources %}
+        <div><div class="kd-row"><span>{{ s.label }}</span><b>{{ s.value }} · {{ s.pct }}%</b></div><div class="kd-bar"><span style="width: {{ s.pct }}%"></span></div></div>
+      {% empty %}
+        <span class="kd-empty">Заявок за период пока нет.</span>
+      {% endfor %}
+    </div>
+
+    <div class="kd-card">
+      <h2>Как туристы хотят связи</h2>
+      <p class="kd-sub">Средняя группа — <b>{{ avg_people }}</b> чел. Интерес: частные {{ type_split.solo }}% · групповые {{ type_split.group }}%.</p>
+      {% for c in contact_rows %}
+        <div><div class="kd-row"><span>{{ c.label }}</span><b>{{ c.value }} · {{ c.pct }}%</b></div><div class="kd-bar"><span style="width: {{ c.pct }}%; background: #25d366"></span></div></div>
+      {% endfor %}
+    </div>
+
+    <div class="kd-card">
+      <h2>Отзывы с сайта</h2>
+      <p class="kd-sub">Средняя оценка <b>{{ review_avg }}★</b> из {{ review_total }} отзывов. <a href="{{ admin_reviews }}?source__exact=site" style="color:#f2994a;font-weight:700;text-decoration:none">Все отзывы →</a></p>
+      {% for s in star_rows %}
+        <div class="kd-row"><span style="width:42px">{{ s.stars }}★</span><div class="kd-bar" style="flex:1;margin:0"><span style="width: {{ s.pct }}%; background: {% if s.stars >= 4 %}#2fa564{% elif s.stars == 3 %}#d08a1e{% else %}#dc2626{% endif %}"></span></div><b style="width:32px;text-align:right">{{ s.value }}</b></div>
+      {% endfor %}
+      {% for r in latest_reviews %}
+        <div class="kd-review">
+          <span class="{% if r.rating >= 4 %}kd-good{% elif r.rating == 3 %}kd-mid{% else %}kd-bad{% endif %}">{% for _ in "x"|rjust:r.rating %}★{% endfor %}</span>
+          <b>{{ r.author_name }}</b>{% if r.tour %} · {{ r.tour.title }}{% endif %}
+          {% if not r.is_published %}<span class="kd-pill" style="background:rgb(242 153 74/.15);color:#c06a17">ждёт проверки</span>{% endif %}
+          <p>{{ r.text }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

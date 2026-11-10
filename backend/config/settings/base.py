@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+from django.templatetags.static import static
 from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     "apps.tours",
     "apps.content",
     "apps.inquiries",
+    "apps.stats",
 ]
 
 MIDDLEWARE = [
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.csp.ContentSecurityPolicyMiddleware",
     # must be last: locks out repeated failed admin logins
     "axes.middleware.AxesMiddleware",
 ]
@@ -137,6 +140,11 @@ DJANGO_VITE = {
     }
 }
 
+# --- Content-Security-Policy (apps/core/csp.py) ---------------------------------
+CSP_ENABLED = env.bool("CSP_ENABLED", default=True)
+# true: the browser only reports what it would block (to try a change safely)
+CSP_REPORT_ONLY = env.bool("CSP_REPORT_ONLY", default=False)
+
 # --- Email -------------------------------------------------------------------
 EMAIL_CONFIG = env.email_url("EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
@@ -187,7 +195,10 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_THROTTLE_RATES": {"inquiries": env("INQUIRY_THROTTLE_RATE", default="5/hour")},
+    "DEFAULT_THROTTLE_RATES": {
+        "inquiries": env("INQUIRY_THROTTLE_RATE", default="5/hour"),
+        "stats": "60/hour",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -213,10 +224,15 @@ SPECTACULAR_SETTINGS = {
 
 # --- Admin (django-unfold) -----------------------------------------------------
 UNFOLD = {
-    "SITE_TITLE": "Kyrgyz Tours",
-    "SITE_HEADER": "Kyrgyz Tours",
+    "SITE_TITLE": "Kyrgyz Bridge Travel",
+    "SITE_HEADER": "Kyrgyz Bridge Travel",
+    "DASHBOARD_CALLBACK": "apps.stats.dashboard.dashboard_callback",
     "SITE_SUBHEADER": "Управление сайтом",
     "SITE_SYMBOL": "landscape",
+    "SITE_ICON": lambda request: static("brand/logo-64.png"),
+    "SITE_FAVICONS": [
+        {"rel": "icon", "type": "image/png", "href": lambda request: static("brand/favicon-32.png")}
+    ],
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "COLORS": {
@@ -276,6 +292,7 @@ UNFOLD = {
                         "title": "Отзывы",
                         "icon": "reviews",
                         "link": reverse_lazy("admin:content_review_changelist"),
+                        "badge": "apps.content.admin.pending_reviews_badge",
                     },
                     {
                         "title": "Частые вопросы",

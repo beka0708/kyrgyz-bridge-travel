@@ -6,7 +6,7 @@ import urllib.request
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -46,11 +46,13 @@ def client_ip(request) -> str | None:
     return request.META.get("REMOTE_ADDR")
 
 
-def rate_limited(ip: str | None, limit: int = 5, window: int = 3600) -> bool:
-    """Per-IP limit for the no-JS form; the API has DRF throttling with the same rate."""
+def rate_limited(
+    ip: str | None, limit: int = 5, window: int = 3600, scope: str = "inquiry"
+) -> bool:
+    """Per-IP limit for plain HTML forms (inquiry, review); the API has DRF throttling."""
     if not ip:
         return False
-    key = f"inquiry-rate:{ip}"
+    key = f"{scope}-rate:{ip}"
     count = cache.get(key, 0)
     if count >= limit:
         return True
@@ -83,8 +85,36 @@ def notification_recipients() -> list[str]:
     return [email] if email else []
 
 
+def _when(inquiry: Inquiry) -> str:
+    if inquiry.travel_when:
+        return inquiry.travel_when
+    if inquiry.date_from:
+        end = f" – {inquiry.date_to:%d.%m.%Y}" if inquiry.date_to else ""
+        return f"{inquiry.date_from:%d.%m.%Y}{end}"
+    return ""
+
+
+def _email(subject, template, context, to, reply_to=None) -> EmailMultiAlternatives:
+    """Text + HTML email from templates/emails/<template>.txt / .html."""
+    site = SiteSettings.load()
+    context = {"site": site, "site_url": settings.SITE_URL, **context}
+    message = EmailMultiAlternatives(
+        subject=subject,
+        body=render_to_string(f"emails/{template}.txt", context),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=to,
+        reply_to=reply_to,
+    )
+    message.attach_alternative(render_to_string(f"emails/{template}.html", context), "text/html")
+    return message
+
+
 def notify_about_inquiry(inquiry: Inquiry) -> bool:
-    """Email the agency. Failures are logged and retried by `manage.py resend_inquiries`."""
+    """Email the agency, then thank the traveller (if they left an email).
+
+    Agency failures are logged and retried by `manage.py resend_inquiries`; the traveller's
+    confirmation is best effort and never blocks or repeats.
+    """
     recipients = notification_recipients()
     if not recipients:
         logger.warning(
@@ -92,17 +122,26 @@ def notify_about_inquiry(inquiry: Inquiry) -> bool:
         )
         return False
 
+    rows = [
+        ("Имя", inquiry.name),
+        ("Email", inquiry.email),
+        ("Телефон / WhatsApp", inquiry.contact),
+        ("Тур", inquiry.tour_title or "не выбран — нужна консультация"),
+        ("Когда", _when(inquiry)),
+        ("Человек", inquiry.people),
+    ]
     context = {
         "inquiry": inquiry,
+        "rows": rows,
         "admin_url": settings.SITE_URL
         + reverse("admin:inquiries_inquiry_change", args=[inquiry.pk]),
         "whatsapp_link": whatsapp_link(inquiry.contact),
     }
     tour = inquiry.tour_title or "консультация"
-    message = EmailMessage(
-        subject=f"Новая заявка: {inquiry.name} — {tour}, {inquiry.people} чел.",
-        body=render_to_string("emails/new_inquiry.txt", context),
-        from_email=settings.DEFAULT_FROM_EMAIL,
+    message = _email(
+        f"Новая заявка: {inquiry.name} — {tour}, {inquiry.people} чел.",
+        "new_inquiry",
+        context,
         to=recipients,
         # «Reply» in the mail app goes straight to the traveller (when they left an email)
         reply_to=[inquiry.email] if inquiry.email else None,
@@ -115,4 +154,39 @@ def notify_about_inquiry(inquiry: Inquiry) -> bool:
 
     Inquiry.objects.filter(pk=inquiry.pk).update(notified_at=timezone.now())
     inquiry.notified_at = timezone.now()
+    send_confirmation(inquiry)
+    return True
+
+
+def send_confirmation(inquiry: Inquiry) -> bool:
+    """«We got your request» to the traveller, in English, with a summary and a WhatsApp button."""
+    if not inquiry.email:
+        return False
+    site = SiteSettings.load()
+    rows = [
+        ("Tour", inquiry.tour_title or "Not sure yet — we'll help you choose"),
+        ("When", _when(inquiry)),
+        ("Travellers", inquiry.people),
+        ("Phone / WhatsApp", inquiry.contact),
+    ]
+    context = {
+        "inquiry": inquiry,
+        "rows": rows,
+        "whatsapp_url": site.whatsapp_url(
+            f"Hi! I sent a request on your website, my name is {inquiry.name}."
+        ),
+    }
+    reply_to = [site.inquiry_email or site.email] if (site.inquiry_email or site.email) else None
+    message = _email(
+        f"We got your request — {site.brand_name}",
+        "inquiry_confirmation",
+        context,
+        to=[inquiry.email],
+        reply_to=reply_to,
+    )
+    try:
+        message.send()
+    except Exception:
+        logger.exception("Failed to send confirmation for inquiry %s", inquiry.pk)
+        return False
     return True

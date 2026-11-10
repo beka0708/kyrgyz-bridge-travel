@@ -1,0 +1,35 @@
+{% autoescape off %}# {{ site.brand_name }}
+
+> {{ site.brand_name }} is a local tour operator in Kyrgyzstan (based in Bishkek). It runs private and small-group tours with local guides: treks in the Tian Shan, yurt stays, mountain lakes (Issyk-Kul, Song-Kul, Ala-Kul), canyons and horse riding. Travellers send a request on the website or WhatsApp and get free dates and the full price {{ site.reply_time }}.
+
+{% if site.founder_name %}Founded{% if site.founder_since %} in {{ site.founder_since }}{% endif %} by {{ site.founder_name }}{% if site.founder_role %} ({{ site.founder_role|lower }}){% endif %}.
+{% endif %}Languages: English, Russian. Website: {{ site_url }}/
+
+## Tours
+
+{% for tour in tours %}- [{{ tour.title }}]({{ site_url }}{{ tour.get_absolute_url }}): {{ tour.type_label }}, {{ tour.duration_days }} day{{ tour.duration_days|pluralize }}, {{ tour.price_display }}{% if tour.season_label %}, season {{ tour.season_label }}{% endif %}. {{ tour.short_description }}
+{% endfor %}
+All tours: {{ site_url }}/tours/
+
+## How booking works
+
+{% for title, text in steps %}{{ forloop.counter }}. {{ title }}. {{ text }}
+{% endfor %}{% if faqs %}
+## FAQ
+
+{% for faq in faqs %}### {{ faq.question }}
+{{ faq.answer|striptags }}
+
+{% endfor %}{% endif %}## Contact
+
+- Request form: {{ site_url }}/#contact
+{% if site.whatsapp %}- WhatsApp: https://wa.me/{{ site.whatsapp }}
+{% endif %}{% if site.phone %}- Phone: {{ site.phone }}
+{% endif %}{% if site.email %}- Email: {{ site.email }}
+{% endif %}{% if site.instagram_url %}- Instagram: {{ site.instagram_url }}
+{% endif %}
+## Optional
+
+- [Privacy Policy]({{ site_url }}/privacy/)
+- [Terms of Use]({{ site_url }}/terms/)
+{% endautoescape %}

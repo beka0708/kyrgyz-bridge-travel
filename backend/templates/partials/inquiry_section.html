@@ -4,11 +4,8 @@
     <div class="flex flex-col gap-4 md:sticky md:top-8">
       <h2 class="h-section">{% if tour %}Check dates for this tour{% else %}Check dates and price{% endif %}</h2>
       <p class="text-base text-[#d5e0da] md:text-lg">Free dates and the full price {{ site.reply_time }}. A real person replies, not a bot.</p>
-      {% if site.whatsapp or site.telegram %}
-        <div class="mt-2 grid gap-3 sm:grid-cols-2">
-          {% if site.whatsapp %}<a class="btn btn-wa min-h-[54px] gap-2 text-base" href="{{ whatsapp_url|default:site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="20" %}WhatsApp</a>{% endif %}
-          {% if site.telegram %}<a class="btn min-h-[54px] gap-2 bg-[#2aabee] text-base text-ink" href="{{ site.telegram_url }}" target="_blank" rel="noopener" data-track="telegram">Telegram</a>{% endif %}
-        </div>
+      {% if site.whatsapp %}
+        <a class="btn btn-wa mt-2 min-h-[56px] w-full gap-2.5 text-base sm:w-fit sm:px-10" href="{{ whatsapp_url|default:site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="22" %}Write on WhatsApp</a>
       {% endif %}
       <ul class="mt-2 flex flex-col gap-1.5 text-sm text-mist">
         <li><span class="text-accent" aria-hidden="true">✓</span> No prepayment to ask</li>
@@ -16,7 +13,7 @@
       </ul>
     </div>
     <div class="flex min-w-0 flex-col gap-3">
-      {% if site.whatsapp or site.telegram %}<p class="text-center text-sm text-mist md:text-left">or leave a request</p>{% endif %}
+      {% if site.whatsapp %}<p class="text-center text-sm text-mist md:text-left">or leave a request</p>{% endif %}
       {% include "partials/inquiry_form.html" %}
     </div>
   </div>

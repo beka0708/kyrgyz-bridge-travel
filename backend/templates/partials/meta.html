@@ -8,12 +8,10 @@
 <meta property="og:locale" content="en_US">
 {% if meta.image %}
 <meta property="og:image" content="{{ meta.image }}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image:width" content="{{ meta.image_size.0 }}">
+<meta property="og:image:height" content="{{ meta.image_size.1 }}">
+<meta name="twitter:card" content="{% if meta.large_image %}summary_large_image{% else %}summary{% endif %}">
 <meta name="twitter:image" content="{{ meta.image }}">
-{% else %}
-<meta name="twitter:card" content="summary">
 {% endif %}
 <meta name="twitter:title" content="{{ meta.title }}">
 <meta name="twitter:description" content="{{ meta.description }}">

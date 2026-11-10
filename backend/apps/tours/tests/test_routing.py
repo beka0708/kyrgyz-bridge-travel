@@ -252,3 +252,57 @@ def test_admin_day_page_renders_map_editor(admin_client):
     html = admin_client.get(reverse("admin:tours_tourday_change", args=[day.pk])).content.decode()
     assert 'data-island="route-editor"' in html
     assert "route-editor" in html  # vite asset tag
+
+
+def _upload(name, content):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    return SimpleUploadedFile(name, content)
+
+
+KML_LINE = b"""<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+<Placemark><name>Camp</name><Point><coordinates>78.61,42.37,2600</coordinates></Point></Placemark>
+<Placemark><name>Track</name><LineString><coordinates>
+78.61,42.37,2600 78.58,42.34,3300 78.545,42.326,3920</coordinates></LineString></Placemark>
+</Document></kml>"""
+
+KML_POINTS = b"""<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+<Placemark><name>Altyn-Arashan</name>
+<Point><coordinates>78.611,42.373</coordinates></Point></Placemark>
+<Placemark><name>Ala-Kul pass</name>
+<Point><coordinates>78.545,42.326</coordinates></Point></Placemark>
+<Placemark><name>Ala-Kul lake</name>
+<Point><coordinates>78.527,42.319</coordinates></Point></Placemark>
+</Document></kml>"""
+
+
+def test_kml_track_from_maps_me():
+    from apps.tours.services.routing import gpx_route
+
+    result = gpx_route(_upload("route.kml", KML_LINE))
+    assert result.track["type"] == "LineString" and result.distance_km > 0
+    assert result.ascent_m >= 1300
+
+
+def test_kml_bookmarks_become_day_points():
+    from apps.tours.services.routing import gpx_route
+
+    result = gpx_route(_upload("bookmarks.kml", KML_POINTS))
+    assert [p["name"] for p in result.waypoints] == [
+        "Altyn-Arashan",
+        "Ala-Kul pass",
+        "Ala-Kul lake",
+    ]
+
+
+def test_kmz_archive():
+    import io
+    import zipfile
+
+    from apps.tours.services.routing import gpx_route
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("doc.kml", KML_POINTS)
+    result = gpx_route(_upload("export.kmz", buffer.getvalue()))
+    assert len(result.waypoints) == 3

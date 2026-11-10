@@ -38,7 +38,7 @@ def test_creates_inquiry_and_emails_agency(api, django_capture_on_commit_callbac
     assert inquiry.tour_title == "Ala-Kul"
     assert inquiry.status == InquiryStatus.NEW
     assert inquiry.notified_at is not None
-    assert len(mail.outbox) == 1
+    assert len(mail.outbox) == 2
     message = mail.outbox[0]
     assert message.to == ["agency@example.com"]
     assert message.reply_to == ["anna@example.com"]
@@ -53,6 +53,27 @@ def test_honeypot_marks_spam_without_email(api, django_capture_on_commit_callbac
     assert resp.status_code == 201  # same answer as for people
     assert Inquiry.objects.get().status == InquiryStatus.SPAM
     assert mail.outbox == []
+
+
+def test_traveller_gets_html_confirmation(api, django_capture_on_commit_callbacks):
+    with django_capture_on_commit_callbacks(execute=True):
+        api.post(URL, payload(travel_when="mid-July"), format="json")
+
+    agency, confirmation = mail.outbox
+    assert agency.alternatives and agency.alternatives[0][1] == "text/html"
+    assert confirmation.to == ["anna@example.com"]
+    assert confirmation.subject.startswith("We got your request")
+    html = confirmation.alternatives[0][0]
+    assert "Thank you, Anna!" in html and "mid-July" in html
+
+
+def test_international_phone_is_checked(api):
+    bad = api.post(URL, payload(email="", contact="+996 70"), format="json")
+    assert bad.status_code == 400 and "number" in bad.json()["contact"][0]
+
+    ok = api.post(URL, payload(email="", contact="+996704313147"), format="json")
+    assert ok.status_code == 201
+    assert Inquiry.objects.get().contact == "+996 704 313 147"
 
 
 def test_whatsapp_instead_of_email(api, django_capture_on_commit_callbacks):
@@ -112,7 +133,7 @@ def test_resend_command_retries_unsent(settings):
     call_command("resend_inquiries")
     inquiry.refresh_from_db()
     assert inquiry.notified_at is not None
-    assert len(mail.outbox) == 1
+    assert [m.to for m in mail.outbox] == [["agency@example.com"], ["bob@example.com"]]
 
 
 @pytest.mark.parametrize(

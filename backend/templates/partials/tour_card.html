@@ -1,18 +1,52 @@
 {% load site_tags %}
 {% comment %}
-Tour card (tablets and desktop). Photo: type and «Bestseller» on top, days and the highest point at
-the bottom; on hover it crossfades to the first gallery photo. Body: guest rating, title, one-line
-pitch, difficulty meter and group, next departure, price and an arrow button.
+Tour card (tablets and desktop). Photos: cover + up to 3 gallery photos, switched only by the
+visitor — arrows on hover (mouse) or a swipe (touch); bars on top show which one is open. Extra
+photos load only once the card is visible. The title is a stretched link: the whole card opens the
+tour, the arrows stay clickable above it.
 {% endcomment %}
-<a class="tour-card group flex h-full w-full flex-col overflow-hidden rounded-[24px] bg-white text-ink ring-1 ring-ink/5" href="{{ tour.get_absolute_url }}">
-  <div class="pic aspect-[4/5] w-full">
-    <span class="absolute inset-0" style="view-transition-name: tour-{{ tour.slug }}">{% img tour.cover alt="" sizes="(min-width: 1280px) 290px, (min-width: 768px) 45vw, 90vw" css="tour-card__photo" %}</span>
-    {% with alt_photo=tour.hover_photo %}{% if alt_photo %}
-      <span class="tour-card__alt absolute inset-0" aria-hidden="true">{% img alt_photo alt="" sizes="(min-width: 1280px) 290px, 45vw" css="tour-card__photo" %}</span>
-    {% endif %}{% endwith %}
-    <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-2/5 bg-[linear-gradient(180deg,rgb(10_22_18/0)_0%,rgb(10_22_18/0.65)_100%)]"></span>
+{% with photos=tour.card_photos %}
+<article class="tour-card group relative flex h-full w-full flex-col overflow-hidden rounded-[24px] bg-white text-ink ring-1 ring-ink/5"
+         x-data="cardSlides({{ photos|length }})">
+  <div class="pic aspect-[4/5] w-full" @touchstart.passive="swipeStart($event)" @touchend="swipeEnd($event)">
+    <span class="absolute inset-0 transition-opacity duration-700 ease-[var(--ease-out)]" :class="index === 0 ? 'opacity-100' : 'opacity-0'" style="view-transition-name: tour-{{ tour.slug }}">
+      {% img photos.0 alt="" sizes="(min-width: 1280px) 290px, (min-width: 768px) 45vw, 90vw" css="tour-card__photo" %}
+    </span>
+    {% if photos|length > 1 %}
+      <template x-if="loaded">
+        <span>
+          {% for photo in photos|slice:"1:" %}
+            <span class="absolute inset-0 opacity-0 transition-opacity duration-700 ease-[var(--ease-out)]" :class="index === {{ forloop.counter }} && '!opacity-100'">
+              {% img photo alt="" sizes="(min-width: 1280px) 290px, (min-width: 768px) 45vw, 90vw" css="tour-card__photo" %}
+            </span>
+          {% endfor %}
+        </span>
+      </template>
+    {% endif %}
+    <span aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-1/4 bg-[linear-gradient(0deg,rgb(10_22_18/0)_0%,rgb(10_22_18/0.35)_100%)]"></span>
+    <span aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-[linear-gradient(180deg,rgb(10_22_18/0)_0%,rgb(10_22_18/0.65)_100%)]"></span>
 
-    <span class="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+    {% if photos|length > 1 %}
+      {# which photo is open #}
+      <span class="absolute inset-x-3 top-2.5 z-10 flex gap-1" aria-hidden="true">
+        {% for photo in photos %}
+          <span class="h-[3px] flex-1 overflow-hidden rounded-full bg-white/35">
+            <span class="block h-full rounded-full bg-white transition-opacity duration-300 {% if not forloop.first %}opacity-0{% endif %}"
+                  :class="index === {{ forloop.counter0 }} ? '!opacity-100' : '!opacity-0'"></span>
+          </span>
+        {% endfor %}
+      </span>
+      <button type="button" tabindex="-1" aria-hidden="true" @click="step(-1)"
+              class="absolute top-1/2 left-2.5 z-20 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-paper/90 text-ink opacity-0 shadow transition-opacity duration-200 can-hover:flex can-hover:group-hover:opacity-100">
+        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button type="button" tabindex="-1" aria-hidden="true" @click="step(1)"
+              class="absolute top-1/2 right-2.5 z-20 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-paper/90 text-ink opacity-0 shadow transition-opacity duration-200 can-hover:flex can-hover:group-hover:opacity-100">
+        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    {% endif %}
+
+    <span class="pointer-events-none absolute inset-x-3 top-6 flex items-start justify-between gap-2">
       <span class="rounded-full bg-paper/95 px-3 py-1.5 text-xs font-bold text-ink">{{ tour.type_label }}</span>
       {% if tour.is_featured %}
         <span class="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-extrabold text-ink shadow-[0_6px_16px_rgb(242_153_74/0.45)]">
@@ -22,25 +56,24 @@ pitch, difficulty meter and group, next departure, price and an arrow button.
       {% endif %}
     </span>
 
-    <span class="absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5 text-xs font-semibold text-snow">
+    <span class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5 text-xs font-semibold text-snow">
       <span class="rounded-full bg-night/55 px-2.5 py-1 backdrop-blur-sm">{{ tour.duration_label }}</span>
       {% if tour.altitude_label %}<span class="rounded-full bg-night/55 px-2.5 py-1 backdrop-blur-sm" title="Highest point">{{ tour.altitude_label }}</span>{% endif %}
     </span>
   </div>
 
   <div class="flex flex-1 flex-col gap-2 p-5">
-    {% if tour.rating_count %}
-      <p class="flex items-center gap-1 text-[13px] font-bold">
-        <span class="text-rust" aria-hidden="true">★</span>{{ tour.rating_avg|floatformat:1 }}
-        <span class="font-normal text-ink-muted">· {{ tour.rating_count }} review{{ tour.rating_count|pluralize }}</span>
+    <h3 class="line-clamp-2 text-lg leading-snug font-bold">
+      <a class="after:absolute after:inset-0 after:z-10 focus-visible:outline-none" href="{{ tour.get_absolute_url }}">{{ tour.title }}</a>
+    </h3>
+    {% if tour.short_description %}<p class="line-clamp-2 text-sm text-ink-muted">{{ tour.short_description }}</p>{% endif %}
+    {% if tour.group_label or tour.season_label %}
+      <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-muted">
+        {% if tour.group_label %}<span>{{ tour.group_label|capfirst }}</span>{% endif %}
+        {% if tour.group_label and tour.season_label %}<span aria-hidden="true">·</span>{% endif %}
+        {% if tour.season_label %}<span>{{ tour.season_label }}</span>{% endif %}
       </p>
     {% endif %}
-    <h3 class="line-clamp-2 text-lg leading-snug font-bold">{{ tour.title }}</h3>
-    {% if tour.short_description %}<p class="line-clamp-2 text-sm text-ink-muted">{{ tour.short_description }}</p>{% endif %}
-    <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-muted">
-      <span class="flex items-center gap-1.5 font-semibold text-ink">{% include "partials/difficulty_meter.html" %}{{ tour.difficulty_label }}</span>
-      {% if tour.group_label %}<span aria-hidden="true">·</span><span>{{ tour.group_label|capfirst }}</span>{% endif %}
-    </p>
     {% if tour.next_departure %}
       <p class="flex items-center gap-2 text-[13px]"><span class="size-2 flex-none rounded-full bg-[#2fa564]" aria-hidden="true"></span><span class="truncate">Next: <b>{{ tour.next_departure }}</b></span></p>
     {% endif %}
@@ -56,4 +89,5 @@ pitch, difficulty meter and group, next departure, price and an arrow button.
       </span>
     </div>
   </div>
-</a>
+</article>
+{% endwith %}

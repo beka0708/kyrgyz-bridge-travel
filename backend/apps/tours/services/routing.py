@@ -14,7 +14,7 @@ from apps.tours.geo import line_length_km, simplify, total_ascent_m
 from apps.tours.models import TrackSource
 
 from .errors import RoutingError
-from .gpx import parse_gpx
+from .gpx import parse_track_file
 
 logger = logging.getLogger(__name__)
 
@@ -122,17 +122,34 @@ def _ors_error_message(code, detail):
 
 
 def gpx_route(gpx_file) -> RouteResult:
-    coords, names = parse_gpx(gpx_file)
-    if len(coords) < 2:
-        raise RoutingError("В GPX-файле нет трека (нужно минимум две точки).")
-    distance = line_length_km(coords)
-    ascent = total_ascent_m(coords)
-    track = _line([[round(c, 6) for c in point] for point in simplify(coords)])
-    start, end = coords[0], coords[-1]
-    waypoints = [
-        {"lat": start[1], "lng": start[0], "name": names[0] if names else "Start"},
-        {"lat": end[1], "lng": end[0], "name": names[-1] if len(names) > 1 else "Finish"},
-    ]
+    """A day from a route file (GPX, or KML/KMZ from maps.me and similar apps).
+
+    A recorded line is used as is. A file with only bookmarks becomes the day's points in order,
+    joined by straight lines: switch the day to «по пешим тропам» to route them along real trails.
+    """
+    line, points = parse_track_file(gpx_file)
+    if len(line) < 2 and len(points) >= 2:
+        line = [[p["lng"], p["lat"]] for p in points]
+        waypoints = [
+            {
+                "lat": round(p["lat"], 6),
+                "lng": round(p["lng"], 6),
+                "name": p["name"] or f"Point {i}",
+            }
+            for i, p in enumerate(points, 1)
+        ][:25]
+    elif len(line) >= 2:
+        start, end = line[0], line[-1]
+        names = [p["name"] for p in points if p["name"]]
+        waypoints = [
+            {"lat": start[1], "lng": start[0], "name": names[0] if names else "Start"},
+            {"lat": end[1], "lng": end[0], "name": names[-1] if len(names) > 1 else "Finish"},
+        ]
+    else:
+        raise RoutingError("В файле нет маршрута: нужна линия трека или хотя бы две метки.")
+    distance = line_length_km(line)
+    ascent = total_ascent_m(line)
+    track = _line([[round(c, 6) for c in point] for point in simplify(line)])
     return RouteResult(track=track, distance_km=_km(distance), ascent_m=ascent, waypoints=waypoints)
 
 

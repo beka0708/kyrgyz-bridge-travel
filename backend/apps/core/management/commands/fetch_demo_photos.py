@@ -24,7 +24,7 @@ API = "https://api.unsplash.com"
 # People and avatars are shown small; landscapes may fill a wide screen; the hero and the footer
 # band are full-width on large retina screens.
 PORTRAIT_PREFIXES = ("guide-", "review-")
-FULL_BLEED = ("hero", "footer")
+FULL_BLEED = ("hero", "footer", "about", "founder")
 
 
 def _get(url: str, key: str, as_json: bool = True):
@@ -56,7 +56,11 @@ class Command(BaseCommand):
             if target.exists():
                 done += 1
                 continue
-            uid = item["unsplash_id"]
+            uid = item.get("unsplash_id")
+            if not uid:  # a photo from the client: copied into demo/photos/ by hand
+                failed += 1
+                self.stderr.write(f"  {name}: client photo missing, copy it to {target}")
+                continue
             width = 900 if name.startswith(PORTRAIT_PREFIXES) else 2000
             if name in FULL_BLEED:
                 width = 3200

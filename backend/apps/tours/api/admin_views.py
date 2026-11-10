@@ -62,7 +62,7 @@ class RouteBuildView(APIView):
 
 
 class RouteGpxView(APIView):
-    """Read a GPX file: line, distance, ascent and start/finish points."""
+    """Read a GPX / KML / KMZ file: line, distance, ascent and points."""
 
     permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser]

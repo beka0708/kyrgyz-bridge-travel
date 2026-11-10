@@ -1,6 +1,6 @@
 {# GA4 with Consent Mode v2. Nothing from Google loads unless a GA ID is set in the admin. #}
 {% if site.google_analytics_id %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
   // No ads on the site: ad storage is always off.

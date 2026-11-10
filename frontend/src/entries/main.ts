@@ -4,9 +4,10 @@ import "@/styles/main.css";
 import collapse from "@alpinejs/collapse";
 import Alpine from "alpinejs";
 
-import { initAnalytics, registerConsent } from "@/lib/analytics";
+import { initAnalytics, initContactBeacons, registerConsent } from "@/lib/analytics";
 import { registerHome } from "@/lib/home";
 import { registerInquiry } from "@/lib/inquiry";
+import { initPhoneInputs } from "@/lib/phone";
 import {
   initCounters,
   initImageFade,
@@ -42,9 +43,11 @@ initSplitHeadings();
 markTitles();
 initImageFade();
 initReveal();
+initPhoneInputs();
 initScrollProgress();
 // A link like /#guide-3 opens that guide's details.
 const linked = location.hash && document.getElementById(location.hash.slice(1));
 if (linked instanceof HTMLDialogElement) linked.showModal();
 initCounters();
 initAnalytics();
+initContactBeacons();

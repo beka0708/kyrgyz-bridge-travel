@@ -10,6 +10,45 @@ export function registerTourPage(Alpine: AlpineType) {
     },
   }));
 
+  /** «Read more»: the text is collapsed to a min height (x-collapse.min); the button shows only if it overflows. */
+  Alpine.data("readMore", () => ({
+    open: false,
+    overflow: false,
+    decided: false,
+    busy: false,
+    init() {
+      const body = this.$refs.body as HTMLElement;
+      // First look — on load, or when a hidden text (another day, the phone/desktop variant)
+      // becomes visible: a short text is shown whole, with no button. Never mid-animation.
+      const measure = () => {
+        if (this.busy || !body.offsetParent) return;
+        if (!this.decided) {
+          this.decided = true;
+          this.overflow = body.scrollHeight > body.clientHeight + 8;
+          if (!this.overflow) this.open = true;
+        } else if (!this.open) {
+          this.overflow = body.scrollHeight > body.clientHeight + 8;
+        }
+      };
+      setTimeout(measure, 0);
+      window.addEventListener("load", measure);
+      // Shown later (phones: the text of a day appears when its chip is tapped): measure then.
+      new IntersectionObserver(([entry]) => entry.isIntersecting && measure()).observe(body);
+      let timer = 0;
+      window.addEventListener("resize", () => {
+        clearTimeout(timer);
+        timer = window.setTimeout(measure, 200);
+      });
+    },
+    toggle() {
+      this.busy = true;
+      this.open = !this.open;
+      setTimeout(() => (this.busy = false), 500);
+      // collapsing a long text: bring its start back into view
+      if (!this.open) (this.$el as HTMLElement).scrollIntoView({ block: "nearest", behavior: "smooth" });
+    },
+  }));
+
   /** Photo strip (swipe on phones, arrows on desktop) and a full-screen viewer. */
   Alpine.data("gallery", (count: number) => ({
     count,

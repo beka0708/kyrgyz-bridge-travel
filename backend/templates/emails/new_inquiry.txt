@@ -1,18 +1,12 @@
 {% autoescape off %}Новая заявка с сайта
 
-Имя:       {{ inquiry.name }}
-Email:     {{ inquiry.email|default:"—" }}
-Контакт:   {{ inquiry.contact|default:"—" }}{% if whatsapp_link %}
-WhatsApp:  {{ whatsapp_link }}{% endif %}
-Тур:       {{ inquiry.tour_title|default:"не выбран — нужна консультация" }}
-Когда:     {{ inquiry.travel_when|default:"—" }}
-Даты:      {% if inquiry.date_from %}{{ inquiry.date_from|date:"d.m.Y" }}{% else %}?{% endif %} — {% if inquiry.date_to %}{{ inquiry.date_to|date:"d.m.Y" }}{% else %}?{% endif %}
-Человек:   {{ inquiry.people }}
-
+{% for label, value in rows %}{% if value %}{{ label }}: {{ value }}
+{% endif %}{% endfor %}{% if whatsapp_link %}WhatsApp:  {{ whatsapp_link }}
+{% endif %}
 Сообщение:
 {{ inquiry.comment|default:"—" }}
 
-{% if inquiry.email %}Чтобы ответить туристу, просто нажмите «Ответить» — письмо уйдёт на {{ inquiry.email }}.{% else %}Турист не оставил email — ответьте через контакт выше.{% endif %}
+{% if inquiry.email %}Чтобы ответить туристу, просто нажмите «Ответить» — письмо уйдёт на {{ inquiry.email }}.{% else %}Турист не оставил email — ответьте через телефон или WhatsApp.{% endif %}
 
 Открыть заявку в админке: {{ admin_url }}
 

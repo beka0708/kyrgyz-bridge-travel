@@ -178,6 +178,13 @@
   .lnk {
     transition: color 150ms ease;
   }
+  /* Header links: white over the hero photo, ink on the light bar (.is-light) — hover never hides them. */
+  .nav-link {
+    opacity: 0.85;
+    transition:
+      opacity 150ms ease,
+      color 150ms ease;
+  }
   /* Horizontal scroller with snap, used for chips and galleries on phones. */
   .snap-row {
     @apply -mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1;
@@ -236,6 +243,79 @@
     @apply bg-forest text-snow;
   }
 
+  /* Phone field with a country picker (intl-tel-input), styled for the dark request form.
+     Scoped under .band-dark: the library's own CSS loads later and would win otherwise. */
+  .band-dark .iti {
+    --iti-border-color: rgb(255 255 255 / 0.12);
+    --iti-hover-color: rgb(255 255 255 / 0.08);
+    --iti-icon-color: var(--color-mist);
+    --iti-arrow-color: var(--color-mist);
+    --iti-country-selector-bg: var(--color-forest);
+    @apply w-full;
+  }
+  .band-dark .iti .iti__selected-country {
+    @apply rounded-l-2xl text-snow;
+  }
+  .band-dark .iti .iti__selected-dial-code {
+    @apply text-snow;
+  }
+  .band-dark .iti__country-selector {
+    @apply overflow-hidden rounded-2xl border border-white/12 bg-forest text-snow shadow-[0_16px_40px_rgb(0_0_0/0.45)];
+  }
+  .band-dark .iti__search-input {
+    @apply min-h-12 w-full border-0 border-b border-white/12 bg-transparent px-4 text-base text-snow placeholder:text-sage;
+  }
+  .band-dark .iti__search-input:focus {
+    @apply outline-none;
+  }
+  .band-dark .iti__country {
+    @apply px-4 py-2.5 text-[15px];
+  }
+  .band-dark .iti__country.iti__highlight {
+    @apply bg-white/8;
+  }
+  .band-dark .iti__dial-code {
+    @apply text-sage;
+  }
+  .band-dark .iti--fullscreen-popup {
+    @apply bg-night/80 p-4;
+  }
+
+  /* Library colours, for the list both inside the form and when it opens attached to <body>.
+     html:root outranks the library's own :root, which loads later. */
+  html:root {
+    --iti-country-selector-bg: var(--color-forest);
+    --iti-border-color: rgb(255 255 255 / 0.12);
+    --iti-hover-color: rgb(255 255 255 / 0.08);
+    --iti-icon-color: var(--color-mist);
+  }
+  /* On phones the country list opens full screen, attached to <body> (outside .band-dark) */
+  body .iti--detached-country-selector .iti__country-selector,
+  body .iti--fullscreen-popup .iti__country-selector {
+    @apply rounded-2xl border border-white/12 bg-forest text-snow;
+  }
+  body .iti--detached-country-selector .iti__search-input {
+    @apply min-h-12 border-0 border-b border-white/12 bg-transparent px-4 text-base text-snow placeholder:text-sage;
+  }
+  body .iti--detached-country-selector .iti__country.iti__highlight {
+    @apply bg-white/8;
+  }
+  body .iti--detached-country-selector .iti__dial-code {
+    @apply text-sage;
+  }
+
+  /* Form fields on light pages (guest review form) */
+  .review-input {
+    @apply min-h-12 w-full rounded-2xl border border-pebble bg-paper/60 px-4 text-base text-ink placeholder:text-ink-muted/60;
+    transition: border-color 150ms ease;
+  }
+  .review-input:focus {
+    @apply border-ink bg-white outline-none;
+  }
+  .review-input[aria-invalid="true"] {
+    @apply border-[#b5463b];
+  }
+
   /* Tour cards (home grid, tour list) */
   .tour-card {
     transition:
@@ -258,11 +338,6 @@
       background-color 200ms ease,
       color 200ms ease;
   }
-  /* second photo for the hover crossfade */
-  .tour-card__alt {
-    opacity: 0;
-    transition: opacity 500ms var(--ease-out);
-  }
   .tile {
     transition: border-color 200ms ease;
   }
@@ -284,6 +359,12 @@
     .band-dark .lnk:hover {
       @apply text-snow;
     }
+    .nav-link:hover {
+      opacity: 1;
+    }
+    .is-light .nav-link:hover {
+      @apply text-rust;
+    }
     .pic:hover img.zoom {
       transform: scale(1.04);
     }
@@ -304,9 +385,6 @@
     .tour-card:hover .tour-card__arrow {
       @apply bg-accent text-ink;
       transform: rotate(45deg);
-    }
-    .tour-card:hover .tour-card__alt {
-      opacity: 1;
     }
     /* tiles are not clickable: only the border reacts, no lift */
     .tile:hover {
@@ -574,6 +652,27 @@ html:has(.guide-dialog[open]) {
   overflow: hidden;
 }
 
+/* Review sent: the circle pops in and the check mark draws itself. */
+.review-done {
+  animation: review-pop 500ms var(--ease-out) both;
+}
+.review-done-check {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: review-draw 450ms 250ms var(--ease-out) forwards;
+}
+@keyframes review-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes review-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* Reduced motion: no movement; content just appears, short fades only. */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -599,9 +698,14 @@ html:has(.guide-dialog[open]) {
   .rise-5,
   #site-menu nav a,
   #site-menu .menu-cta,
-  .guide-dialog {
+  .guide-dialog,
+  .review-done {
     animation: none;
     transform: none;
+  }
+  .review-done-check {
+    animation: none;
+    stroke-dashoffset: 0;
   }
   @view-transition {
     navigation: none;

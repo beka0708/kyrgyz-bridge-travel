@@ -6,10 +6,17 @@
   <title>{% block title %}{{ meta.title|default:site.seo_title|default:site.brand_name }}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ meta.description|default:site.seo_description }}{% endblock %}">
   {% if meta %}{% include "partials/meta.html" %}{% endif %}
+  {% if robots_noindex %}<meta name="robots" content="noindex">{% else %}<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">{% endif %}
+  {% if site.google_site_verification %}<meta name="google-site-verification" content="{{ site.google_site_verification }}">{% endif %}
+  {% if site.bing_site_verification %}<meta name="msvalidate.01" content="{{ site.bing_site_verification }}">{% endif %}
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="Site summary for AI assistants">
   <meta name="theme-color" content="#0e1b17">
   {# Set before the first paint so scroll-reveal blocks never flash visible-then-hidden. #}
-  <script>document.documentElement.classList.add("js")</script>
-  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <script nonce="{{ request.csp_nonce }}">document.documentElement.classList.add("js")</script>
+  <link rel="icon" href="{% static 'favicon.ico' %}" sizes="48x48">
+  <link rel="icon" href="{% static 'brand/favicon-32.png' %}" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+  <link rel="manifest" href="{% static 'site.webmanifest' %}">
   {% include "partials/analytics.html" %}
   {% vite_hmr_client %}
   {% vite_asset "src/entries/main.ts" %}

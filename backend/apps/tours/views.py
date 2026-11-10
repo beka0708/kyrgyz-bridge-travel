@@ -5,6 +5,7 @@ from django.urls import reverse
 from apps.core.maps import map_config
 from apps.core.models import SiteSettings
 from apps.core.seo import tour_list_meta, tour_meta
+from apps.stats.services import record_tour_view
 
 from .models import ListKind, Tour, TourDay, TourType
 
@@ -100,6 +101,8 @@ def tour_detail(request, slug):
         slug=slug,
     )
     days = list(tour.days.all())
+    if tour.is_published:
+        record_tour_view(request, tour)
     route_props = {
         "map": map_config(),
         "initialDay": days[0].day_number if days else None,
@@ -132,10 +135,10 @@ def tour_detail(request, slug):
             "whatsapp_url": site.whatsapp_url(f"Hi! I'm interested in the tour “{tour.title}”."),
             # header (desktop pill nav and phone back link)
             "nav_links": [
-                {"href": reverse("tours:list"), "label": "Tours"},
-                {"href": "#route", "label": "Route"},
-                {"href": "#included", "label": "What's included"},
-                {"href": "#contact", "label": "Contact"},
+                {"href": reverse("tours:list"), "label": "Tours", "icon": "tours"},
+                {"href": "#route", "label": "Route", "icon": "route"},
+                {"href": "#included", "label": "What's included", "icon": "included"},
+                {"href": "#contact", "label": "Contact", "icon": "contact"},
             ],
             "header_cta_href": "#contact",
             "header_cta_label": "Check dates",

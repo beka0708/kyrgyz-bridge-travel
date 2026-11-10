@@ -8,12 +8,10 @@
   <span class="flex min-w-0 flex-1 flex-col gap-0.5">
     <span class="flex items-center gap-2 text-[11px] font-bold tracking-[0.08em] text-rust uppercase">
       {{ tour.type_label }}
-      {% if tour.rating_count %}<span class="tracking-normal text-ink normal-case"><span class="text-rust" aria-hidden="true">★</span> {{ tour.rating_avg|floatformat:1 }}</span>{% endif %}
     </span>
     <span class="line-clamp-2 text-[15px] leading-snug font-bold">{{ tour.title }}</span>
     <span class="flex flex-wrap items-center gap-x-1.5 text-[13px] text-ink-muted">
-      {{ tour.duration_label }}{% if tour.altitude_label %} · {{ tour.altitude_label }}{% endif %} ·
-      <span class="inline-flex items-center gap-1">{% include "partials/difficulty_meter.html" %}{{ tour.difficulty_label }}</span>
+      {{ tour.duration_label }}{% if tour.altitude_label %} · {{ tour.altitude_label }}{% endif %}{% if tour.season_label %} · {{ tour.season_label }}{% endif %}
     </span>
     <span class="mt-1 text-[13px] text-ink-muted">{% if tour.price_from %}from <b class="font-display text-base font-semibold text-ink tabular-nums">{{ tour.price_label }}</b> / person{% else %}<b class="text-ink">Price on request</b>{% endif %}</span>
   </span>

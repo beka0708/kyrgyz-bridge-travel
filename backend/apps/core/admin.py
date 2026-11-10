@@ -47,6 +47,10 @@ class SiteSettingsAdmin(ModelAdmin):
                     "about_title",
                     "about_text",
                     "about_image",
+                    ("founder_name", "founder_role", "founder_since"),
+                    "founder_photo",
+                    "founder_quote",
+                    "founder_story",
                     "trust_line",
                     ("rating_value", "rating_count", "rating_url"),
                     "reply_time",
@@ -59,7 +63,7 @@ class SiteSettingsAdmin(ModelAdmin):
             "Контакты",
             {
                 "classes": ["tab"],
-                "fields": ["phone", "whatsapp", "telegram", "email", "inquiry_email"],
+                "fields": ["phone", "whatsapp", "email", "inquiry_email"],
             },
         ),
         (
@@ -70,12 +74,32 @@ class SiteSettingsAdmin(ModelAdmin):
             },
         ),
         ("Карта", {"classes": ["tab"], "fields": ["map_3d_mode"]}),
-        ("Правовое", {"classes": ["tab"], "fields": ["privacy_policy"]}),
+        (
+            "Правовое",
+            {
+                "classes": ["tab"],
+                "description": "Заполните реквизиты — они сами подставятся в тексты политики и "
+                "условий. Тексты — стандартные для туристических сайтов; менять не обязательно.",
+                "fields": [
+                    ("legal_name", "registration_number"),
+                    ("legal_address", "legal_email"),
+                    "legal_updated",
+                    "privacy_policy",
+                    "terms_of_use",
+                ],
+            },
+        ),
         (
             "SEO и аналитика",
             {
                 "classes": ["tab"],
-                "fields": ["seo_title", "seo_description", "og_image", "google_analytics_id"],
+                "fields": [
+                    "seo_title",
+                    "seo_description",
+                    "og_image",
+                    "google_analytics_id",
+                    ("google_site_verification", "bing_site_verification"),
+                ],
             },
         ),
     ]

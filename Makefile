@@ -2,7 +2,8 @@ BACK = cd backend && uv run
 # Web port; override with: make dev PORT=9000
 PORT ?= 8010
 
-.PHONY: db dev migrate migrations superuser seed test lint fmt shell check front-install front-dev front-build
+.PHONY: db dev migrate migrations superuser seed test lint fmt shell check front-install front-dev front-build \
+	update-deps audit
 
 db:            ## start PostgreSQL in Docker
 	docker compose up -d --wait db
@@ -46,6 +47,15 @@ front-dev:     ## Vite with hot reload; set VITE_DEV_MODE=true in .env
 front-build:   ## typecheck + build into backend/static/dist (restart Django after)
 	cd frontend && npm run build
 
+update-deps:   ## update Python and npm packages within their ranges, then test and build
+	cd backend && uv lock --upgrade && uv sync
+	cd frontend && npm update
+	$(MAKE) test front-build
+
+audit:         ## known vulnerabilities in Python and npm packages
+	cd backend && uv export --no-dev --no-hashes --format requirements-txt > /tmp/kt-req.txt && uvx pip-audit -r /tmp/kt-req.txt
+	cd frontend && npm audit --omit=dev
+
 # ------------------------------------------------------------------ server (preview / production)
 # [laptop] targets run on your computer and talk to the server over SSH;
 # [server] targets run on the server inside /opt/kg-tours (see deploy/README.md).
@@ -86,8 +96,9 @@ ssh:              ## [laptop] open a shell on the server
 prod-env:         ## [server] create .env from deploy/.env.prod.example (once)
 	@if [ -f .env ]; then echo ".env exists, not touched"; else cp deploy/.env.prod.example .env && echo "created .env: fill it in with nano .env"; fi
 
-prod-up:          ## [server] build and start, or update, the site
-	$(PROD) up -d --build --remove-orphans
+prod-up:          ## [server] build and start, or update, the site (fresh base images: security fixes)
+	$(PROD) build --pull
+	$(PROD) up -d --remove-orphans
 	$(PROD) ps
 
 prod-ps:          ## [server] status of the containers
@@ -108,12 +119,13 @@ prod-superuser:   ## [server] create an admin account
 prod-demo:        ## [server] fill a PREVIEW with demo tours and photos (refuses on a public site)
 	@grep -q '^SITE_ACCESS=preview' .env || { echo "refusing: demo data only when SITE_ACCESS=preview"; exit 1; }
 	$(PROD) exec app python manage.py demo_fill
+	$(PROD) exec app python manage.py demo_stats
 	$(PROD) exec app python manage.py warm_images
 
 prod-shell:       ## [server] Django shell
 	$(PROD) exec app python manage.py shell
 
-prod-backup:      ## [server] database + photos backup now (also runs nightly from cron)
+prod-backup:      ## [server] database + photos backup now (cron: daily + monthly)
 	./deploy/backup.sh
 
 prod-cron:        ## [server] install nightly backups and email retries

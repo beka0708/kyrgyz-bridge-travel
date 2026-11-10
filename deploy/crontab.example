@@ -1,5 +1,8 @@
-# Install on the server with: crontab deploy/crontab.example  (adjust /opt/kg-tours)
-# Daily backup at 03:30
+# Install on the server with: make prod-cron  (or: crontab deploy/crontab.example)
+# Daily backup at 03:30 (last 7 days) and a monthly one on the 1st at 04:00 (last 12 months)
 30 3 * * * /opt/kg-tours/deploy/backup.sh >> /opt/kg-tours/backups/backup.log 2>&1
+0 4 1 * * /opt/kg-tours/deploy/backup.sh monthly >> /opt/kg-tours/backups/backup.log 2>&1
+# Privacy: erase IPs after 30 days, spam after 30 days, requests after 3 years (every night)
+15 4 * * * cd /opt/kg-tours/deploy && docker compose -f compose.prod.yml --env-file ../.env exec -T app python manage.py purge_personal_data >> /opt/kg-tours/backups/backup.log 2>&1
 # Retry inquiry emails that failed to send, every 15 minutes
 */15 * * * * cd /opt/kg-tours/deploy && docker compose -f compose.prod.yml --env-file ../.env exec -T app python manage.py resend_inquiries > /dev/null

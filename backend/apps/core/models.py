@@ -2,6 +2,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from django.core.cache import cache
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -57,6 +58,17 @@ class SEOModel(models.Model):
 
 def default_privacy_policy():
     return (Path(__file__).parent / "legal" / "privacy_default.md").read_text(encoding="utf-8")
+
+
+def default_terms():
+    return (Path(__file__).parent / "legal" / "terms_default.md").read_text(encoding="utf-8")
+
+
+LEGAL_HELP = (
+    "На английском. «## Заголовок» — раздел, «- » — пункт, **текст** — жирный. "
+    "Сами подставляются: {company} — название и реквизиты, {brand}, {email}, {site}, {updated}. "
+    "Их заполняют поля выше; текст можно не трогать."
+)
 
 
 class Map3DMode(models.TextChoices):
@@ -157,14 +169,67 @@ class SiteSettings(SEOModel):
     faq_image = models.ImageField("фото у блока FAQ", upload_to="home/", blank=True)
     request_image = models.ImageField("фото рядом с формой", upload_to="home/", blank=True)
     footer_image = models.ImageField("панорама над подвалом", upload_to="home/", blank=True)
+    founder_name = models.CharField("имя основателя", max_length=100, blank=True)
+    founder_role = models.CharField(
+        "роль", max_length=100, blank=True, default="Founder & lead guide"
+    )
+    founder_photo = models.ImageField("фото основателя", upload_to="home/", blank=True)
+    founder_quote = models.CharField(
+        "цитата", max_length=200, blank=True, help_text="Одна фраза крупно, на английском."
+    )
+    founder_story = models.TextField(
+        "история", blank=True, help_text="2–3 коротких абзаца на английском. Пусто — блок скрыт."
+    )
+    founder_since = models.PositiveSmallIntegerField(
+        "год основания", null=True, blank=True, help_text="Например 2014"
+    )
+
+    legal_name = models.CharField(
+        "юр. название компании",
+        max_length=150,
+        blank=True,
+        help_text="Например: Kyrgyz Bridge Travel LLC",
+    )
+    registration_number = models.CharField("регистрационный номер / ИНН", max_length=60, blank=True)
+    legal_address = models.CharField("юридический адрес", max_length=200, blank=True)
+    legal_email = models.EmailField(
+        "email по вопросам данных",
+        blank=True,
+        help_text="Куда писать по поводу персональных данных. Пусто — публичная почта.",
+    )
+    legal_updated = models.DateField(
+        "дата редакции документов", null=True, blank=True, help_text="Показывается вверху страниц."
+    )
     privacy_policy = models.TextField(
-        "политика конфиденциальности",
-        default=default_privacy_policy,
-        help_text="На английском. «## Заголовок» — раздел, «- » — пункт списка, "
-        "**текст** — жирный. Заполните поля в [квадратных скобках].",
+        "политика конфиденциальности", default=default_privacy_policy, help_text=LEGAL_HELP
+    )
+    terms_of_use = models.TextField(
+        "условия использования", default=default_terms, help_text=LEGAL_HELP
+    )
+    google_site_verification = models.CharField(
+        "Google Search Console",
+        max_length=100,
+        blank=True,
+        help_text="Код из мета-тега google-site-verification (только значение content). "
+        "Не нужен, если домен подтверждён через DNS.",
+    )
+    bing_site_verification = models.CharField(
+        "Bing Webmaster Tools",
+        max_length=100,
+        blank=True,
+        help_text="Код из мета-тега msvalidate.01 (только значение content).",
     )
     google_analytics_id = models.CharField(
-        "Google Analytics ID", max_length=32, blank=True, help_text="G-XXXXXXXXXX"
+        "Google Analytics ID",
+        max_length=32,
+        blank=True,
+        validators=[
+            RegexValidator(
+                r"^G-[A-Z0-9]{6,20}$", "Нужен ID вида G-ABC123XYZ9 (GA4 → Admin → Data streams)."
+            )
+        ],
+        help_text="G-XXXXXXXXXX: Google Analytics → Admin → Data streams → сайт → "
+        "Measurement ID. Пусто — аналитика выключена.",
     )
 
     class Meta:
@@ -199,3 +264,32 @@ class SiteSettings(SEOModel):
             return ""
         url = f"https://wa.me/{self.whatsapp}"
         return f"{url}?text={quote(text)}" if text else url
+
+
+def fill_legal(text: str, site: "SiteSettings") -> str:
+    """Put the company details from the admin into a legal text ({company}, {email}, …).
+
+    Only these placeholders are replaced, so any other braces in the text stay as written.
+    """
+    from django.conf import settings
+    from django.utils.dateformat import format as date_format
+
+    company = ", ".join(
+        part
+        for part in [
+            site.legal_name or site.brand_name,
+            f"registration no. {site.registration_number}" if site.registration_number else "",
+            site.legal_address or site.address,
+        ]
+        if part
+    )
+    values = {
+        "company": company,
+        "brand": site.brand_name,
+        "email": site.legal_email or site.email or site.inquiry_email or "the email in the footer",
+        "site": settings.SITE_URL.split("://")[-1],
+        "updated": date_format(site.legal_updated, "j F Y") if site.legal_updated else "—",
+    }
+    for key, value in values.items():
+        text = text.replace("{" + key + "}", value)
+    return text

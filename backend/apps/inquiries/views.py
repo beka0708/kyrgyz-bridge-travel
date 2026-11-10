@@ -27,5 +27,5 @@ def submit_inquiry(request):
         data = dict(form.cleaned_data)
         honeypot = data.pop("website", "")
         create_inquiry(data=data, request=request, is_spam=bool(honeypot))
-        return redirect(f"{_safe_next(request)}?sent=1#inquiry")
+        return redirect(f"{_safe_next(request)}?sent=1#contact")
     return render(request, "pages/inquiry_error.html", {"form": form, "error": error}, status=400)

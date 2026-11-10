@@ -27,9 +27,9 @@ def test_success_redirects_back_with_thanks(client, django_capture_on_commit_cal
     with django_capture_on_commit_callbacks(execute=True):
         resp = post(client, tour=tour.slug, next=tour.get_absolute_url())
     assert resp.status_code == 302
-    assert resp["Location"] == f"{tour.get_absolute_url()}?sent=1#inquiry"
+    assert resp["Location"] == f"{tour.get_absolute_url()}?sent=1#contact"
     assert Inquiry.objects.get().tour == tour
-    assert len(mail.outbox) == 1
+    assert len(mail.outbox) == 2  # the agency + «we got your request» to the traveller
 
 
 def test_thanks_message_after_redirect(client):
@@ -63,7 +63,7 @@ def test_rate_limit(client):
 
 def test_external_next_is_ignored(client):
     resp = post(client, next="https://evil.example.com/")
-    assert resp["Location"] == "/?sent=1#inquiry"
+    assert resp["Location"] == "/?sent=1#contact"
 
 
 def test_get_not_allowed(client):

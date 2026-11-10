@@ -19,7 +19,8 @@
 7. **Запуск** (на сервере): `make prod-up` — первый раз 5–10 минут (сборка). HTTPS выдаётся сам.
 8. **Демо-данные:** `make deploy-photos SERVER=deploy@<ip>` (на ноутбуке), затем на сервере
    `make prod-demo` и `make prod-superuser`.
-9. **Бэкапы** (на сервере): `make prod-cron`.
+9. **Бэкапы и очистка данных** (на сервере): `make prod-cron` — копия каждую ночь (хранятся 7 дней),
+   ежемесячная 1-го числа (12 месяцев, `backups/monthly/`), ночная очистка IP и спама.
 
 Обновить сайт после изменений в коде: `git push`, затем `make deploy SERVER=deploy@<ip>`
 (когда домен заработает, `SERVER=` можно не указывать: по умолчанию `deploy@kyrgyzbridgetravel.com`).
