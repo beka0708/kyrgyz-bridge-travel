@@ -101,6 +101,12 @@ class Review(TimeStampedModel, OrderableModel, PublishableModel):
         )
 
     @property
+    def read_seconds(self):
+        """How long the home «spotlight» shows this review: time to read it, 8–25 s."""
+        words = len(self.text.split())
+        return max(8, min(25, round(4 + words / 3)))
+
+    @property
     def public_source(self):
         """«Google», «TripAdvisor», «Instagram» for the site; nothing for direct or site reviews."""
         return {"google": "Google", "tripadvisor": "TripAdvisor", "instagram": "Instagram"}.get(

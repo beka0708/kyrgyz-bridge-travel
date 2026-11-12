@@ -1243,7 +1243,7 @@ html.lenis {
 }
 @media (prefers-reduced-motion: no-preference) {
   .reviews-spot__face.is-active .reviews-spot__ring circle {
-    animation: review-ring 7s linear forwards;
+    animation: review-ring var(--dur, 10s) linear forwards;
   }
   .reviews-spot.is-paused .reviews-spot__ring circle {
     animation-play-state: paused;

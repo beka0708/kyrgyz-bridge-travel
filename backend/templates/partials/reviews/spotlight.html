@@ -2,11 +2,12 @@
 {% comment %}
   Reviews, variant A «spotlight»: one guest at a time, the quote large, the photo of their tour
   softly cross-fading behind. The faces underneath pick a review; a ring around the active face fills
-  up and moves on to the next one by itself (paused on hover, while off screen or with reduced
-  motion). Swipe on phones. lib/home.ts reviewSpotlight.
+  up and moves on to the next one by itself, after the time it takes to read it (Review.read_seconds;
+  paused under a mouse, while off screen or with reduced motion). Swipe on phones. lib/home.ts reviewSpotlight.
 {% endcomment %}
 <section id="reviews" class="reviews-spot band-dark relative scroll-mt-4 overflow-clip bg-night"
-         x-data="reviewSpotlight({{ reviews|length }})" @mouseenter="hover = true" @mouseleave="hover = false"
+         x-data="reviewSpotlight({{ reviews|length }})"
+         @pointerenter="$event.pointerType === 'mouse' && (hover = true)" @pointerleave="$event.pointerType === 'mouse' && (hover = false)"
          @touchstart.passive="swipeStart($event)" @touchend="swipeEnd($event)"
          :class="{ 'is-paused': hover || !visible }"
          role="region" aria-roledescription="carousel" aria-label="Guest reviews">
@@ -44,7 +45,7 @@
           <button type="button" role="tab" class="reviews-spot__face" :class="active === {{ forloop.counter0 }} && 'is-active'"
                   :aria-selected="active === {{ forloop.counter0 }}" @click="go({{ forloop.counter0 }})" aria-label="Review by {{ review.author_name }}">
             {% include "partials/reviews/_avatar.html" with size="size-full" %}
-            <svg class="reviews-spot__ring" viewBox="0 0 52 52" aria-hidden="true" @animationend="$event.target.tagName === 'circle' && next()"><circle cx="26" cy="26" r="24.5"/></svg>
+            <svg class="reviews-spot__ring" viewBox="0 0 52 52" aria-hidden="true" style="--dur: {{ review.read_seconds }}s" @animationend="$event.target.tagName === 'circle' && next()"><circle cx="26" cy="26" r="24.5"/></svg>
           </button>
         {% endfor %}
       </div>

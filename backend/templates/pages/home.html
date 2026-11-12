@@ -149,10 +149,7 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
           {% if site.founder_role %}<span class="text-sm text-ink-muted">{{ site.founder_role }}</span>{% endif %}
         </div>
         {% if site.founder_instagram %}
-          <a class="founder-ig" href="{{ site.founder_instagram }}" target="_blank" rel="noopener me" aria-label="{{ site.founder_name }} on Instagram" data-magnetic>{% include "partials/icon_social.html" with name="instagram" %}</a>
-        {% endif %}
-        {% if site.whatsapp %}
-          <a class="btn btn-wa gap-2 sm:ml-auto" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}Write to {{ site.founder_name|truncatewords:1|cut:"…"|cut:" " }}</a>
+          <a class="founder-ig ml-auto" href="{{ site.founder_instagram }}" target="_blank" rel="noopener me" aria-label="{{ site.founder_name }} on Instagram" data-magnetic>{% include "partials/icon_social.html" with name="instagram" %}</a>
         {% endif %}
       </div>
     </div>
