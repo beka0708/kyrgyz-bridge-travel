@@ -73,3 +73,24 @@ def test_founder_block(client):
     html = client.get("/").content.decode()
     assert 'id="founder"' in html and "Leading trips since" in html
     assert html.index('id="founder"') < html.index('id="guides"') if 'id="guides"' in html else True
+
+
+def test_cookie_settings_buttons_work_outside_components(client):
+    from apps.core.models import SiteSettings
+
+    s = SiteSettings.load()
+    s.google_analytics_id = "G-TEST12345"
+    s.save()
+    html = client.get("/privacy/").content.decode()
+    # the delegated handler (lib/analytics.ts) listens for this attribute anywhere on the page
+    assert html.count("data-cookie-settings") == 2  # legal page chip + footer
+
+
+def test_markdown_links_are_safe():
+    from apps.core.templatetags.site_tags import simple_markdown
+
+    text = "[ok](/tours/x/) [ext](https://a.org) [bad](javascript:x) [p](//e.com)"
+    html = str(simple_markdown(text))
+    assert '<a href="/tours/x/">ok</a>' in html
+    assert 'href="https://a.org" target="_blank" rel="noopener"' in html
+    assert "[bad](javascript:x)" in html and 'href="//e.com"' not in html

@@ -102,7 +102,7 @@
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-[1200px];
+    @apply mx-auto w-full max-w-[1280px];
     /* safe areas: landscape iPhone notch */
     padding-left: max(1.25rem, env(safe-area-inset-left));
     padding-right: max(1.25rem, env(safe-area-inset-right));
@@ -117,7 +117,7 @@
     @apply text-xs font-bold tracking-[0.14em] uppercase md:text-[13px];
   }
   .h-section {
-    @apply font-display text-[28px] leading-[1.12] font-semibold tracking-[-0.01em] md:text-[44px] md:leading-[1.1];
+    @apply font-display text-[24px] leading-[1.15] font-semibold tracking-[-0.01em] md:text-[34px] md:leading-[1.12] lg:text-[38px];
   }
   .btn {
     @apply inline-flex min-h-12 items-center justify-center rounded-full px-6 text-[15px] font-bold whitespace-nowrap;
@@ -200,6 +200,28 @@
   .snap-row::-webkit-scrollbar {
     display: none;
   }
+  .reviews-deck__stack:focus-visible {
+    @apply rounded-[26px] outline-2 outline-offset-4 outline-ink;
+  }
+  .carousel-btn {
+    @apply flex size-11 items-center justify-center rounded-full border border-ink/15 bg-white text-ink;
+    transition:
+      transform 160ms var(--ease-out),
+      opacity 160ms,
+      background-color 160ms;
+  }
+  .carousel-btn:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+  .carousel-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  @media (hover: hover) {
+    .carousel-btn:hover:not(:disabled) {
+      @apply bg-ink text-snow;
+    }
+  }
   .pic {
     @apply relative overflow-hidden bg-moss;
   }
@@ -219,6 +241,16 @@
   }
   .legal strong {
     @apply text-ink;
+  }
+  /* founder's Instagram: a round icon in the brand gradient, next to his name */
+  .founder-ig {
+    @apply flex size-11 flex-none items-center justify-center rounded-full text-white;
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+    box-shadow: 0 6px 16px rgb(214 36 159 / 0.25);
+    transition: transform 200ms var(--ease-out);
+  }
+  .founder-ig:active {
+    transform: scale(0.94);
   }
   /* Form fields on dark backgrounds */
   .kt-input {
@@ -728,5 +760,799 @@ html:has(.guide-dialog[open]) {
   .js [data-reveal="photo"] img {
     clip-path: none;
     transform: none;
+  }
+}
+
+/* --- About: numbers row (partials/about/_stats.html) --------------------------------- */
+.about-stats {
+  border-color: rgb(255 255 255 / 0.25);
+}
+.about-stats dd {
+  color: var(--color-snow);
+}
+.about-stats__label {
+  color: #e2ebe6;
+}
+
+/* --- Footer: round social icons next to WhatsApp ---------------------------------------- */
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-line-strong);
+  color: var(--color-snow);
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    transform 300ms var(--ease-out);
+}
+.social-btn:active {
+  transform: scale(0.94);
+}
+@media (hover: hover) and (pointer: fine) {
+  .social-btn:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-ink);
+    transform: translateY(-2px);
+  }
+}
+
+/* With Lenis gliding the page (lib/smooth-scroll.ts), the browser must not smooth-scroll too:
+   programmatic scrolls stay instant and Lenis does the easing. */
+html.lenis {
+  scroll-behavior: auto;
+}
+
+/* --- Premium touches for a mouse (lib/premium.ts) --------------------------------------- */
+/* Magnetic buttons: `translate` is separate from `transform`, so press/hover effects still work. */
+.btn.is-magnetic {
+  transition:
+    transform 160ms var(--ease-out),
+    translate 550ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+}
+.social-btn.is-magnetic {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    transform 300ms var(--ease-out),
+    translate 550ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+}
+/* Hero copy drifts up and fades as the hero scrolls away (supported browsers only). */
+@keyframes hero-copy-out {
+  to {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-copy-out {
+      animation: hero-copy-out linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 70vh;
+    }
+  }
+}
+
+/* About «floating gallery» (after altermind.com): photos drift past the text at their own speeds; --lp is the
+   eased scroll position (-0.5 … 0.5). The heading rises word by word (.is-in). */
+.about-float {
+  overflow: clip; /* not hidden: «hidden» would make the block a scroller and break the sticky text */
+  display: flex;
+  flex-direction: column; /* phones: strip above, text, strip below */
+}
+.about-float__photos {
+  display: none; /* laptops only, see the media query below */
+  position: absolute;
+  inset: 0;
+}
+.about-float__ph {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--color-moss);
+  filter: saturate(0.6) brightness(0.82);
+  transition:
+    filter 600ms var(--ease-out),
+    scale 600ms var(--ease-out);
+}
+.about-float__ph img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about-float__ph--person {
+  aspect-ratio: 3 / 4;
+}
+.about-float__ph figcaption,
+.about-float__card figcaption {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgb(10 22 18 / 0.6);
+  backdrop-filter: blur(6px);
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+.about-float.is-scene .about-float__ph {
+  transform: translate3d(0, calc(var(--lp, 0) * var(--s) * -70vh), 0);
+  will-change: transform;
+}
+/* phones: two strips of photos that slide sideways in opposite directions as the block passes;
+   cards never overlap each other or the text. --shift centres a strip wider than the screen. */
+.about-float__strip {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  --dir: -1;
+  --shift: -20vw;
+  padding: 56px 0 32px;
+  transform: translate3d(var(--shift), 0, 0);
+}
+.about-float__strip--b {
+  order: 3;
+  --dir: 1;
+  --shift: -46vw;
+  padding: 36px 0 72px;
+}
+.about-float__center {
+  order: 2;
+}
+.about-float.is-scene .about-float__strip {
+  transform: translate3d(calc(var(--shift) + var(--lp, 0) * var(--dir) * 40vw), 0, 0);
+  will-change: transform;
+}
+.about-float__card {
+  position: relative;
+  flex: none;
+  width: 44vw;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--color-moss);
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.35);
+}
+.about-float__card:nth-child(even) {
+  translate: 0 22px; /* a staggered rhythm instead of a flat row */
+}
+.about-float__card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* tablets and small laptops use the phone strips: cards keep a phone-like size, strips stay centred */
+@media (min-width: 640px) {
+  .about-float__card {
+    width: 230px;
+  }
+  .about-float__strip {
+    --shift: calc(50vw - 360px);
+  }
+  .about-float__strip--b {
+    --shift: calc(50vw - 480px);
+  }
+}
+/* scattered photos need side room next to the 680px text: from 1280px; narrower screens keep the strips */
+@media (min-width: 1280px) {
+  .about-float__photos {
+    display: block;
+  }
+  .about-float__strip {
+    display: none;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .about-float__ph:hover {
+    filter: none;
+    scale: 1.04;
+  }
+}
+.about-float__center {
+  position: relative;
+  z-index: 1;
+}
+.about-float__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+  text-shadow: 0 2px 24px rgb(10 22 18 / 0.8);
+}
+.about-float__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.about-float__title {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 8.6vw, 40px);
+  line-height: 1.06;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.about-float__text {
+  font-size: 16px;
+  line-height: 1.65;
+  color: #dbe5df;
+}
+.about-float__stats {
+  width: 100%;
+  margin-top: 8px;
+}
+.about-float__stats > div {
+  align-items: center;
+}
+.about-float__link {
+  display: inline-flex;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-snow);
+}
+.about-float__link span {
+  color: var(--color-accent);
+  transition: transform 300ms var(--ease-out);
+}
+.about-float__link:hover span {
+  transform: translateX(4px);
+}
+
+/* entrance: words rise out of their masks, then the rest follows */
+.about-float__title .w {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+  vertical-align: top;
+}
+.about-float__title .w > span {
+  display: inline-block;
+}
+.about-float.is-scene .about-float__title .w > span {
+  transform: translateY(110%);
+  transition: transform 900ms var(--ease-out) calc(var(--i) * 70ms);
+}
+.about-float.is-scene .about-float__copy > :not(.about-float__title) {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 800ms var(--ease-out) 450ms,
+    transform 800ms var(--ease-out) 450ms;
+}
+.about-float.is-scene .about-float__copy > .about-float__eyebrow {
+  transition-delay: 0ms;
+}
+.about-float.is-scene.is-in .about-float__title .w > span,
+.about-float.is-scene.is-in .about-float__copy > :not(.about-float__title) {
+  opacity: 1;
+  transform: none;
+}
+
+/* tablets: phone layout (strip · text · strip), a bit larger type */
+@media (min-width: 768px) {
+  .about-float__title {
+    font-size: 52px;
+  }
+  .about-float__text {
+    font-size: 18px;
+  }
+}
+/* laptops: the floating scene (sticky text, photos around it), see .about-float__photos */
+@media (min-width: 1280px) {
+  .about-float {
+    display: block;
+    min-height: 170svh;
+  }
+  .about-float__ph {
+    border-radius: 24px;
+  }
+  .about-float__ph figcaption,
+.about-float__card figcaption {
+    left: 12px;
+    bottom: 12px;
+    font-size: 13px;
+    padding: 4px 12px;
+  }
+  .about-float__center {
+    min-height: 170svh;
+    padding: 30svh 0 26svh;
+  }
+  .about-float__copy {
+    position: sticky;
+    top: clamp(84px, 14svh, 160px);
+    gap: 22px;
+  }
+  .about-float__eyebrow {
+    font-size: 14px;
+  }
+  .about-float__title {
+    font-size: 64px;
+  }
+  .about-float__text {
+    font-size: 19px;
+  }
+}
+
+/* --- Reviews (templates/partials/reviews/: spotlight on home, deck on tour pages) ------------ */
+.review-meta {
+  color: var(--color-ink-muted);
+}
+.band-dark .review-meta {
+  color: var(--color-mist);
+}
+.carousel-btn--dark {
+  border-color: rgb(255 255 255 / 0.25);
+  background: transparent;
+  color: var(--color-snow);
+}
+@media (hover: hover) {
+  .carousel-btn--dark:hover:not(:disabled) {
+    background: var(--color-snow);
+    color: var(--color-ink);
+  }
+}
+
+/* Spotlight (home): the tour photo cross-fades behind, the quote changes with a soft blur. */
+.reviews-spot__bgs,
+.reviews-spot__bg {
+  position: absolute;
+  inset: 0;
+}
+.reviews-spot__bg {
+  opacity: 0;
+  transition: opacity 1200ms var(--ease-out);
+}
+.reviews-spot__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+  transition: transform 7000ms linear;
+}
+.reviews-spot__bg.is-on {
+  opacity: 1;
+}
+.reviews-spot__bg.is-on img {
+  transform: scale(1); /* a slow push-in while the review is read */
+}
+.reviews-spot__bgs::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(10 22 18 / 0.88) 0%, rgb(10 22 18 / 0.72) 45%, rgb(10 22 18 / 0.92) 100%);
+}
+.reviews-spot__stage {
+  display: grid;
+}
+.reviews-spot__slide {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 980px;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  filter: blur(10px);
+  transform: translateX(40px);
+  transition:
+    opacity 700ms var(--ease-out),
+    filter 700ms var(--ease-out),
+    transform 900ms var(--ease-out),
+    visibility 0s 700ms;
+}
+.reviews-spot__slide.is-before {
+  transform: translateX(-40px);
+}
+.reviews-spot__slide.is-on {
+  opacity: 1;
+  visibility: visible;
+  filter: none;
+  transform: none;
+  transition-delay: 120ms, 120ms, 120ms, 0s;
+}
+.reviews-spot__quote {
+  font-family: var(--font-display);
+  font-size: clamp(21px, 5.6vw, 24px);
+  line-height: 1.32;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
+}
+.reviews-spot__faces {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px;
+  margin: -4px;
+}
+.reviews-spot__faces::-webkit-scrollbar {
+  display: none;
+}
+.reviews-spot__face {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  padding: 5px;
+  border-radius: 50%;
+  opacity: 0.5;
+  filter: grayscale(0.6);
+  transition:
+    opacity 300ms ease,
+    filter 300ms ease,
+    transform 300ms var(--ease-out);
+  cursor: pointer;
+}
+.reviews-spot__face.is-active {
+  opacity: 1;
+  filter: none;
+}
+@media (hover: hover) {
+  .reviews-spot__face:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+.reviews-spot__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+  pointer-events: none;
+}
+.reviews-spot__ring circle {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2.5;
+  stroke-dasharray: 154;
+  stroke-dashoffset: 154;
+}
+@keyframes review-ring {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reviews-spot__face.is-active .reviews-spot__ring circle {
+    animation: review-ring 7s linear forwards;
+  }
+  .reviews-spot.is-paused .reviews-spot__ring circle {
+    animation-play-state: paused;
+  }
+}
+@media (min-width: 768px) {
+  .reviews-spot__quote {
+    font-size: 36px;
+    line-height: 1.25;
+  }
+  .reviews-spot__slide {
+    gap: 30px;
+  }
+  .reviews-spot__face {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Deck (tour page): postcards in a stack; the top one is dragged or thrown away. */
+.reviews-deck__stack {
+  position: relative;
+  width: min(100%, 440px);
+  height: 430px;
+  margin-bottom: 44px; /* the cards behind peek out below the top one */
+  outline: none;
+  touch-action: pan-y; /* vertical swipes still scroll the page */
+}
+.reviews-deck__card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 26px;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgb(17 32 26 / 0.12);
+  z-index: calc(100 - var(--pos, 0));
+  opacity: clamp(0, calc(4 - var(--pos, 0)), 1);
+  transform: translate3d(var(--dx, 0px), calc(min(var(--pos, 0), 3) * 16px), 0) rotate(var(--tilt, 0deg))
+    scale(calc(1 - min(var(--pos, 0), 3) * 0.045));
+  transform-origin: 50% 100%;
+  transition:
+    transform 600ms cubic-bezier(0.2, 0.9, 0.25, 1.15),
+    opacity 400ms ease;
+  user-select: none;
+}
+.reviews-deck__card.is-top {
+  cursor: grab;
+}
+.reviews-deck__card.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+.reviews-deck__card.is-leaving {
+  transform: translate3d(calc(var(--fly, 1) * 120%), -30px, 0) rotate(calc(var(--fly, 1) * 16deg));
+  opacity: 0;
+  transition:
+    transform 420ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 420ms ease;
+}
+.reviews-deck__stamp {
+  padding: 4px 10px;
+  border: 1.5px dashed var(--color-rust);
+  border-radius: 8px;
+  rotate: 4deg;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-rust);
+}
+@media (max-width: 767.98px) {
+  .reviews-deck__stack {
+    height: 380px;
+  }
+  .reviews-deck__card {
+    padding: 22px;
+  }
+}
+@media (min-width: 768px) {
+  .reviews-deck__stack {
+    height: 440px;
+  }
+  .reviews-deck__card {
+    padding: 34px;
+  }
+}
+
+/* «Share your experience»: guest faces + question + stars that light up to the hovered one.
+   One dark pill on laptops; on phones the stars drop to their own row. */
+.review-cta {
+  display: inline-flex;
+  align-self: flex-start; /* hug the content inside the sections' column layouts */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 10px 12px 10px 12px;
+  border-radius: 32px;
+  background: var(--color-ink);
+  color: var(--color-snow);
+  box-shadow: 0 14px 34px rgb(17 32 26 / 0.18);
+}
+.review-cta.is-dark {
+  background: rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+}
+.review-cta__ask {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 6px;
+}
+.review-cta__faces {
+  display: flex;
+}
+.review-cta__faces > * {
+  margin-left: -10px;
+  box-shadow: 0 0 0 2px var(--color-ink);
+  transition: transform 350ms var(--ease-out);
+}
+.review-cta.is-dark .review-cta__faces > * {
+  box-shadow: 0 0 0 2px var(--color-night);
+}
+.review-cta__faces > :first-child {
+  margin-left: 0;
+}
+@media (hover: hover) {
+  .review-cta__ask:hover .review-cta__faces > :nth-child(1) {
+    transform: translateX(-3px) rotate(-6deg);
+  }
+  .review-cta__ask:hover .review-cta__faces > :nth-child(3) {
+    transform: translateX(3px) rotate(6deg);
+  }
+}
+.review-cta__stars {
+  display: flex;
+  flex-direction: row-reverse; /* the DOM goes 5→1, so «this and the stars after it» = lower ones */
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+}
+.review-cta__stars a {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: rgb(255 255 255 / 0.28);
+  transition:
+    color 150ms ease,
+    transform 250ms var(--ease-out);
+}
+.review-cta__stars svg {
+  width: 26px;
+  height: 26px;
+}
+.review-cta__stars a:hover,
+.review-cta__stars a:hover ~ a,
+.review-cta__stars a:focus-visible,
+.review-cta__stars a:focus-visible ~ a {
+  color: var(--color-accent) !important;
+}
+.review-cta__stars a:hover {
+  transform: scale(1.18) rotate(-8deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* a hint that the stars are tappable: they light up once, left to right */
+  .review-cta__stars a {
+    animation: star-wave 2.4s var(--ease-out) both;
+    animation-delay: calc(1s + (var(--n, 1) - 1) * 90ms);
+  }
+}
+@keyframes star-wave {
+  20% {
+    color: var(--color-accent);
+    transform: translateY(-4px);
+  }
+  45% {
+    transform: none;
+  }
+}
+@media (max-width: 479.98px) {
+  .review-cta {
+    display: flex;
+    align-self: stretch;
+    border-radius: 26px;
+    padding: 14px;
+  }
+  .review-cta__stars {
+    flex: 1 1 100%;
+    justify-content: space-evenly;
+  }
+}
+
+/* --- How it works: a route line draws through the steps (lib/scroll.ts initSteps) ---------- */
+.steps {
+  position: relative;
+}
+/* the line: vertical on phones (left of the cards), horizontal behind the cards on laptops */
+.steps::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 34px;
+  bottom: 34px;
+  width: 2px;
+  background: repeating-linear-gradient(180deg, var(--color-accent) 0 8px, transparent 8px 14px);
+  transform-origin: top;
+}
+.steps__dot {
+  position: absolute;
+  left: -29px;
+  top: 30px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 5px var(--color-paper);
+}
+.steps__num {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+.steps__num > span {
+  display: inline-block;
+}
+@media (max-width: 767.98px) {
+  .steps {
+    padding-left: 34px;
+  }
+}
+@media (min-width: 768px) {
+  .steps::before {
+    left: 8%;
+    right: 8%;
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--color-accent) 0 8px, transparent 8px 14px);
+    transform-origin: left;
+  }
+  .steps__dot {
+    display: none;
+  }
+}
+
+/* entrance (only once JS armed it: without JS or with reduced motion everything just shows) */
+.steps.is-armed::before {
+  transform: scaleY(0);
+  transition: transform 1400ms var(--ease-out) 200ms;
+}
+.steps.is-armed .steps__item {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms var(--ease-out),
+    transform 900ms var(--ease-out);
+  transition-delay: calc(var(--i) * 260ms);
+}
+.steps.is-armed .steps__num > span {
+  transform: translateY(105%);
+  transition: transform 800ms var(--ease-out);
+  transition-delay: calc(var(--i) * 260ms + 250ms);
+}
+.steps.is-armed .steps__dot,
+.steps.is-armed .steps__arrow {
+  scale: 0;
+  transition: scale 500ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  transition-delay: calc(var(--i) * 260ms + 450ms);
+}
+.steps.is-in::before {
+  transform: none;
+}
+.steps.is-in .steps__item {
+  opacity: 1;
+  transform: none;
+}
+.steps.is-in .steps__num > span {
+  transform: none;
+}
+.steps.is-in .steps__dot,
+.steps.is-in .steps__arrow {
+  scale: 1;
+}
+@media (min-width: 768px) {
+  .steps.is-armed::before {
+    transform: scaleX(0);
+  }
+  .steps.is-in::before {
+    transform: none;
+  }
+}
+/* after the entrance (.is-done), a little life on hover: the card lifts */
+@media (hover: hover) and (pointer: fine) {
+  .steps.is-done .steps__item {
+    transition:
+      transform 500ms var(--ease-out),
+      box-shadow 500ms var(--ease-out);
+    transition-delay: 0ms;
+  }
+  .steps.is-done .steps__item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgb(17 32 26 / 0.1);
   }
 }

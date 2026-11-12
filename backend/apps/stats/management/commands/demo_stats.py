@@ -12,7 +12,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.inquiries.models import Inquiry, InquiryStatus
-from apps.stats.models import ContactChannel, ContactClick, TourView
+from apps.stats.models import ContactChannel, ContactClick, CountryVisit, TourView
 from apps.tours.models import Tour
 
 DEMO_MARK = "demo-stats"
@@ -41,6 +41,25 @@ PHONES = [
     "",
 ]
 SOURCES = [("", 45), ("google", 25), ("instagram", 18), ("facebook", 8), ("tripadvisor", 4)]
+# where foreign travellers to Kyrgyzstan come from (roughly)
+COUNTRIES = [
+    ("DE", 18),
+    ("GB", 14),
+    ("US", 12),
+    ("FR", 9),
+    ("KG", 8),
+    ("RU", 7),
+    ("KZ", 6),
+    ("NL", 5),
+    ("AU", 4),
+    ("CH", 3),
+    ("CA", 3),
+    ("IL", 3),
+    ("KR", 3),
+    ("JP", 2),
+    ("PL", 2),
+    ("", 3),
+]
 WHEN = [
     "mid-July",
     "August, about a week",
@@ -71,12 +90,13 @@ class Command(BaseCommand):
         Inquiry.objects.filter(utm_campaign=DEMO_MARK).delete()
         TourView.objects.filter(date__gte=today - timedelta(days=DAYS)).delete()
         ContactClick.objects.filter(date__gte=today - timedelta(days=DAYS)).delete()
+        CountryVisit.objects.filter(date__gte=today - timedelta(days=DAYS)).delete()
 
         # Interest grows a little towards today (as if the ads started); bestsellers get more.
         popularity = {
             t.pk: (3.0 if t.is_featured else 1.0) * random.uniform(0.6, 1.4) for t in tours
         }
-        views, clicks, inquiries = [], [], 0
+        views, clicks, visits, inquiries = [], [], [], 0
         for offset in range(DAYS, -1, -1):
             day = today - timedelta(days=offset)
             growth = 1 + (DAYS - offset) / DAYS  # 1 → 2
@@ -85,6 +105,12 @@ class Command(BaseCommand):
                 n = int(random.gauss(9, 3) * popularity[tour.pk] * growth * weekend)
                 if n > 0:
                     views.append(TourView(tour=tour, date=day, views=n))
+            people = max(5, int(random.gauss(38, 9) * growth * weekend))
+            per_country: dict[str, int] = {}
+            for _ in range(people):
+                code = weighted(COUNTRIES)
+                per_country[code] = per_country.get(code, 0) + 1
+            visits += [CountryVisit(date=day, country=c, visits=n) for c, n in per_country.items()]
             wa = max(0, int(random.gauss(3, 1.5) * growth))
             if wa:
                 clicks.append(ContactClick(date=day, channel=ContactChannel.WHATSAPP, clicks=wa))
@@ -97,6 +123,7 @@ class Command(BaseCommand):
 
         TourView.objects.bulk_create(views)
         ContactClick.objects.bulk_create(clicks)
+        CountryVisit.objects.bulk_create(visits)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Demo stats: {inquiries} inquiries, {sum(v.views for v in views)} tour views, "
@@ -136,6 +163,7 @@ class Command(BaseCommand):
             utm_source=source,
             utm_medium="cpc" if source in ("google", "facebook") else ("social" if source else ""),
             utm_campaign=DEMO_MARK,
+            country=weighted([c for c in COUNTRIES if c[0]]),
             user_agent="Mozilla/5.0 (demo)",
             notified_at=timezone.now(),
         )

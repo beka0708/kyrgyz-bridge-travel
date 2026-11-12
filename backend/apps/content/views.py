@@ -28,7 +28,12 @@ def review_submit(request):
             transaction.on_commit(lambda: notify_about_review(review))
             return redirect(f"{reverse('content:review_submit')}?sent=1&r={review.rating}")
     else:
-        form = ReviewSubmitForm(initial={"tour": tour_slug})
+        # «How was your trip? ★★★★★» on the home page links here with the tapped star
+        rating = request.GET.get("rating", "")
+        initial = {"tour": tour_slug}
+        if rating in {"1", "2", "3", "4", "5"}:
+            initial["rating"] = int(rating)
+        form = ReviewSubmitForm(initial=initial)
     meta = PageMeta(
         title="Share your experience",
         description="Travelled with us? Tell other travellers how it was.",

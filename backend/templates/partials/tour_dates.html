@@ -1,0 +1,42 @@
+{% comment %}
+  Tour page: upcoming dates as a strip of cards, month labels between them (variant C, chosen by
+  the client). Swipe on phones, ← → or a trackpad on laptops. Private tours without fixed dates get
+  a short note instead: they start any day the traveller wants.
+{% endcomment %}
+{% if departure_months %}
+<section id="dates" class="flex scroll-mt-20 flex-col gap-5 pt-10 md:pt-14" x-data="scrollStrip">
+  <div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+    <div class="flex flex-col gap-1">
+      <h2 class="h-section">Dates &amp; availability</h2>
+      <a class="lnk text-sm font-bold text-rust" href="{% url 'tours:dates' %}">All tour dates →</a>
+    </div>
+    <div class="hidden gap-2 md:flex" x-show="!(atStart && atEnd)">
+      <button type="button" class="carousel-btn" @click="step(-1)" :disabled="atStart" aria-label="Earlier dates">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button type="button" class="carousel-btn" @click="step(1)" :disabled="atEnd" aria-label="Later dates">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+  <div x-ref="track" class="snap-row gap-3 pb-2 md:mx-0 md:px-0 md:[scroll-padding-inline:0]" tabindex="0" aria-label="Departure dates">
+    {% for m in departure_months %}
+      <div class="flex w-9 flex-none snap-start items-center justify-center rounded-[18px] bg-ink text-snow">
+        <span class="rotate-180 text-xs font-bold tracking-[0.16em] whitespace-nowrap uppercase [writing-mode:vertical-rl]">{{ m.label }}</span>
+      </div>
+      {% for departure in m.items %}{% include "partials/departure_card.html" %}{% endfor %}
+    {% endfor %}
+  </div>
+  <p class="text-sm text-ink-muted">Other dates or a private group? <a class="font-bold text-rust underline-offset-4 can-hover:hover:underline" href="#contact">Ask us</a> — we often add departures.</p>
+</section>
+{% elif tour.tour_type == "solo" %}
+<section id="dates" class="scroll-mt-20 pt-10 md:pt-14">
+  <div class="flex flex-col gap-3 rounded-[22px] bg-white p-5 ring-1 ring-ink/5 md:flex-row md:items-center md:justify-between md:p-6">
+    <span class="flex flex-col gap-1">
+      <b class="text-[17px]">Private tour: you choose the dates</b>
+      <span class="text-[15px] text-ink-muted">It starts any day{% if tour.season_label %}, {{ tour.season_label }}{% endif %}. Just you, your people and your guide.</span>
+    </span>
+    <a class="btn btn-accent min-h-11 flex-none px-5 text-sm" href="#contact">Tell us your dates</a>
+  </div>
+</section>
+{% endif %}

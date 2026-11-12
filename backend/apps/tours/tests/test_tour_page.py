@@ -70,3 +70,26 @@ def test_related_tours_same_type_first(client):
     assert related_tours(tour) == [group, solo]
     html = client.get(tour.get_absolute_url()).content.decode()
     assert 'id="more-tours"' in html and "You may also like" in html
+
+
+@pytest.mark.django_db
+def test_tour_reviews_as_a_deck_with_this_tours_rating(client):
+    from apps.content.models import Review
+
+    tour = TourFactory(title="Ala-Kul Trek")
+    Review.objects.create(author_name="Anna", text="Loved it", rating=5, tour=tour)
+    Review.objects.create(author_name="Tom", text="Good", rating=4, tour=tour)
+    Review.objects.create(author_name="Other", text="Elsewhere", rating=5)  # fills the deck
+    html = client.get(tour.get_absolute_url()).content.decode()
+    assert "reviewDeck(3)" in html
+    assert "4.5" in html and "2 reviews of this tour" in html
+    assert "Been on this tour?" in html
+    assert f"?tour={tour.slug}&amp;rating=5" in html  # the stars open the form for this tour
+
+
+@pytest.mark.django_db
+def test_tour_without_own_reviews_has_no_rating(client):
+    tour = TourFactory()
+    html = client.get(tour.get_absolute_url()).content.decode()
+    assert "of this tour" not in html
+    assert "Share your experience" in html

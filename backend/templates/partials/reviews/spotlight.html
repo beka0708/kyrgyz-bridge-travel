@@ -1,0 +1,63 @@
+{% load site_tags %}
+{% comment %}
+  Reviews, variant A «spotlight»: one guest at a time, the quote large, the photo of their tour
+  softly cross-fading behind. The faces underneath pick a review; a ring around the active face fills
+  up and moves on to the next one by itself (paused on hover, while off screen or with reduced
+  motion). Swipe on phones. lib/home.ts reviewSpotlight.
+{% endcomment %}
+<section id="reviews" class="reviews-spot band-dark relative scroll-mt-4 overflow-clip bg-night"
+         x-data="reviewSpotlight({{ reviews|length }})" @mouseenter="hover = true" @mouseleave="hover = false"
+         @touchstart.passive="swipeStart($event)" @touchend="swipeEnd($event)"
+         :class="{ 'is-paused': hover || !visible }"
+         role="region" aria-roledescription="carousel" aria-label="Guest reviews">
+  <div class="reviews-spot__bgs" aria-hidden="true">
+    {% for review in reviews %}
+      {% if review.tour.cover %}
+        <div class="reviews-spot__bg" :class="active === {{ forloop.counter0 }} && 'is-on'">{% img review.tour.cover alt="" sizes="100vw" %}</div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="container-page relative flex flex-col gap-10 py-16 md:gap-14 md:py-28">
+    <div class="flex flex-wrap items-end justify-between gap-5">
+      <h2 class="h-section">Travellers say</h2>
+      {% include "partials/reviews/_rating.html" %}
+    </div>
+
+    <div class="reviews-spot__stage">
+      {% for review in reviews %}
+        <figure class="reviews-spot__slide" :class="active === {{ forloop.counter0 }} ? 'is-on' : (active > {{ forloop.counter0 }} ? 'is-before' : '')"
+                aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ reviews|length }}" :aria-hidden="active !== {{ forloop.counter0 }}">
+          <span class="text-lg tracking-[3px] text-accent" role="img" aria-label="{{ review.rating }} out of 5 stars">{% for _ in "x"|rjust:review.rating %}★{% endfor %}</span>
+          <blockquote class="reviews-spot__quote">“{{ review.text }}”</blockquote>
+          <figcaption class="flex items-center gap-3.5">
+            {% include "partials/reviews/_avatar.html" with size="size-12" %}
+            {% include "partials/reviews/_meta.html" %}
+          </figcaption>
+        </figure>
+      {% endfor %}
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="reviews-spot__faces" role="tablist" aria-label="Choose a review">
+        {% for review in reviews %}
+          <button type="button" role="tab" class="reviews-spot__face" :class="active === {{ forloop.counter0 }} && 'is-active'"
+                  :aria-selected="active === {{ forloop.counter0 }}" @click="go({{ forloop.counter0 }})" aria-label="Review by {{ review.author_name }}">
+            {% include "partials/reviews/_avatar.html" with size="size-full" %}
+            <svg class="reviews-spot__ring" viewBox="0 0 52 52" aria-hidden="true" @animationend="$event.target.tagName === 'circle' && next()"><circle cx="26" cy="26" r="24.5"/></svg>
+          </button>
+        {% endfor %}
+      </div>
+      <div class="flex flex-none gap-2">
+        <button type="button" class="carousel-btn carousel-btn--dark" @click="go(active - 1)" aria-label="Previous review">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" class="carousel-btn carousel-btn--dark" @click="go(active + 1)" aria-label="Next review">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    {% include "partials/reviews/_cta.html" with dark=True %}
+  </div>
+</section>

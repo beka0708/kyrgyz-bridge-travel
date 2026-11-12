@@ -28,8 +28,11 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-kgtours}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-kgtours}
       MEDIA_ROOT: /app/media
       DEMO_DIR: /demo
+      GEOIP_PATH: /app/var/geoip/dbip-country.mmdb
     volumes:
       - media:/app/media
+      # visitor countries database (DB-IP Lite), refreshed monthly by cron
+      - geoip:/app/var/geoip
       # demo photos for `make prod-demo` (preview only; the folder is not in git, see deploy-photos)
       - ../demo:/demo:ro
     depends_on:
@@ -66,5 +69,6 @@ services:
 volumes:
   pgdata:
   media:
+  geoip:
   caddy_data:
   caddy_config:

@@ -1,13 +1,15 @@
-from django.db.models import Prefetch
+from django.db.models import Avg, Count, Prefetch
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from apps.content.models import Review
 from apps.core.maps import map_config
 from apps.core.models import SiteSettings
 from apps.core.seo import tour_list_meta, tour_meta
 from apps.stats.services import record_tour_view
 
-from .models import ListKind, Tour, TourDay, TourType
+from .models import Departure, ListKind, Tour, TourDay, TourType
+from .services.departures import by_month
 
 TYPE_FILTERS = [
     ("", "All tours"),
@@ -89,6 +91,23 @@ def _price_lists(tour):
     }
 
 
+def tour_page_reviews(tour, limit=12):
+    """This tour's reviews first, then other guests' words, so the carousel is never thin."""
+    own = list(tour.reviews.filter(is_published=True).select_related("tour")[:limit])
+    if len(own) < 4:
+        others = Review.objects.published().exclude(tour=tour).select_related("tour")
+        own += list(others[: limit - len(own)])
+    return own
+
+
+def tour_rating(tour):
+    """Average stars of this tour's own published reviews: {"value": 4.8, "count": 6} or None."""
+    stats = tour.reviews.filter(is_published=True).aggregate(avg=Avg("rating"), count=Count("pk"))
+    if not stats["count"]:
+        return None
+    return {"value": round(stats["avg"], 1), "count": stats["count"]}
+
+
 def tour_detail(request, slug):
     # Staff can preview unpublished tours from the admin («Смотреть на сайте»).
     tours = Tour.objects.all() if request.user.is_staff else Tour.objects.published()
@@ -101,6 +120,8 @@ def tour_detail(request, slug):
         slug=slug,
     )
     days = list(tour.days.all())
+    departures = list(tour.departures.upcoming().select_related("tour"))
+    tour.upcoming_departures = departures  # for tour.next_departure_label
     if tour.is_published:
         record_tour_view(request, tour)
     route_props = {
@@ -128,7 +149,10 @@ def tour_detail(request, slug):
             "tabs": _detail_tabs(tour),
             **_price_lists(tour),
             "gallery": list(tour.images.all()),
-            "tour_reviews": list(tour.reviews.filter(is_published=True)[:2]),
+            "tour_reviews": tour_page_reviews(tour),
+            "tour_rating": tour_rating(tour),
+            "departures": departures,
+            "departure_months": by_month(departures),
             "related": related_tours(tour),
             "route_props": route_props,
             "meta": tour_meta(site, tour, days),
@@ -136,6 +160,7 @@ def tour_detail(request, slug):
             # header (desktop pill nav and phone back link)
             "nav_links": [
                 {"href": reverse("tours:list"), "label": "Tours", "icon": "tours"},
+                {"href": "#dates", "label": "Dates", "icon": "dates"},
                 {"href": "#route", "label": "Route", "icon": "route"},
                 {"href": "#included", "label": "What's included", "icon": "included"},
                 {"href": "#contact", "label": "Contact", "icon": "contact"},
@@ -143,5 +168,34 @@ def tour_detail(request, slug):
             "header_cta_href": "#contact",
             "header_cta_label": "Check dates",
             "back_url": reverse("tours:list"),
+        },
+    )
+
+
+def departures_calendar(request):
+    """All upcoming dates of all tours, month by month: plan a trip a year ahead."""
+    departures = list(
+        Departure.objects.upcoming().select_related("tour").order_by("start_date", "tour__order")
+    )
+    site = SiteSettings.load()
+    from apps.core.seo import PageMeta, absolute
+
+    meta = PageMeta(
+        title=f"Tour dates in Kyrgyzstan {departures[0].start_date.year if departures else ''}"
+        f" — group departures | {site.brand_name}".replace("  ", " "),
+        description="Calendar of small-group tours in Kyrgyzstan for the next 12 months: "
+        "treks, yurt stays and horse riding. Pick a date and check free seats.",
+        canonical=absolute(reverse("tours:dates")),
+    )
+    return render(
+        request,
+        "pages/departures.html",
+        {
+            "months": by_month(departures),
+            "departures": departures,
+            "meta": meta,
+            "back_url": reverse("core:home"),
+            "header_cta_href": "#contact",
+            "header_cta_label": "Ask about dates",
         },
     )

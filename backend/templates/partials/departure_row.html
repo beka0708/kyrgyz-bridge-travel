@@ -1,0 +1,32 @@
+{% load site_tags %}
+{% comment %}
+  One date in a calendar. On the tour page «Choose» fills the request form below;
+  on the calendar page it opens the tour with that date picked. `show_tour`: calendar page.
+{% endcomment %}
+<div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[20px] bg-white p-3 pr-4 ring-1 ring-ink/5 md:gap-5 md:p-4 md:pr-5{% if departure.is_full %} opacity-60{% endif %}" data-departure="{{ departure.pk }}" data-departure-label="{{ departure.tour.title }}, {{ departure.dates_label }}">
+  <span class="flex w-14 flex-col items-center rounded-2xl bg-paper py-2 leading-none md:w-16">
+    <b class="font-display text-xl tabular-nums md:text-2xl">{{ departure.start_date.day }}</b>
+    <span class="mt-1 text-[11px] font-bold tracking-[0.08em] text-rust uppercase">{{ departure.start_date|date:"M" }}</span>
+  </span>
+  <span class="flex min-w-0 flex-col gap-1">
+    {% if show_tour %}<a class="line-clamp-2 leading-snug font-bold can-hover:hover:underline" href="{{ departure.tour.get_absolute_url }}">{{ departure.tour.title }}</a>{% endif %}
+    <span class="{% if show_tour %}text-sm{% else %}font-bold{% endif %}">{{ departure.dates_label }}<span class="block text-[13px] font-normal text-ink-muted md:inline md:text-[inherit]"><span class="hidden md:inline"> · </span>{{ departure.weekdays_label }}</span></span>
+    <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+      <span class="inline-flex items-center gap-1.5 font-semibold {% if departure.is_full %}text-ink-muted{% elif departure.status == 'few' or departure.seats_left and departure.seats_left <= 3 %}text-rust{% else %}text-[#23864f]{% endif %}">
+        <span class="size-2 rounded-full {% if departure.is_full %}bg-ink-muted{% elif departure.status == 'few' or departure.seats_left and departure.seats_left <= 3 %}bg-accent{% else %}bg-[#2fa564]{% endif %}" aria-hidden="true"></span>{{ departure.seats_label }}
+      </span>
+      {% if departure.price_label %}<span class="font-semibold tabular-nums md:hidden">{{ departure.price_label }}</span>{% endif %}
+      {% if departure.note %}<span class="text-ink-muted">{{ departure.note }}</span>{% endif %}
+    </span>
+  </span>
+  <span class="flex items-center gap-4">
+    {% if departure.price_label %}<span class="hidden text-right font-display text-lg font-semibold tabular-nums md:block">{{ departure.price_label }}</span>{% endif %}
+    {% if departure.is_full %}
+      <span class="text-sm font-semibold text-ink-muted">Full</span>
+    {% elif show_tour %}
+      <a class="btn btn-accent min-h-10 px-4 text-sm md:min-h-11 md:px-5" href="{{ departure.tour.get_absolute_url }}?departure={{ departure.pk }}#contact">Choose</a>
+    {% else %}
+      <button type="button" class="btn btn-accent min-h-10 px-4 text-sm md:min-h-11 md:px-5" @click="$dispatch('departure-pick', { id: '{{ departure.pk }}', label: '{{ departure.dates_label|escapejs }}' })">Choose</button>
+    {% endif %}
+  </span>
+</div>

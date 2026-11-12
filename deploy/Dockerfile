@@ -42,8 +42,8 @@ RUN SECRET_KEY=build-only DATABASE_URL=sqlite:////tmp/build.db \
     python manage.py collectstatic --noinput -v0
 
 RUN useradd --uid 1000 --create-home app \
-    && mkdir -p /app/media /tmp/django-cache \
-    && chown -R app:app /app/media /tmp/django-cache
+    && mkdir -p /app/media /app/var/geoip /tmp/django-cache \
+    && chown -R app:app /app/media /app/var /tmp/django-cache
 USER app
 
 EXPOSE 8000

@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from apps.content.models import FAQ, Guide, Review, Stat
+from apps.content.models import FAQ, AboutPhoto, Guide, Review, Stat
 from apps.core.models import SiteSettings
 from apps.core.templatetags.site_tags import accent_title
 from conftest import TourFactory, image_file
@@ -38,7 +38,9 @@ def test_home_shows_filled_sections(client):
     assert 'id="guide-' in html and "I love these hills" in html  # details dialog
     # counts up, thousands separator, the suffix in the accent colour
     assert 'data-count="3000"' in html and '3,000</span><span class="text-accent">+</span>' in html
-    assert not re.search(r'<h2[^>]*>[^<]*<span class="text-accent">', html)  # one accent: the hero
+    # accents: the hero and the «About us» title only
+    accented = re.findall(r'<h2([^>]*)>[^<]*<span class="text-accent">', html)
+    assert all("about-float__title" in attrs for attrs in accented)
     assert "https://wa.me/996555000000" in html
 
 
@@ -52,7 +54,7 @@ def test_home_hides_empty_sections(client):
 
 
 def test_rating_and_filters(client):
-    TourFactory(title="Day hike", tour_type="solo", duration_days=1)
+    TourFactory(title="Day hike", tour_type="solo", duration_days=1, is_featured=True)
     TourFactory(title="Big trek", tour_type="group", duration_days=5)
     s = SiteSettings.load()
     s.rating_value = "4.8"
@@ -62,8 +64,20 @@ def test_rating_and_filters(client):
     html = client.get("/").content.decode()
 
     assert "4.8 on Google (57 reviews)" in html
-    assert "All · 2" in html and ">1–2 days<" in html
-    assert ">Winter<" not in html  # chips without tours are hidden
+    # order: bestsellers first (selected), then private, group, all — no counts
+    chips = re.findall(r'class="chip"[^>]*>([^<]+)</button>', html)
+    assert chips == ["Bestsellers", "Private tours", "Group tours", "All tours"]
+    assert "tourFilter('best')" in html
+    # the non-featured tour is hidden until Alpine starts (no flash of all tours)
+    assert html.count('style="display: none"') >= 2
+
+
+def test_filters_without_bestsellers_start_with_private(client):
+    TourFactory(tour_type="solo")
+    TourFactory(tour_type="group")
+    html = client.get("/").content.decode()
+    chips = re.findall(r'class="chip"[^>]*>([^<]+)</button>', html)
+    assert chips == ["Private tours", "Group tours", "All tours"]
 
 
 def test_tour_card_badges(client):
@@ -93,3 +107,78 @@ def test_phone_menu_is_outside_the_blurred_header(client):
     assert 'x-teleport="body"' in html  # backdrop-filter would clip a fixed menu inside the header
     assert "lang_switch" not in html and "Русский" not in html  # no language switch
     assert "t.me/" not in html  # Telegram removed
+
+
+def test_reviews_show_up_to_twelve(client):
+    for i in range(14):
+        Review.objects.create(author_name=f"Guest {i}", text="Great", rating=5)
+    html = client.get("/").content.decode()
+    assert "reviewSpotlight" in html
+    assert html.count('aria-roledescription="slide"') == 12
+
+
+def test_about_gallery_falls_back_to_guides_and_tours(client):
+    Stat.objects.create(value=12, suffix="+", label="years")
+    TourFactory(title="Ala-Kul Trek")
+    Guide.objects.create(name="Aibek", photo=image_file())
+    html = client.get("/").content.decode()
+    assert 'id="about" class="about-float' in html and 'data-about-scene="floating"' in html
+    assert 'data-count="12"' in html
+    assert "<figcaption>Aibek</figcaption>" in html  # guides are captioned with their names
+    assert html.count('<figure class="about-float__ph') == 2  # one tour cover + one guide
+
+
+def test_about_gallery_and_texts_come_from_the_admin(client):
+    for i in range(9):
+        AboutPhoto.objects.create(image=image_file(), caption=f"Photo {i}")
+    AboutPhoto.objects.create(image=image_file(), caption="Hidden", is_published=False)
+    s = SiteSettings.load()
+    s.about_eyebrow = "Our people"
+    s.about_link_label = "See who leads"
+    s.founder_since = 2014
+    s.save()
+    Guide.objects.create(name="Aibek", photo=image_file())
+
+    html = client.get("/").content.decode()
+    assert html.count('<figure class="about-float__ph') == 7  # one per place in the layout
+    assert "Photo 0" in html and "Photo 7" not in html and "Hidden" not in html
+    assert "Since 2014 · Our people" in html
+    assert "See who leads" in html
+
+
+def test_footer_shows_only_filled_social_links(client):
+    s = SiteSettings.load()
+    s.instagram_url = "https://instagram.com/kgtours"
+    s.tiktok_url = "https://tiktok.com/@kgtours"
+    s.save()
+    html = client.get("/").content.decode()
+    assert 'aria-label="Instagram"' in html and 'aria-label="TikTok"' in html
+    assert 'aria-label="Facebook"' not in html and 'aria-label="Tripadvisor"' not in html
+
+
+@pytest.mark.parametrize(
+    ("query", "marker"),
+    [("", "reviewSpotlight")],
+)  # fmt: skip
+def test_review_designs_to_compare(client, query, marker):
+    Review.objects.create(author_name="Anna", text="Great trip")
+    html = client.get(f"/{query}").content.decode()
+    assert marker in html and 'id="reviews"' in html
+
+
+def test_review_star_link_opens_the_form_with_that_rating(client):
+    Review.objects.create(author_name="Anna", text="Great trip", photo=image_file())
+    html = client.get("/").content.decode()
+    assert "/reviews/new/?rating=5" in html
+    form = client.get("/reviews/new/?rating=4").content.decode()
+    assert "rating: 4" in form
+    assert "rating: 0" in client.get("/reviews/new/?rating=9").content.decode()
+    # guest photos show in the faces (a block, so the round frame gets its size)
+    assert '<span class="pic block size-10' in html
+
+
+def test_no_template_comment_leaks_into_the_page(client):
+    Review.objects.create(author_name="Anna", text="Great trip")
+    for query in ("",):
+        html = client.get(f"/{query}").content.decode()
+        assert "{#" not in html and "#}" not in html and "{%" not in html

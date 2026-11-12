@@ -1,0 +1,10 @@
+{# The overall rating from the admin (Настройки → Главная): «4.9 ★★★★★ 126 reviews…». #}
+{% if site.rating_value %}
+  <a class="review-rating flex items-center gap-3.5" {% if site.rating_url %}href="{{ site.rating_url }}" target="_blank" rel="noopener"{% endif %}>
+    <span class="font-display text-[36px] leading-none font-semibold tabular-nums md:text-[44px]">{{ site.rating_value }}</span>
+    <span class="flex flex-col gap-0.5">
+      <span class="tracking-[2px] text-accent" aria-hidden="true">★★★★★</span>
+      <span class="review-meta text-sm">{% if site.rating_count %}{{ site.rating_count }} reviews on {% endif %}Google and TripAdvisor</span>
+    </span>
+  </a>
+{% endif %}

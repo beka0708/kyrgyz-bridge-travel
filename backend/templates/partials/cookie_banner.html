@@ -8,16 +8,16 @@
 <div x-data="cookieBanner" x-show="open" x-cloak x-transition.opacity.duration.200ms @cookie-settings.window="openBanner()"
      class="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 md:inset-x-auto md:right-6 md:bottom-6 md:max-w-[420px]"
      role="dialog" aria-labelledby="cookie-title">
-  <div class="flex flex-col gap-4 rounded-3xl border-[1.5px] border-line-strong bg-forest p-5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-    <p class="text-sm text-mist">
-      <strong id="cookie-title" class="mb-1 block text-base text-snow">Analytics cookies</strong>
+  <div class="flex flex-col gap-3 rounded-3xl border-[1.5px] border-line-strong bg-forest p-4 md:gap-4 md:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+    <p class="text-[13px] leading-snug text-mist md:text-sm">
+      <strong id="cookie-title" class="mb-1 block text-[15px] text-snow md:text-base">Analytics cookies</strong>
       We use Google Analytics to see which tours people look at and improve the site.
       No ads, no selling of data. Change your choice any time in the footer.
       <a class="text-accent underline underline-offset-2" href="{% url 'core:privacy' %}">Privacy Policy</a>
     </p>
     <div class="flex gap-3">
-      <button type="button" x-ref="first" class="btn min-h-11 flex-1 border-[1.5px] border-snow/70 text-snow can-hover:hover:bg-white/10" @click="choose('granted')">Accept</button>
-      <button type="button" class="btn min-h-11 flex-1 border-[1.5px] border-snow/70 text-snow can-hover:hover:bg-white/10" @click="choose('denied')">Decline</button>
+      <button type="button" x-ref="first" class="btn min-h-10 flex-1 text-sm md:min-h-11 md:text-[15px] border-[1.5px] border-snow/70 text-snow can-hover:hover:bg-white/10" @click="choose('granted')">Accept</button>
+      <button type="button" class="btn min-h-10 flex-1 text-sm md:min-h-11 md:text-[15px] border-[1.5px] border-snow/70 text-snow can-hover:hover:bg-white/10" @click="choose('denied')">Decline</button>
     </div>
   </div>
 </div>

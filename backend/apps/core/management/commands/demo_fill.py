@@ -625,6 +625,7 @@ class Command(BaseCommand):
         self.fill_tours()
         self.fill_content()
         self.fill_site()
+        call_command("demo_departures", stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS("Demo site filled. Run warm_images for fast pages."))
 
     def add_tours(self):

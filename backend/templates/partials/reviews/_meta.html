@@ -1,0 +1,8 @@
+{# «Anna, Germany» + tour and source under it (link to the original when there is one). #}
+<span class="flex min-w-0 flex-col text-sm">
+  <b>{{ review.author_name }}{% if review.country %}, {{ review.country }}{% endif %}</b>
+  <span class="review-meta">
+    {% if review.tour %}{{ review.tour.title }}{% elif review.travel_date %}{{ review.travel_date|date:"F Y" }}{% endif %}
+    {% if review.public_source %} · {% if review.source_url %}<a class="underline underline-offset-2" href="{{ review.source_url }}" target="_blank" rel="noopener">{{ review.public_source }}</a>{% else %}{{ review.public_source }}{% endif %}{% endif %}
+  </span>
+</span>

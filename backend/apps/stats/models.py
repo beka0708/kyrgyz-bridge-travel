@@ -41,3 +41,23 @@ class ContactClick(models.Model):
 
     def __str__(self):
         return f"{self.get_channel_display()} {self.date}: {self.clicks}"
+
+
+class CountryVisit(models.Model):
+    """Visitors per country per day (one per visitor and day, from the IP; the IP is not kept)."""
+
+    date = models.DateField("день", db_index=True)
+    country = models.CharField(
+        "страна", max_length=2, blank=True, help_text="ISO-код, пусто — не определена"
+    )
+    visits = models.PositiveIntegerField("посетители", default=0)
+
+    class Meta:
+        verbose_name = "посетители по странам за день"
+        verbose_name_plural = "посетители по странам"
+        constraints = [
+            models.UniqueConstraint(fields=["date", "country"], name="countryvisit_per_day")
+        ]
+
+    def __str__(self):
+        return f"{self.country or '??'} {self.date}: {self.visits}"

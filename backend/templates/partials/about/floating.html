@@ -1,0 +1,43 @@
+{% load site_tags %}
+{% comment %}
+  About «floating gallery» (after altermind.com «The team»): the text stays in the middle
+  while photos of the guides and the places float past around it, each at its own speed, with a soft
+  inertia (lib/scroll.ts initFloating eases --lp towards the scroll position). The heading rises
+  word by word when the block comes in. Hover a photo: it gains its full colour.
+  Photos and their places come from the view (core/views.py about_gallery, ABOUT_SLOTS); the
+  client uploads them in the admin under «Фото «О нас»», the texts are in «Настройки → Главная».
+{% endcomment %}
+<section id="about" class="about-float band-dark relative bg-night" data-about-scene="floating">
+  {# laptops: photos scattered around the text, each drifting at its own speed #}
+  <div class="about-float__photos" aria-hidden="true">
+    {% for photo in about_photos %}
+      <figure class="about-float__ph{% if photo.caption %} about-float__ph--person{% endif %}" style="{{ photo.style }}">
+        {% img photo.image alt="" sizes="20vw" css="object-[center_30%]" %}
+        {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+      </figure>
+    {% endfor %}
+  </div>
+  {# phones: two tidy strips (above / below the text) that slide sideways in opposite directions #}
+  {% for strip in "tb" %}
+    <div class="about-float__strip about-float__strip--{{ strip }}" aria-hidden="true">
+      {% for photo in about_photos %}
+        {% if forloop.counter0 < 3 and forloop.parentloop.first or forloop.counter0 >= 3 and forloop.parentloop.last %}
+          <figure class="about-float__card">
+            {% img photo.image alt="" sizes="44vw" css="object-[center_30%]" %}
+            {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+          </figure>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  <div class="about-float__center container-page">
+    <div class="about-float__copy">
+      {% if site.founder_since or site.about_eyebrow %}<p class="about-float__eyebrow">{% if site.founder_since %}Since {{ site.founder_since }}{% if site.about_eyebrow %} · {% endif %}{% endif %}{{ site.about_eyebrow }}</p>{% endif %}
+      <h2 class="about-float__title" data-words>{{ site.about_title|accent_title|default:"Who we are" }}</h2>
+      {% if site.about_text %}<p class="about-float__text">{{ site.about_text|linebreaksbr }}</p>{% endif %}
+      {% include "partials/about/_stats.html" with css="about-float__stats" %}
+      {% if site.about_link_label and guides %}<a class="about-float__link" href="#guides"><span aria-hidden="true">→</span> {{ site.about_link_label }}</a>{% endif %}
+    </div>
+  </div>
+</section>

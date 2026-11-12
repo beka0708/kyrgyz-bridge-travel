@@ -25,6 +25,14 @@ class Inquiry(TimeStampedModel):
         blank=True,
         related_name="inquiries",
     )
+    departure = models.ForeignKey(
+        "tours.Departure",
+        verbose_name="выезд",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="inquiries",
+    )
     # Snapshot, so the inquiry stays readable if the tour is renamed or deleted.
     tour_title = models.CharField("тур (на момент заявки)", max_length=150, blank=True)
     travel_when = models.CharField(
@@ -48,6 +56,9 @@ class Inquiry(TimeStampedModel):
 
     # Technical context, useful for spam handling and marketing attribution.
     ip = models.GenericIPAddressField("IP", null=True, blank=True)
+    country = models.CharField(
+        "страна", max_length=2, blank=True, help_text="По IP, иначе по коду телефона"
+    )
     user_agent = models.CharField("браузер", max_length=300, blank=True)
     page_url = models.URLField("страница", max_length=500, blank=True)
     utm_source = models.CharField(max_length=100, blank=True)
@@ -64,6 +75,10 @@ class Inquiry(TimeStampedModel):
         return f"{self.name} — {self.tour_title or 'без тура'}"
 
     def save(self, *args, **kwargs):
+        if self.departure_id and not self.date_from:
+            self.date_from, self.date_to = self.departure.start_date, self.departure.end_date
+        if self.departure_id and not self.tour_id:
+            self.tour = self.departure.tour
         if self.tour and not self.tour_title:
             self.tour_title = self.tour.title
         super().save(*args, **kwargs)

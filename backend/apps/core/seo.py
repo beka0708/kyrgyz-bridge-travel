@@ -108,6 +108,8 @@ def organization(site) -> dict:
         photo = social_image(site.founder_photo)
         if photo:
             founder["image"] = photo
+        if site.founder_instagram:
+            founder["sameAs"] = [site.founder_instagram]
         data["founder"] = founder
     if site.phone:
         data["telephone"] = site.phone
@@ -125,7 +127,13 @@ def organization(site) -> dict:
     data["image"] = image or logo_url()
     same_as = [
         u
-        for u in (site.instagram_url, site.facebook_url, site.youtube_url, site.tripadvisor_url)
+        for u in (
+            site.instagram_url,
+            site.tiktok_url,
+            site.facebook_url,
+            site.youtube_url,
+            site.tripadvisor_url,
+        )
         if u
     ]
     if site.whatsapp:

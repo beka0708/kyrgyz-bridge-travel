@@ -18,6 +18,8 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 SITE_URL = env("SITE_URL", default="http://localhost:8010").rstrip("/")
 # True on staging/preview servers: robots.txt then forbids indexing the whole site.
 ROBOTS_DISALLOW_ALL = env.bool("ROBOTS_DISALLOW_ALL", default=False)
+# Visitor countries for the dashboard (DB-IP Lite, `manage.py update_geoip`)
+GEOIP_PATH = Path(env("GEOIP_PATH", default=str(BASE_DIR / "var" / "geoip" / "dbip-country.mmdb")))
 
 INSTALLED_APPS = [
     # unfold must come before django.contrib.admin
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.core.csp.ContentSecurityPolicyMiddleware",
+    "apps.stats.middleware.VisitCounterMiddleware",
     # must be last: locks out repeated failed admin logins
     "axes.middleware.AxesMiddleware",
 ]
@@ -274,6 +277,11 @@ UNFOLD = {
                         "link": reverse_lazy("admin:tours_tour_changelist"),
                     },
                     {
+                        "title": "Расписание выездов",
+                        "icon": "calendar_month",
+                        "link": reverse_lazy("admin:tours_departure_changelist"),
+                    },
+                    {
                         "title": "Дни маршрутов",
                         "icon": "route",
                         "link": reverse_lazy("admin:tours_tourday_changelist"),
@@ -298,6 +306,11 @@ UNFOLD = {
                         "title": "Частые вопросы",
                         "icon": "help",
                         "link": reverse_lazy("admin:content_faq_changelist"),
+                    },
+                    {
+                        "title": "Фото «О нас»",
+                        "icon": "photo_library",
+                        "link": reverse_lazy("admin:content_aboutphoto_changelist"),
                     },
                     {
                         "title": "Счётчики",

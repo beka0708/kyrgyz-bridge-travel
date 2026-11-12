@@ -16,7 +16,7 @@ agency gets an email and publishes it in the admin. Happy guests are invited to 
   <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_22_18/0.25),rgb(10_22_18/0.75))]"></div>
   <div class="container-page relative flex h-full flex-col justify-end pb-16 md:pb-20">
     <p class="rise text-sm font-semibold text-[#e2ebe6]">{% if tour %}{{ tour.title }}{% else %}{{ site.brand_name }}{% endif %}</p>
-    <h1 class="rise-2 font-display text-[30px] leading-[1.05] font-semibold tracking-[-0.02em] md:text-[48px]">Share your experience</h1>
+    <h1 class="rise-2 font-display text-[26px] leading-[1.05] font-semibold tracking-[-0.02em] md:text-[40px]">Share your experience</h1>
   </div>
 </div>
 
@@ -58,7 +58,7 @@ agency gets an email and publishes it in the admin. Happy guests are invited to 
       <fieldset class="flex flex-col items-center gap-4 text-center">
         <legend class="sr-only">Your rating</legend>
         <span class="text-xs font-bold tracking-[0.1em] text-rust uppercase">Step 1 of 3</span>
-        <h2 class="font-display text-[24px] leading-tight font-semibold md:text-[30px]">How was your trip?</h2>
+        <h2 class="font-display text-[24px] leading-tight font-semibold md:text-[26px]">How was your trip?</h2>
         <div class="grid w-full grid-cols-5 gap-2 md:gap-3" @mouseleave="hover = 0">
           {% for value in "12345" %}
             <label class="cursor-pointer" @mouseenter="hover = {{ value }}">

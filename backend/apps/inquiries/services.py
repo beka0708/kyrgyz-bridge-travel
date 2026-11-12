@@ -60,11 +60,32 @@ def rate_limited(
     return False
 
 
+def inquiry_country(ip: str | None, contact: str) -> str:
+    """Where the traveller is: by IP; if unknown, by the phone's country code."""
+    from apps.stats.geo import country_for_ip
+
+    country = country_for_ip(ip)
+    if country or not contact.startswith("+"):
+        return country
+    try:
+        import phonenumbers
+
+        number = phonenumbers.parse(contact)
+        region = phonenumbers.region_code_for_number(number) or (
+            phonenumbers.region_code_for_country_code(number.country_code)
+        )
+        return "" if region in (None, "ZZ", "001") else region
+    except phonenumbers.NumberParseException:
+        return ""
+
+
 def create_inquiry(*, data: dict, request, is_spam: bool = False) -> Inquiry:
+    ip = client_ip(request)
     inquiry = Inquiry(
         **data,
         status=InquiryStatus.SPAM if is_spam else InquiryStatus.NEW,
-        ip=client_ip(request),
+        ip=ip,
+        country=inquiry_country(ip, data.get("contact", "")),
         user_agent=request.META.get("HTTP_USER_AGENT", "")[:300],
     )
     inquiry.save()

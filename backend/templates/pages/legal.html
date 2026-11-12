@@ -3,12 +3,12 @@
 {# Privacy Policy and Terms of Use: texts from the admin, company details filled in (fill_legal). #}
 {% block content %}
 <section class="container-page flex flex-col gap-4 pt-8 pb-6 md:pt-20 md:pb-10">
-  <h1 class="font-display text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] md:text-[56px]">{{ title }}</h1>
+  <h1 class="font-display text-[28px] leading-[1.08] font-semibold tracking-[-0.02em] md:text-[44px]">{{ title }}</h1>
   <nav class="flex gap-2 text-sm" aria-label="Legal">
     {% url 'core:privacy' as privacy_url %}{% url 'core:terms' as terms_url %}
     <a class="chip" href="{{ privacy_url }}" aria-pressed="{% if request.path == privacy_url %}true{% else %}false{% endif %}">Privacy</a>
     <a class="chip" href="{{ terms_url }}" aria-pressed="{% if request.path == terms_url %}true{% else %}false{% endif %}">Terms</a>
-    {% if site.google_analytics_id %}<button type="button" class="chip" @click="window.dispatchEvent(new Event('cookie-settings'))">Cookie settings</button>{% endif %}
+    {% if site.google_analytics_id %}<button type="button" class="chip" data-cookie-settings>Cookie settings</button>{% endif %}
   </nav>
 </section>
 <section class="container-page pb-20 md:pb-28">

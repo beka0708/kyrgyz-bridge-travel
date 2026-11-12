@@ -1,0 +1,36 @@
+{% load site_tags %}
+{% comment %}
+  Guest reviews as a stack of postcards (tour page). Drag or swipe the top card away (or ← →):
+  it flies off with a twist and slides under the stack; the next one rises. lib/home.ts reviewDeck
+  sets each card's place in the stack (--pos) and the drag offset (--dx). Needs `reviews`.
+{% endcomment %}
+<div class="reviews-deck flex flex-col items-center gap-5" x-data="reviewDeck({{ reviews|length }})"
+     role="region" aria-roledescription="carousel" aria-label="Guest reviews">
+<div class="reviews-deck__stack" @keydown.right.prevent="throwTop(1)" @keydown.left.prevent="throwTop(-1)" tabindex="0" aria-label="Reviews, use arrow keys">
+  {% for review in reviews %}
+    <figure class="reviews-deck__card" style="--i: {{ forloop.counter0 }}" :style="cardStyle({{ forloop.counter0 }})"
+            :class="{ 'is-top': isTop({{ forloop.counter0 }}), 'is-dragging': dragging && isTop({{ forloop.counter0 }}), 'is-leaving': leaving === {{ forloop.counter0 }} }"
+            @pointerdown="isTop({{ forloop.counter0 }}) && dragStart($event)"
+            aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ reviews|length }}" :aria-hidden="!isTop({{ forloop.counter0 }})">
+      <span class="flex items-center justify-between">
+        <span class="text-lg tracking-[3px] text-accent" role="img" aria-label="{{ review.rating }} out of 5 stars">{% for _ in "x"|rjust:review.rating %}★{% endfor %}</span>
+        <span class="reviews-deck__stamp" aria-hidden="true">{{ review.country|default:"Kyrgyzstan"|truncatechars:14 }}</span>
+      </span>
+      <blockquote class="line-clamp-7 text-[17px] leading-relaxed [overflow-wrap:anywhere] md:text-lg">“{{ review.text }}”</blockquote>
+      <figcaption class="mt-auto flex items-center gap-3 border-t border-dashed border-pebble pt-4">
+        {% include "partials/reviews/_avatar.html" with size="size-11" %}
+        {% include "partials/reviews/_meta.html" %}
+      </figcaption>
+    </figure>
+  {% endfor %}
+</div>
+<div class="flex items-center gap-4">
+  <button type="button" class="carousel-btn" @click="throwTop(-1)" aria-label="Previous review">
+    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+  </button>
+  <span class="min-w-[56px] text-center text-sm font-semibold tabular-nums text-ink-muted" aria-live="polite"><span x-text="top + 1">1</span> / {{ reviews|length }}</span>
+  <button type="button" class="carousel-btn" @click="throwTop(1)" aria-label="Next review">
+    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+</div>
+</div>

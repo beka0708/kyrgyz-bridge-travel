@@ -43,6 +43,7 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "email",
             "address",
             "instagram_url",
+            "tiktok_url",
             "facebook_url",
             "youtube_url",
             "tripadvisor_url",

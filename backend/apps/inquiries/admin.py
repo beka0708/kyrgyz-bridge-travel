@@ -21,11 +21,12 @@ class InquiryAdmin(ModelAdmin):
         "dates",
         "people",
         "contact_info",
+        "country_flag",
         "status_label",
         "notified",
     ]
     list_display_links = ["created_at", "name"]
-    list_filter = ["status", "tour", "created_at"]
+    list_filter = ["status", "tour", "country", "created_at"]
     search_fields = ["name", "email", "contact", "comment", "tour_title"]
     date_hierarchy = "created_at"
     list_per_page = 50
@@ -36,6 +37,7 @@ class InquiryAdmin(ModelAdmin):
         "contact",
         "tour",
         "tour_title",
+        "departure",
         "travel_when",
         "date_from",
         "date_to",
@@ -44,6 +46,7 @@ class InquiryAdmin(ModelAdmin):
         "created_at",
         "notified_at",
         "ip",
+        "country",
         "user_agent",
         "page_url",
         "utm_source",
@@ -57,6 +60,7 @@ class InquiryAdmin(ModelAdmin):
                 "fields": [
                     ("name", "email", "contact"),
                     ("tour", "tour_title"),
+                    "departure",
                     ("travel_when", "people"),
                     ("date_from", "date_to"),
                     "comment",
@@ -70,7 +74,7 @@ class InquiryAdmin(ModelAdmin):
                 "classes": ["collapse"],
                 "fields": [
                     ("created_at", "notified_at"),
-                    ("ip", "user_agent"),
+                    ("ip", "country", "user_agent"),
                     "page_url",
                     ("utm_source", "utm_medium", "utm_campaign"),
                 ],
@@ -89,6 +93,12 @@ class InquiryAdmin(ModelAdmin):
             return "—"
         end = f" – {obj.date_to:%d.%m}" if obj.date_to else ""
         return f"{obj.date_from:%d.%m.%Y}{end}"
+
+    @display(description="страна", ordering="country")
+    def country_flag(self, obj):
+        from apps.stats.geo import country_name, flag
+
+        return f"{flag(obj.country)} {country_name(obj.country)}" if obj.country else "—"
 
     @display(description="контакт", header=True)
     def contact_info(self, obj):

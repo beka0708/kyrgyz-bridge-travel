@@ -1,6 +1,7 @@
 import type { Alpine as AlpineType } from "alpinejs";
 
 import { readPhone, type PhoneInput } from "@/lib/phone";
+import { scrollToElement } from "@/lib/smooth-scroll";
 
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign"] as const;
 const UTM_STORAGE = "kt-utm";
@@ -31,12 +32,39 @@ export function registerInquiry(Alpine: AlpineType) {
     sent: false,
     error: "",
     errors: {} as Record<string, string>,
+    departure: { id: "", label: "" },
 
     init() {
       const utm = rememberUtm();
       this.$el.querySelectorAll<HTMLInputElement>("[data-utm]").forEach((input) => {
         input.value = utm[input.dataset.utm!] ?? "";
       });
+      // /tours/ala-kul-trek/?departure=12#contact — a date chosen on the calendar page
+      const id = new URLSearchParams(location.search).get("departure");
+      const row = id && document.querySelector<HTMLElement>(`[data-departure="${CSS.escape(id)}"]`);
+      if (row) this.pickDeparture({ id, label: row.dataset.departureLabel!.split(", ").pop()! }, false);
+    },
+
+    /** «Choose» in the tour's dates: remember the date and bring the form into view. */
+    pickDeparture(detail: { id: string; label: string }, scroll = true) {
+      this.departure = detail;
+      const when = this.$el.querySelector<HTMLInputElement>('input[name="travel_when"]');
+      if (when) when.value = detail.label;
+      if (!scroll) return;
+      scrollToElement(document.getElementById("contact"));
+      this.$nextTick(() =>
+        this.$el.querySelector<HTMLInputElement>('input[name="name"]')?.focus({ preventScroll: true }),
+      );
+    },
+
+    clearDeparture() {
+      this.departure = { id: "", label: "" };
+      const when = this.$el.querySelector<HTMLInputElement>('input[name="travel_when"]');
+      if (when) {
+        when.value = "";
+        when.focus();
+      }
+      scrollToElement(document.getElementById("dates"));
     },
 
     /** The button is at the bottom: bring the first broken field into view and focus it. */
@@ -44,7 +72,7 @@ export function registerInquiry(Alpine: AlpineType) {
       this.$nextTick(() => {
         const field = form.querySelector<HTMLElement>('[aria-invalid="true"]');
         field?.focus({ preventScroll: true });
-        field?.scrollIntoView({ block: "center", behavior: "smooth" });
+        scrollToElement(field, "center");
       });
     },
 
@@ -85,6 +113,7 @@ export function registerInquiry(Alpine: AlpineType) {
             email: data.email ?? "",
             contact: data.contact ?? "",
             tour: data.tour || null,
+            departure: data.departure ? Number(data.departure) : null,
             travel_when: data.travel_when ?? "",
             date_from: data.date_from || null,
             date_to: data.date_to || null,

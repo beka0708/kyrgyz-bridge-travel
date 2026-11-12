@@ -1,0 +1,21 @@
+{% comment %}
+  One date in the tour's dates strip (variant C, chosen by the client): weekdays, the dates, seats,
+  price and «Choose», which fills the request form below (lib/inquiry.ts pickDeparture).
+{% endcomment %}
+<div class="flex w-[156px] flex-none snap-start flex-col gap-2 rounded-[20px] bg-white p-4 ring-1 ring-ink/5{% if departure.is_full %} opacity-55{% endif %}"
+     data-departure="{{ departure.pk }}" data-departure-label="{{ departure.tour.title }}, {{ departure.dates_label }}">
+  <span class="text-xs font-semibold text-ink-muted">{{ departure.weekdays_label }}</span>
+  <b class="font-display text-[22px] leading-none tabular-nums">{{ departure.start_date.day }}–{{ departure.end_date.day }}</b>
+  <span class="text-[13px] text-ink-muted">{% if departure.start_date.month != departure.end_date.month %}{{ departure.start_date|date:"M" }} – {% endif %}{{ departure.end_date|date:"M Y" }}</span>
+  <span class="flex items-center gap-1.5 text-[13px] font-semibold {% if departure.is_full %}text-ink-muted{% elif departure.status == 'few' or departure.seats_left and departure.seats_left <= 3 %}text-rust{% else %}text-[#23864f]{% endif %}">
+    <span class="size-2 flex-none rounded-full {% if departure.is_full %}bg-ink-muted{% elif departure.status == 'few' or departure.seats_left and departure.seats_left <= 3 %}bg-accent{% else %}bg-[#2fa564]{% endif %}" aria-hidden="true"></span>{{ departure.seats_label }}
+  </span>
+  {% if departure.note %}<span class="text-xs text-ink-muted">{{ departure.note }}</span>{% endif %}
+  <span class="mt-auto pt-1 font-display text-lg font-semibold tabular-nums">{{ departure.price_label }}</span>
+  {% if departure.is_full %}
+    <span class="btn min-h-10 bg-ink/6 text-sm text-ink-muted">Full</span>
+  {% else %}
+    <button type="button" class="btn btn-accent min-h-10 text-sm" aria-label="Choose {{ departure.dates_label }}"
+            @click="$dispatch('departure-pick', { id: '{{ departure.pk }}', label: '{{ departure.dates_label|escapejs }}' })">Choose</button>
+  {% endif %}
+</div>

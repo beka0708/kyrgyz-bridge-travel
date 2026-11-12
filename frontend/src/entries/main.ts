@@ -8,14 +8,18 @@ import { initAnalytics, initContactBeacons, registerConsent } from "@/lib/analyt
 import { registerHome } from "@/lib/home";
 import { registerInquiry } from "@/lib/inquiry";
 import { initPhoneInputs } from "@/lib/phone";
+import { initMagnetic } from "@/lib/premium";
 import {
+  initAboutScenes,
   initCounters,
   initImageFade,
   initReveal,
   initScrollProgress,
   initSplitHeadings,
+  initSteps,
   markTitles,
 } from "@/lib/scroll";
+import { initSmoothScroll } from "@/lib/smooth-scroll";
 import { registerTourPage } from "@/lib/tour-page";
 
 /** Alpine's collapse plugin ignores «reduce motion»: make accordions open instantly there. */
@@ -39,6 +43,7 @@ registerTourPage(Alpine);
 window.Alpine = Alpine;
 Alpine.start();
 
+void initSmoothScroll();
 initSplitHeadings();
 markTitles();
 initImageFade();
@@ -49,5 +54,8 @@ initScrollProgress();
 const linked = location.hash && document.getElementById(location.hash.slice(1));
 if (linked instanceof HTMLDialogElement) linked.showModal();
 initCounters();
+initAboutScenes();
+initSteps();
+initMagnetic();
 initAnalytics();
 initContactBeacons();

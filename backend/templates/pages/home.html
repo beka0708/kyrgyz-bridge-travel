@@ -23,9 +23,9 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
   <span data-header-sentinel class="pointer-events-none absolute top-[55%] left-0 h-px w-px" aria-hidden="true"></span>
   {% include "partials/header.html" with overlay=True %}
 
-  <section class="container-page relative mt-auto flex flex-col items-start gap-5 pt-28 pb-10 md:gap-6 md:pb-20">
-    <h1 data-split class="max-w-[860px] [text-shadow:0_2px_24px_rgb(10_22_18/0.35)] font-display text-[clamp(36px,11vw,48px)] leading-[1.02] font-semibold tracking-[-0.02em] md:text-[88px]">{{ site.hero_title|accent_title }}</h1>
-    {% if site.hero_subtitle %}<p class="rise-4 max-w-[520px] text-[17px] text-[#e2ebe6] md:text-xl">{{ site.hero_subtitle }}</p>{% endif %}
+  <section class="hero-copy-out container-page relative mt-auto flex flex-col items-start gap-5 pt-28 pb-10 md:gap-6 md:pb-20">
+    <h1 data-split class="max-w-[720px] [text-shadow:0_2px_24px_rgb(10_22_18/0.35)] font-display text-[clamp(30px,8.6vw,38px)] leading-[1.06] font-semibold tracking-[-0.02em] md:text-[56px] lg:text-[64px]">{{ site.hero_title|accent_title }}</h1>
+    {% if site.hero_subtitle %}<p class="rise-4 max-w-[480px] text-base text-[#e2ebe6] md:text-lg">{{ site.hero_subtitle }}</p>{% endif %}
     <div class="rise-5 mt-1 flex w-full gap-3 sm:w-auto" data-hero-ctas>
       <a class="btn btn-accent min-h-[54px] flex-1 gap-2 px-8 text-base sm:flex-none" href="#tours">
         See tours
@@ -48,20 +48,23 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
 
 {# ------------------------------------------------------------------ TOURS #}
 {% if tours %}
-<section id="tours" class="scroll-mt-4" x-data="tourFilter">
+<section id="tours" class="scroll-mt-4" x-data="tourFilter('{{ initial_filter }}')">
   <div class="container-page flex flex-col gap-5 py-14 md:gap-8 md:py-24">
     <div class="flex items-end justify-between gap-4">
       <div class="flex flex-col gap-2">
         <h2 class="h-section">Choose your trip</h2>
         <p class="text-ink-muted md:text-lg">From a one-day hike to a week in the mountains.</p>
       </div>
-      <a class="lnk hidden min-h-11 items-center gap-1.5 font-bold text-rust md:inline-flex" href="{% url 'tours:list' %}">All tours <span aria-hidden="true">→</span></a>
+      <span class="hidden items-center gap-6 md:flex">
+        <a class="lnk inline-flex min-h-11 items-center gap-1.5 font-bold text-rust" href="{% url 'tours:dates' %}">Tour dates <span aria-hidden="true">→</span></a>
+        <a class="lnk inline-flex min-h-11 items-center gap-1.5 font-bold text-rust" href="{% url 'tours:list' %}">All tours <span aria-hidden="true">→</span></a>
+      </span>
     </div>
 
     {% if filters %}
       <div class="snap-row md:mx-0 md:flex-wrap md:px-0" role="group" aria-label="Filter tours">
         {% for f in filters %}
-          <button type="button" class="chip" @click="filter = '{{ f.value }}'" :aria-pressed="filter === '{{ f.value }}'" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">{{ f.label }}</button>
+          <button type="button" class="chip" @click="filter = '{{ f.value }}'" :aria-pressed="filter === '{{ f.value }}'" aria-pressed="{% if f.value == initial_filter %}true{% else %}false{% endif %}">{{ f.label }}</button>
         {% endfor %}
       </div>
     {% endif %}
@@ -69,81 +72,27 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
     {# Phones: compact rows, every price visible at once. Tablets and up: photo cards. #}
     <div class="flex flex-col gap-2.5 md:hidden">
       {% for tour in tours %}
-        <div x-show="shows('{{ tour.filter_tags }}')" x-transition.opacity.scale.97.duration.250ms data-reveal>{% include "partials/tour_row.html" %}</div>
+        <div x-show="shows('{{ tour.filter_tags }}')"{% if initial_filter != "all" and initial_filter not in tour.filter_tags %} style="display: none"{% endif %} x-transition.opacity.scale.97.duration.250ms data-reveal>{% include "partials/tour_row.html" %}</div>
       {% endfor %}
     </div>
     <div class="hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
       {% for tour in tours %}
-        <div class="flex" x-show="shows('{{ tour.filter_tags }}')" x-transition.opacity.scale.97.duration.250ms data-reveal>{% include "partials/tour_card.html" %}</div>
+        <div class="flex" x-show="shows('{{ tour.filter_tags }}')"{% if initial_filter != "all" and initial_filter not in tour.filter_tags %} style="display: none"{% endif %} x-transition.opacity.scale.97.duration.250ms data-reveal>{% include "partials/tour_card.html" %}</div>
       {% endfor %}
     </div>
-    <a class="btn min-h-[52px] border border-ink/20 text-base md:hidden" href="{% url 'tours:list' %}">All tours</a>
+    <div class="grid grid-cols-2 gap-2.5 md:hidden">
+      <a class="btn min-h-[52px] border border-ink/20 text-base" href="{% url 'tours:list' %}">All tours</a>
+      <a class="btn min-h-[52px] border border-ink/20 text-base" href="{% url 'tours:dates' %}">Tour dates</a>
+    </div>
   </div>
 </section>
 {% endif %}
 
 {# ------------------------------------------------------------------ REVIEWS #}
-{% if reviews %}
-<section id="reviews" class="scroll-mt-4 bg-white">
-  <div class="container-page flex flex-col gap-6 py-14 md:gap-10 md:py-24">
-    <div class="flex flex-wrap items-end justify-between gap-5">
-      <h2 class="h-section">Travellers say</h2>
-      {% if site.rating_value %}
-        <a class="flex items-center gap-3.5" {% if site.rating_url %}href="{{ site.rating_url }}" target="_blank" rel="noopener"{% endif %}>
-          <span class="font-display text-[44px] leading-none font-semibold tabular-nums md:text-[56px]">{{ site.rating_value }}</span>
-          <span class="flex flex-col gap-0.5">
-            <span class="tracking-[2px] text-rust" aria-hidden="true">★★★★★</span>
-            <span class="text-sm text-ink-muted">{% if site.rating_count %}{{ site.rating_count }} reviews on {% endif %}Google and TripAdvisor</span>
-          </span>
-        </a>
-      {% endif %}
-    </div>
-    <div class="snap-row md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0">
-      {% for review in reviews %}
-        <figure class="flex w-[84vw] max-w-[360px] flex-col gap-4 rounded-[22px] bg-paper p-6 md:w-auto md:max-w-none md:p-7" data-reveal>
-          <span class="tracking-[2px] text-rust" role="img" aria-label="{{ review.rating }} out of 5 stars">{% for _ in "x"|rjust:review.rating %}★{% endfor %}</span>
-          <blockquote class="line-clamp-6 text-base leading-relaxed [overflow-wrap:anywhere] md:text-[17px]">“{{ review.text }}”</blockquote>
-          <figcaption class="mt-auto flex items-center gap-3">
-            {% if review.photo %}<span class="pic size-11 flex-none rounded-full">{% img review.photo sizes="48px" %}</span>{% else %}<span class="flex size-11 flex-none items-center justify-center rounded-full bg-ink font-bold text-snow" aria-hidden="true">{{ review.author_name|make_list|first|upper }}</span>{% endif %}
-            <span class="flex min-w-0 flex-col text-sm">
-              <b>{{ review.author_name }}{% if review.country %}, {{ review.country }}{% endif %}</b>
-              <span class="text-ink-muted">{% if review.tour %}{{ review.tour.title }}{% endif %}{% if review.tour and review.public_source %} · {% endif %}{% if review.public_source %}{% if review.source_url %}<a class="underline underline-offset-2" href="{{ review.source_url }}" target="_blank" rel="noopener">{{ review.public_source }}</a>{% else %}{{ review.public_source }}{% endif %}{% endif %}</span>
-            </span>
-          </figcaption>
-        </figure>
-      {% endfor %}
-    </div>
-    <p class="text-ink-muted">Travelled with us? <a class="font-bold text-rust underline-offset-4 can-hover:hover:underline" href="{% url 'content:review_submit' %}">Share your experience →</a></p>
-  </div>
-</section>
-{% endif %}
+{% if reviews %}{% include "partials/reviews/spotlight.html" %}{% endif %}
 
-{# ------------------------------------------------------------------ ABOUT: one full screen #}
-<section id="about" class="band-dark relative flex min-h-[100svh] flex-col overflow-hidden">
-  {% if about_image %}
-    <div class="absolute inset-0 band-parallax">{% img about_image alt="" sizes="100vw" css="h-full w-full object-cover object-[center_60%]" %}</div>
-  {% endif %}
-  {# readability: dark on the left (text) and at the bottom (numbers), the mountains stay bright #}
-  <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_22_18/0.55)_0%,rgb(10_22_18/0.15)_35%,rgb(10_22_18/0.35)_60%,rgb(10_22_18/0.92)_100%)] md:bg-[linear-gradient(90deg,rgb(10_22_18/0.82)_0%,rgb(10_22_18/0.5)_38%,rgb(10_22_18/0)_70%)]"></div>
-  <div aria-hidden="true" class="absolute inset-x-0 bottom-0 hidden h-1/2 bg-[linear-gradient(0deg,rgb(10_22_18/0.92)_0%,rgb(10_22_18/0)_100%)] md:block"></div>
-
-  <div class="container-page relative flex flex-1 flex-col justify-between gap-16 py-20 md:py-28">
-    <div class="flex max-w-[620px] flex-col gap-5 [text-shadow:0_2px_18px_rgb(10_22_18/0.45)]">
-      <h2 class="font-display text-[clamp(34px,9vw,44px)] leading-[1.04] font-semibold tracking-[-0.02em] md:text-[64px]">{{ site.about_title|plain_title|default:"Who we are" }}</h2>
-      {% if site.about_text %}<p class="text-[17px] leading-relaxed text-[#eef3f0] md:text-xl">{{ site.about_text|linebreaksbr }}</p>{% endif %}
-    </div>
-    {% if stats %}
-      <dl class="grid grid-cols-3 gap-3 border-t border-white/25 pt-6 md:gap-10 md:pt-10">
-        {% for stat in stats %}
-          <div class="flex flex-col-reverse justify-end gap-2" data-reveal>
-            <dt class="text-xs font-semibold text-[#e2ebe6] md:text-base">{{ stat.label }}</dt>
-            <dd class="font-display text-[clamp(20px,6.2vw,34px)] leading-none font-semibold tracking-[-0.02em] text-snow tabular-nums md:text-[88px]"><span data-count="{{ stat.value }}">{{ stat.value|intcomma }}</span><span class="text-accent">{{ stat.suffix }}</span></dd>
-          </div>
-        {% endfor %}
-      </dl>
-    {% endif %}
-  </div>
-</section>
+{# ------------------------------------------------------------------ ABOUT #}
+{% include "partials/about/floating.html" %}
 
 {# ------------------------------------------------------------------ HOW IT WORKS #}
 <section id="how" class="bg-paper">
@@ -152,13 +101,18 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
       <h2 class="h-section">How it works</h2>
       <p class="text-ink-muted md:text-lg">Three steps from an idea to the mountains.</p>
     </div>
-    <ol class="grid gap-4 md:grid-cols-3 md:gap-6">
+    {% comment %}
+      A route line draws through the steps; the cards and their numbers rise one after another
+      (lib/scroll.ts initSteps adds .is-in). Phones: a vertical timeline with a dot per step.
+    {% endcomment %}
+    <ol class="steps grid gap-4 md:grid-cols-3 md:gap-6" data-steps>
       {% for title, text in steps %}
-        <li class="relative flex flex-col gap-3 rounded-[24px] bg-white p-6 ring-1 ring-ink/5 md:p-8" data-reveal>
-          <span class="font-display text-[44px] leading-none font-semibold text-accent tabular-nums md:text-[56px]">0{{ forloop.counter }}</span>
-          <b class="text-lg leading-snug">{{ title }}</b>
+        <li class="steps__item relative flex flex-col gap-3 rounded-[24px] bg-white p-6 ring-1 ring-ink/5 md:p-8" style="--i: {{ forloop.counter0 }}">
+          <span class="steps__dot" aria-hidden="true"></span>
+          <span class="steps__num font-display text-[32px] leading-none font-semibold text-accent tabular-nums md:text-[40px]"><span>0{{ forloop.counter }}</span></span>
+          <b class="text-base leading-snug md:text-[17px]">{{ title }}</b>
           <span class="text-[15px] text-ink-muted">{{ text }}</span>
-          {% if not forloop.last %}<span aria-hidden="true" class="absolute top-1/2 -right-[18px] z-10 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-paper text-ink-muted md:flex">→</span>{% endif %}
+          {% if not forloop.last %}<span aria-hidden="true" class="steps__arrow absolute top-1/2 -right-[18px] z-10 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-paper text-ink-muted md:flex">→</span>{% endif %}
         </li>
       {% endfor %}
     </ol>
@@ -183,17 +137,20 @@ hero → tours → proof (rating, reviews) → who we are and how it works → g
     <div class="flex flex-col gap-6">
       <p class="text-xs font-bold tracking-[0.12em] text-rust uppercase">Meet the founder</p>
       {% if site.founder_quote %}
-        <blockquote class="relative font-display text-[26px] leading-[1.2] font-semibold tracking-[-0.01em] md:text-[38px]">
-          <span aria-hidden="true" class="absolute -top-6 -left-1 font-display text-[72px] leading-none text-accent/40 md:-top-9 md:text-[110px]">“</span>
+        <blockquote class="relative font-display text-[21px] leading-[1.25] font-semibold tracking-[-0.01em] md:text-[30px]">
+          <span aria-hidden="true" class="absolute -top-5 -left-1 font-display text-[56px] leading-none text-accent/40 md:-top-7 md:text-[80px]">“</span>
           <span class="relative">{{ site.founder_quote }}</span>
         </blockquote>
       {% endif %}
       <div class="flex flex-col gap-4 text-[16px] leading-relaxed text-ink-muted md:text-[17px]">{{ site.founder_story|linebreaks }}</div>
       <div class="flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-pebble/60 pt-6">
         <div class="flex flex-col">
-          <span class="font-display text-xl font-semibold">{{ site.founder_name }}</span>
+          <span class="font-display text-lg font-semibold">{{ site.founder_name }}</span>
           {% if site.founder_role %}<span class="text-sm text-ink-muted">{{ site.founder_role }}</span>{% endif %}
         </div>
+        {% if site.founder_instagram %}
+          <a class="founder-ig" href="{{ site.founder_instagram }}" target="_blank" rel="noopener me" aria-label="{{ site.founder_name }} on Instagram" data-magnetic>{% include "partials/icon_social.html" with name="instagram" %}</a>
+        {% endif %}
         {% if site.whatsapp %}
           <a class="btn btn-wa gap-2 sm:ml-auto" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}Write to {{ site.founder_name|truncatewords:1|cut:"…"|cut:" " }}</a>
         {% endif %}

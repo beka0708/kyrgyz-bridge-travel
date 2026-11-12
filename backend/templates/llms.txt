@@ -10,7 +10,13 @@
 {% for tour in tours %}- [{{ tour.title }}]({{ site_url }}{{ tour.get_absolute_url }}): {{ tour.type_label }}, {{ tour.duration_days }} day{{ tour.duration_days|pluralize }}, {{ tour.price_display }}{% if tour.season_label %}, season {{ tour.season_label }}{% endif %}. {{ tour.short_description }}
 {% endfor %}
 All tours: {{ site_url }}/tours/
+{% if departures %}
+## Upcoming group departures
 
+{% for d in departures %}- {{ d.tour.title }}: {{ d.dates_label }}, {{ d.seats_label|lower }}{% if d.price_label %}, {{ d.price_label }}{% endif %}
+{% endfor %}
+Full calendar: {{ site_url }}/tours/dates/
+{% endif %}
 ## How booking works
 
 {% for title, text in steps %}{{ forloop.counter }}. {{ title }}. {{ text }}
@@ -27,6 +33,8 @@ All tours: {{ site_url }}/tours/
 {% endif %}{% if site.phone %}- Phone: {{ site.phone }}
 {% endif %}{% if site.email %}- Email: {{ site.email }}
 {% endif %}{% if site.instagram_url %}- Instagram: {{ site.instagram_url }}
+{% endif %}{% if site.tiktok_url %}- TikTok: {{ site.tiktok_url }}
+{% endif %}{% if site.tripadvisor_url %}- Tripadvisor: {{ site.tripadvisor_url }}
 {% endif %}
 ## Optional
 

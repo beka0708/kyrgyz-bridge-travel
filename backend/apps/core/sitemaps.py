@@ -27,6 +27,7 @@ class StaticSitemap(SiteUrlSitemap):
             ("tours:list", "", 0.8),
             ("tours:list", "?type=solo", 0.6),
             ("tours:list", "?type=group", 0.6),
+            ("tours:dates", "", 0.7),
             ("core:privacy", "", 0.2),
             ("core:terms", "", 0.2),
         ]

@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% comment %}
+  «Расписание выездов → Запланировать даты»: pick a tour, the first date and how often;
+  step 2 shows every date with its weekday before anything is saved.
+{% endcomment %}
+{% block content %}
+<div class="flex max-w-3xl flex-col gap-6">
+  <p class="text-base-500 dark:text-base-400">
+    Выберите тур, первую дату и как часто повторять. Сначала покажем все даты — проверьте их и нажмите «Создать».
+    Даты вне сезона тура пропускаются, уже существующие не дублируются. Потом любую дату можно поправить в расписании.
+  </p>
+  <form method="post" novalidate class="flex flex-col gap-2">
+    {% csrf_token %}
+    {% include "unfold/helpers/form_errors.html" with errors=form.non_field_errors %}
+    <div class="grid gap-x-6 md:grid-cols-2">
+      {% for field in form %}{% include "unfold/helpers/field.html" %}{% endfor %}
+    </div>
+
+    {% if days %}
+      <div class="rounded-default border border-base-200 p-4 dark:border-base-700">
+        <p class="mb-3 font-semibold">Получится {{ days|length }} дат{% if new_count != days|length %} (новых — {{ new_count }}){% endif %}:</p>
+        <ul class="grid gap-1.5 text-sm sm:grid-cols-2">
+          {% for d in days %}
+            <li class="flex items-center gap-2 {% if d.exists %}text-base-400 line-through{% endif %}">
+              <span class="material-symbols-outlined text-base">{% if d.exists %}event_busy{% else %}event_available{% endif %}</span>
+              {{ d.start|date:"D, j E" }} — {{ d.end|date:"D, j E Y" }}{% if d.exists %} · уже есть{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="flex flex-wrap gap-3 pt-2">
+      {% if days and new_count %}
+        <button type="submit" name="confirm" value="1" class="bg-primary-600 rounded-default px-4 py-2 font-semibold text-white">Создать {{ new_count }} выездов</button>
+        <button type="submit" class="rounded-default border border-base-200 px-4 py-2 font-semibold dark:border-base-700">Пересчитать</button>
+      {% else %}
+        <button type="submit" class="bg-primary-600 rounded-default px-4 py-2 font-semibold text-white">Показать даты</button>
+      {% endif %}
+      <a href="{% url 'admin:tours_departure_changelist' %}" class="rounded-default border border-base-200 px-4 py-2 font-semibold dark:border-base-700">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -74,8 +74,8 @@ tour, the arrows stay clickable above it.
         {% if tour.season_label %}<span>{{ tour.season_label }}</span>{% endif %}
       </p>
     {% endif %}
-    {% if tour.next_departure %}
-      <p class="flex items-center gap-2 text-[13px]"><span class="size-2 flex-none rounded-full bg-[#2fa564]" aria-hidden="true"></span><span class="truncate">Next: <b>{{ tour.next_departure }}</b></span></p>
+    {% if tour.next_departure_label %}
+      <p class="flex items-center gap-2 text-[13px]"><span class="size-2 flex-none rounded-full bg-[#2fa564]" aria-hidden="true"></span><span class="truncate">Next: <b>{{ tour.next_departure_label }}</b></span></p>
     {% endif %}
     <div class="mt-auto flex items-end justify-between gap-3 border-t border-pebble/60 pt-4">
       <p class="leading-tight">

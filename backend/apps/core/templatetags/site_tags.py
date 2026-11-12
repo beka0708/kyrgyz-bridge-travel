@@ -91,13 +91,24 @@ def preload_img(fieldfile, sizes="100vw"):
     )
 
 
+_MD_LINK = re.compile(r"\[([^\]]+)\]\(((?:https?://|/(?!/))[^)\s]*)\)")
+
+
 @register.filter
 def simple_markdown(text):
-    """Tiny, safe subset for editable legal texts: «## heading», «- item», **bold**, paragraphs."""
+    """Tiny, safe subset for editable texts: «## / ### heading», «- item», **bold**,
+    [link](/tours/x/), paragraphs. Only http(s) and site-relative links are allowed."""
+
+    def link(match):
+        text, url = match.group(1), match.group(2)
+        external = url.startswith("http")
+        attrs = ' target="_blank" rel="noopener"' if external else ""
+        return f'<a href="{url}"{attrs}>{text}</a>'
 
     def inline(line):
         parts = escape(line).split("**")
-        return "".join(f"<strong>{p}</strong>" if i % 2 else p for i, p in enumerate(parts))
+        html_line = "".join(f"<strong>{p}</strong>" if i % 2 else p for i, p in enumerate(parts))
+        return _MD_LINK.sub(link, html_line)
 
     html, items = [], []
 
@@ -112,7 +123,9 @@ def simple_markdown(text):
             items.append(inline(line[2:]))
             continue
         flush_list()
-        if line.startswith("## "):
+        if line.startswith("### "):
+            html.append(f"<h3>{inline(line[4:])}</h3>")
+        elif line.startswith("## "):
             html.append(f"<h2>{inline(line[3:])}</h2>")
         elif line:
             html.append(f"<p>{inline(line)}</p>")

@@ -6,7 +6,8 @@ from django.utils import timezone
 
 from apps.inquiries.services import client_ip
 
-from .models import ContactClick, TourView
+from .geo import country_for_ip
+from .models import ContactClick, CountryVisit, TourView
 
 BOT_UA = re.compile(r"bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse", re.I)
 
@@ -40,3 +41,13 @@ def record_click(request, channel: str) -> None:
     day = timezone.localdate()
     row, _ = ContactClick.objects.get_or_create(date=day, channel=channel)
     ContactClick.objects.filter(pk=row.pk).update(clicks=F("clicks") + 1)
+
+
+def record_visit(request) -> None:
+    """One visitor per day, by country (dashboard «Откуда заходят»)."""
+    if not is_counted(request) or not _first_time_today("visit", request, "site"):
+        return
+    day = timezone.localdate()
+    country = country_for_ip(client_ip(request))
+    row, _ = CountryVisit.objects.get_or_create(date=day, country=country)
+    CountryVisit.objects.filter(pk=row.pk).update(visits=F("visits") + 1)

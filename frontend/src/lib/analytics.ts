@@ -112,6 +112,12 @@ export function initAnalytics() {
 
 /** Cookie banner (Consent Mode v2), shown only when a GA ID is set in the admin. */
 export function registerConsent(Alpine: AlpineType) {
+  // «Cookie settings» buttons (footer, legal pages) work anywhere, inside a component or not.
+  document.addEventListener("click", (event) => {
+    if ((event.target as Element | null)?.closest("[data-cookie-settings]")) {
+      window.dispatchEvent(new Event("cookie-settings"));
+    }
+  });
   Alpine.data("cookieBanner", () => ({
     open: false,
     init() {

@@ -5,15 +5,21 @@
     <div class="relative h-64 overflow-hidden md:h-[440px]">
       <div class="absolute inset-0 band-parallax">{% img site.footer_image alt="" sizes="100vw" css="h-full w-full object-cover object-[center_60%]" %}</div>
       <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(14_27_23/0.15)_0%,rgb(14_27_23/0)_35%,rgb(14_27_23/0.55)_75%,var(--color-night)_100%)]"></div>
-      <p class="container-page absolute inset-x-0 bottom-6 font-display text-[28px] leading-[1.05] font-semibold tracking-[-0.02em] text-snow md:bottom-12 md:text-[56px]" data-reveal>See you in the mountains</p>
+      <p class="container-page absolute inset-x-0 bottom-6 font-display text-[24px] leading-[1.08] font-semibold tracking-[-0.02em] text-snow md:bottom-12 md:text-[44px]" data-reveal>See you in the mountains</p>
     </div>
   {% endif %}
   <div class="container-page grid gap-10 pt-10 text-sm text-mist md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:pt-14">
     <div class="flex flex-col gap-4">
       <span class="flex items-center gap-3 font-display text-xl font-semibold text-snow" translate="no"><img src="{% static 'brand/logo-128.png' %}" alt="" width="40" height="40" class="size-10" loading="lazy">{{ site.brand_name }}</span>
       {% if site.trust_line %}<p class="max-w-[340px]">{{ site.trust_line }}</p>{% endif %}
-      <div class="flex flex-wrap gap-3">
-        {% if site.whatsapp %}<a class="btn btn-wa gap-2" href="{{ site.whatsapp_url }}" rel="noopener" target="_blank" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}WhatsApp</a>{% endif %}
+      {# WhatsApp, then a round icon per social network filled in the admin (Настройки → Соцсети) #}
+      <div class="flex flex-wrap items-center gap-2.5">
+        {% if site.whatsapp %}<a class="btn btn-wa mr-1 gap-2" href="{{ site.whatsapp_url }}" rel="noopener" target="_blank" data-track="whatsapp">{% include "partials/icon_whatsapp.html" with size="18" %}WhatsApp</a>{% endif %}
+        {% if site.instagram_url %}<a class="social-btn" href="{{ site.instagram_url }}" rel="noopener" target="_blank" aria-label="Instagram">{% include "partials/icon_social.html" with name="instagram" %}</a>{% endif %}
+        {% if site.tiktok_url %}<a class="social-btn" href="{{ site.tiktok_url }}" rel="noopener" target="_blank" aria-label="TikTok">{% include "partials/icon_social.html" with name="tiktok" %}</a>{% endif %}
+        {% if site.facebook_url %}<a class="social-btn" href="{{ site.facebook_url }}" rel="noopener" target="_blank" aria-label="Facebook">{% include "partials/icon_social.html" with name="facebook" %}</a>{% endif %}
+        {% if site.tripadvisor_url %}<a class="social-btn" href="{{ site.tripadvisor_url }}" rel="noopener" target="_blank" aria-label="Tripadvisor">{% include "partials/icon_social.html" with name="tripadvisor" %}</a>{% endif %}
+        {% if site.youtube_url %}<a class="social-btn" href="{{ site.youtube_url }}" rel="noopener" target="_blank" aria-label="YouTube">{% include "partials/icon_social.html" with name="youtube" %}</a>{% endif %}
       </div>
     </div>
     <nav class="flex flex-col gap-1" aria-label="Tours">
@@ -21,13 +27,13 @@
       {% inquiry_tours as footer_tours %}
       {% for t in footer_tours|slice:":6" %}<a class="lnk py-1.5 can-hover:hover:text-snow" href="{% url 'tours:detail' t.slug %}">{{ t.title }}</a>{% endfor %}
       <a class="lnk py-1.5 font-semibold text-accent" href="{% url 'tours:list' %}">All tours</a>
+      <a class="lnk py-1.5 can-hover:hover:text-snow" href="{% url 'tours:dates' %}">Tour dates</a>
     </nav>
     <div class="flex flex-col gap-1">
       <p class="mb-2 font-bold text-snow">Contact</p>
       {% if site.phone %}<a class="lnk py-1.5 whitespace-nowrap can-hover:hover:text-snow" href="tel:{{ site.phone|cut:' ' }}">{{ site.phone }}</a>{% endif %}
       {% if site.email %}<a class="lnk py-1.5 [overflow-wrap:anywhere] can-hover:hover:text-snow" href="mailto:{{ site.email }}">{{ site.email }}</a>{% endif %}
       <span class="py-1.5">{{ site.address|default:"Bishkek, Kyrgyzstan" }}</span>
-      {% if site.instagram_url %}<a class="lnk py-1.5 can-hover:hover:text-snow" href="{{ site.instagram_url }}" rel="noopener" target="_blank">Instagram</a>{% endif %}
     </div>
   </div>
   {# wraps on phones: «Privacy» and «Cookie settings» must stay reachable #}
@@ -37,7 +43,7 @@
       <a class="lnk py-3 can-hover:hover:text-snow" href="{% url 'content:review_submit' %}">Leave a review</a>
       <a class="lnk py-3 can-hover:hover:text-snow" href="{% url 'core:privacy' %}">Privacy</a>
       <a class="lnk py-3 can-hover:hover:text-snow" href="{% url 'core:terms' %}">Terms</a>
-      {% if site.google_analytics_id %}<button type="button" class="lnk py-3 can-hover:hover:text-snow" @click="window.dispatchEvent(new Event('cookie-settings'))">Cookie settings</button>{% endif %}
+      {% if site.google_analytics_id %}<button type="button" class="lnk py-3 can-hover:hover:text-snow" data-cookie-settings>Cookie settings</button>{% endif %}
     </span>
   </div>
 </footer>

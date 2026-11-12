@@ -4,14 +4,15 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
-from apps.content.models import FAQ, Guide, Review, Stat
-from apps.tours.models import Tour, TourType
+from apps.content.models import FAQ, AboutPhoto, Guide, Review, Stat
+from apps.tours.models import Departure, DepartureStatus, Tour, TourType
 
 from .models import SiteSettings, fill_legal
 from .seo import PageMeta, absolute, home_meta
 
 HOME_TOURS_LIMIT = 12
 HOME_FAQ_LIMIT = 6
+HOME_REVIEWS_LIMIT = 12
 
 # One booking story everywhere: ask → we reply with dates and price → deposit → rest on arrival.
 STEPS = [
@@ -20,12 +21,12 @@ STEPS = [
     ("Small deposit, the rest on arrival", "Free cancellation up to 30 days before the start."),
 ]
 
+# Order matters: the first chip is selected when the page opens.
 FILTERS = [
-    ("all", "All"),
-    (TourType.SOLO, "Private"),
-    (TourType.GROUP, "Small group"),
-    ("short", "1–2 days"),
-    ("winter", "Winter"),
+    ("best", "Bestsellers"),
+    (TourType.SOLO, "Private tours"),
+    (TourType.GROUP, "Group tours"),
+    ("all", "All tours"),
 ]
 
 
@@ -36,15 +37,48 @@ def _first_cover(tours, tour_type=None):
     return None
 
 
+# Where the photos of the «About us» gallery float on laptops (partials/about/floating.html), in
+# order: --x/--y/--w = place and width, --s = drift speed (bigger = faster). Phones show the same
+# photos as two sliding strips instead (3 above the text, the rest below).
+ABOUT_SLOTS = [
+    "--x:4%; --y:6%; --w:19vw; --s:0.35",
+    "--x:44%; --y:-3%; --w:9vw; --s:0.12",  # above the text: barely drifts, never crosses it
+    "--x:76%; --y:6%; --w:13vw; --s:0.55",
+    "--x:6%; --y:44%; --w:12vw; --s:0.6",
+    "--x:81%; --y:40%; --w:15vw; --s:0.2",
+    "--x:76%; --y:76%; --w:17vw; --s:0.4",
+    "--x:10%; --y:82%; --w:11vw; --s:0.75",
+]
+
+
+def about_gallery(site, tours, guides):
+    """Photos for the «About us» gallery: the ones uploaded for it, or (until there are any)
+    the about photo, guides and tour covers mixed so places and people alternate."""
+    photos = [
+        (p.image, p.caption) for p in AboutPhoto.objects.published()[: len(ABOUT_SLOTS)] if p.image
+    ]
+    if not photos:
+        # places and people in the order of the slots; whichever runs out, the other fills in
+        places = [(img, "") for img in (site.about_image, site.request_image) if img]
+        places += [(t.cover, "") for t in tours[1:] + tours[:1] if t.cover]
+        people = [(g.photo, g.name) for g in guides if g.photo]
+        for kind in ["place", "place", "person", "person", "place", "place", "person"]:
+            first, second = (places, people) if kind == "place" else (people, places)
+            if first or second:
+                photos.append((first or second).pop(0))
+    return [
+        {"image": image, "caption": caption, "style": slot}
+        for (image, caption), slot in zip(photos, ABOUT_SLOTS, strict=False)
+    ]
+
+
 def tour_filters(tours):
-    """Chips with at least one tour; «All» carries the total («All · 8»)."""
+    """Chips that change something: a filter matching no tour or every tour is dropped."""
     chips = []
     for value, label in FILTERS:
         count = len(tours) if value == "all" else sum(value in t.filter_tags.split() for t in tours)
-        if count and (value == "all" or count < len(tours)):
-            chips.append(
-                {"value": value, "label": f"{label} · {count}" if value == "all" else label}
-            )
+        if value == "all" or 0 < count < len(tours):
+            chips.append({"value": value, "label": label})
     return chips if len(chips) > 1 else []
 
 
@@ -54,14 +88,18 @@ def home(request):
     tours = list(
         Tour.objects.for_cards().order_by("-is_featured", "order", "pk")[:HOME_TOURS_LIMIT]
     )
-    reviews = list(Review.objects.published().select_related("tour")[:3])
+    reviews = list(Review.objects.published().select_related("tour")[:HOME_REVIEWS_LIMIT])
     faqs = list(FAQ.objects.published()[:HOME_FAQ_LIMIT])
+    guides = list(Guide.objects.published())
     featured = [t for t in tours if t.is_featured] or tours[:4]
+    filters = tour_filters(tours)
     context = {
         "tours": tours,
-        "filters": tour_filters(tours),
+        "filters": filters,
+        "initial_filter": filters[0]["value"] if filters else "all",
         "reviews": reviews,
-        "guides": Guide.objects.published(),
+        "guides": guides,
+        "about_photos": about_gallery(site, tours, guides),
         "faqs": faqs,
         "stats": Stat.objects.published()[:3],
         "steps": [(title.format(reply_time=site.reply_time), text) for title, text in STEPS],
@@ -71,6 +109,7 @@ def home(request):
         "trust_items": [part.strip() for part in site.trust_line.split("·") if part.strip()],
         "nav_links": [
             {"href": "#tours", "label": "Tours", "icon": "tours"},
+            {"href": reverse("tours:dates"), "label": "Dates", "icon": "dates"},
             {"href": "#reviews", "label": "Reviews", "icon": "reviews"},
             {"href": "#guides", "label": "Guides", "icon": "guides"},
             {"href": "#faq", "label": "FAQ", "icon": "faq"},
@@ -137,6 +176,9 @@ def llms_txt(request):
     context = {
         "site": site,
         "tours": tours,
+        "departures": Departure.objects.upcoming()
+        .exclude(status=DepartureStatus.FULL)
+        .select_related("tour")[:24],
         "faqs": faqs,
         "steps": [(title.format(reply_time=site.reply_time), text) for title, text in STEPS],
         "site_url": settings.SITE_URL,

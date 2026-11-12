@@ -163,6 +163,29 @@ class Stat(OrderableModel, PublishableModel):
         return f"{self.value}{self.suffix} {self.label}"
 
 
+class AboutPhoto(OrderableModel, PublishableModel):
+    """Photos floating around the text of the «About us» block (first 7 by order)."""
+
+    image = models.ImageField(
+        "фото",
+        upload_to="about/",
+        help_text="От 1200 px. Вертикальные — для людей, широкие — для мест.",
+    )
+    caption = models.CharField(
+        "подпись на фото",
+        max_length=60,
+        blank=True,
+        help_text="Например имя гида. Пусто — без подписи.",
+    )
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "фото «О нас»"
+        verbose_name_plural = "фото блока «О нас»"
+
+    def __str__(self):
+        return self.caption or f"Фото {self.pk}"
+
+
 class Feature(OrderableModel, PublishableModel):
     """«Why us» tiles on the home page: a photo with a short caption."""
 

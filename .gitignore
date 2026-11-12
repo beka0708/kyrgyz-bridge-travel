@@ -36,3 +36,4 @@ demo/photos/
 
 # local credentials (preview password, admin login)
 .secrets/
+backend/var/

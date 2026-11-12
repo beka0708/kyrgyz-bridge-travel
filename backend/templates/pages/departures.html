@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load site_tags %}
+{# Every upcoming group departure, month by month: plan the trip a year ahead. #}
+
+{% block content %}
+<section class="container-page flex flex-col gap-5 pt-8 pb-14 md:gap-8 md:pt-14 md:pb-24">
+  <div class="flex flex-col gap-3">
+    <h1 class="rise font-display text-[28px] leading-[1.06] font-semibold tracking-[-0.02em] md:text-[44px]">Tour dates</h1>
+    <p class="rise-2 max-w-[640px] text-ink-muted md:text-lg">Small-group departures for the next 12 months. Pick a date to see the tour and check free seats. Private tours start any day you like.</p>
+  </div>
+
+  {% if months %}
+    <nav class="rise-3 sticky top-16 z-10 -mx-5 bg-paper px-5 py-2 backdrop-blur-sm md:static md:mx-0 md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-none" aria-label="Months">
+      <div class="snap-row md:mx-0 md:flex-wrap md:px-0">
+        {% for m in months %}<a class="chip" href="#m-{{ m.key }}">{{ m.label }} <span class="opacity-60">&nbsp;· {{ m.items|length }}</span></a>{% endfor %}
+      </div>
+    </nav>
+    <div class="flex flex-col gap-10 md:gap-14">
+      {% for m in months %}
+        <section id="m-{{ m.key }}" class="flex scroll-mt-36 flex-col gap-3 md:scroll-mt-8">
+          <h2 class="font-display text-xl font-semibold md:text-2xl">{{ m.label }}</h2>
+          <div class="flex flex-col gap-2.5">
+            {% for departure in m.items %}{% include "partials/departure_row.html" with show_tour=True %}{% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="flex flex-col items-start gap-4 rounded-[24px] bg-white p-8 md:p-12">
+      <h2 class="font-display text-xl font-semibold md:text-2xl">New dates are coming soon</h2>
+      <p class="text-ink-muted">Tell us when you'd like to travel and we'll suggest a tour or set up a private one.</p>
+      <a class="btn bg-ink text-snow" href="#contact">Send a request</a>
+    </div>
+  {% endif %}
+</section>
+
+{% include "partials/inquiry_section.html" %}
+{% endblock %}

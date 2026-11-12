@@ -1,0 +1,2 @@
+{% load site_tags %}{# Guest photo or the first letter of the name; `size` = Tailwind size class. #}
+{% if review.photo %}<span class="pic block {{ size|default:'size-11' }} flex-none rounded-full">{% img review.photo sizes="64px" %}</span>{% else %}<span class="flex {{ size|default:'size-11' }} flex-none items-center justify-center rounded-full bg-accent font-bold text-ink" aria-hidden="true">{{ review.author_name|make_list|first|upper }}</span>{% endif %}

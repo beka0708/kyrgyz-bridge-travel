@@ -15,7 +15,8 @@ from apps.content.models import Review, ReviewSource
 from apps.inquiries.models import Inquiry, InquiryStatus
 from apps.tours.models import Tour, TourType
 
-from .models import ContactChannel, ContactClick, TourView
+from .geo import country_name, flag
+from .models import ContactChannel, ContactClick, CountryVisit, TourView
 
 PERIOD = 30
 STATUS_COLORS = {
@@ -263,6 +264,34 @@ def dashboard_callback(request, context):
         group=Count("id", filter=Q(tour__tour_type=TourType.GROUP)),
     )
 
+    # --- where visitors come from (IP → country, DB-IP) ---------------------------------
+    visits_by_country = dict(
+        CountryVisit.objects.filter(date__gte=start)
+        .values_list("country")
+        .annotate(n=Sum("visits"))
+        .values_list("country", "n")
+    )
+    inquiries_by_country = dict(
+        inquiries.values_list("country").annotate(n=Count("id")).values_list("country", "n")
+    )
+    visitors_total = sum(visits_by_country.values())
+    codes = sorted(
+        set(visits_by_country) | set(inquiries_by_country),
+        key=lambda c: (-visits_by_country.get(c, 0), -inquiries_by_country.get(c, 0), c == ""),
+    )
+    top_visits = max(visits_by_country.values(), default=0)
+    country_rows = [
+        {
+            "flag": flag(code) if code else "🌐",
+            "name": country_name(code),
+            "visitors": visits_by_country.get(code, 0),
+            "pct": _pct(visits_by_country.get(code, 0), visitors_total),
+            "bar": _pct(visits_by_country.get(code, 0), top_visits),
+            "inquiries": inquiries_by_country.get(code, 0),
+        }
+        for code in codes[:12]
+    ]
+
     # --- guest reviews from the site ---------------------------------------------------
     site_reviews = Review.objects.filter(source=ReviewSource.SITE)
     review_stats = site_reviews.aggregate(avg=Avg("rating"), total=Count("id"))
@@ -285,6 +314,8 @@ def dashboard_callback(request, context):
             "chart_options": json.dumps(chart_options),
             "tour_rows": tour_rows,
             "no_tour_inquiries": no_tour,
+            "country_rows": country_rows,
+            "visitors_total": visitors_total,
             "statuses": statuses,
             "status_total": status_total,
             "sources": sources,

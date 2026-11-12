@@ -1,7 +1,32 @@
 import type { Alpine as AlpineType } from "alpinejs";
 
+import { scrollToElement } from "@/lib/smooth-scroll";
+
 /** Day selection on the tour page; the map island listens to `route:day`. */
 export function registerTourPage(Alpine: AlpineType) {
+  /** Tour dates strip: native scroll-snap (swipe, trackpad) plus ← → buttons on laptops. */
+  Alpine.data("scrollStrip", () => ({
+    atStart: true,
+    atEnd: false,
+    init() {
+      const track = this.$refs.track as HTMLElement;
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        this.atStart = track.scrollLeft <= 2;
+        this.atEnd = track.scrollLeft >= track.scrollWidth - track.clientWidth - 2;
+      };
+      track.addEventListener("scroll", () => (frame ||= requestAnimationFrame(update)), { passive: true });
+      new ResizeObserver(update).observe(track);
+      update();
+    },
+    step(direction: number) {
+      const track = this.$refs.track as HTMLElement;
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: reduce ? "auto" : "smooth" });
+    },
+  }));
+
   Alpine.data("tourRoute", (firstDay: number) => ({
     day: firstDay,
     select(day: number) {
@@ -45,7 +70,7 @@ export function registerTourPage(Alpine: AlpineType) {
       this.open = !this.open;
       setTimeout(() => (this.busy = false), 500);
       // collapsing a long text: bring its start back into view
-      if (!this.open) (this.$el as HTMLElement).scrollIntoView({ block: "nearest", behavior: "smooth" });
+      if (!this.open) scrollToElement(this.$el as HTMLElement, "nearest");
     },
   }));
 

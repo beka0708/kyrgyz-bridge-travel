@@ -32,6 +32,7 @@ unfold's CSS is prebuilt and does not include arbitrary utility classes.
   .kd-down { background: rgb(220 38 38 / .1); color: #dc2626; }
   .kd-flat { background: var(--kd-soft); color: var(--kd-muted); }
   .kd-hint { color: var(--kd-muted); font-size: 12px; }
+  .kd-flag { font-size: 18px; line-height: 1; margin-right: 4px; vertical-align: -2px; }
   .kd-todo { display: flex; align-items: center; gap: 16px; flex-direction: row; border: 0; padding: 18px 20px; position: relative; overflow: hidden; }
   .kd-todo .kd-icon { flex: none; width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
   .kd-todo .kd-icon svg { width: 22px; height: 22px; }
@@ -137,6 +138,27 @@ unfold's CSS is prebuilt and does not include arbitrary utility classes.
       </tbody>
     </table>
     {% if no_tour_inquiries %}<span class="kd-hint">Ещё {{ no_tour_inquiries }} заявок без выбранного тура («помогите выбрать»).</span>{% endif %}
+  </div>
+
+  <div class="kd-card">
+    <h2>Откуда заходят</h2>
+    <p class="kd-sub">Посетители сайта по странам за {{ period_days }} дней (каждый считается раз в день, всего {{ visitors_total }}) и заявки из этих стран. Страна определяется по IP, сам IP не сохраняется. <a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a>.</p>
+    <table class="kd-table">
+      <thead><tr><th>Страна</th><th class="num">Посетители</th><th class="num">Доля</th><th class="num">Заявки</th></tr></thead>
+      <tbody>
+        {% for row in country_rows %}
+          <tr>
+            <td><span class="kd-flag" aria-hidden="true">{{ row.flag }}</span> {{ row.name }}
+              <div class="kd-bar"><span style="width: {{ row.bar }}%"></span></div></td>
+            <td class="num">{{ row.visitors }}</td>
+            <td class="num">{{ row.pct }}%</td>
+            <td class="num">{% if row.inquiries %}<b>{{ row.inquiries }}</b>{% else %}—{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="kd-empty">Данные появятся после первых посетителей.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
   <div class="kd-grid kd-two">

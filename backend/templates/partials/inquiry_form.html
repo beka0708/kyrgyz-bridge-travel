@@ -1,6 +1,6 @@
 {% load site_tags %}
 {# Works without JS (posts to /inquiry/); with JS Alpine sends JSON to the API and shows errors inline. #}
-<div class="rounded-[24px] border border-white/12 bg-white/4 p-5 md:p-8" x-data="inquiryForm('{% url 'v1:inquiry-create' %}')">
+<div class="rounded-[24px] border border-white/12 bg-white/4 p-5 md:p-8" x-data="inquiryForm('{% url 'v1:inquiry-create' %}')" @departure-pick.window="pickDeparture($event.detail)">
   {% if request.GET.sent %}
     <div class="flex flex-col gap-3" role="status">{% include "partials/inquiry_thanks.html" %}</div>
   {% else %}
@@ -29,6 +29,12 @@
       <span id="contact-error" class="text-sm text-danger" x-show="errors.contact" x-text="errors.contact" x-cloak></span>
     </label>
     <p class="-mt-2 text-xs text-sage">An email or a phone is enough. With both we can reply where it suits you.</p>
+    {# a date chosen in «Dates & availability» #}
+    <input type="hidden" name="departure" :value="departure.id">
+    <div x-show="departure.id" x-cloak class="flex items-center justify-between gap-3 rounded-2xl bg-accent/15 px-4 py-3 text-sm text-snow">
+      <span class="flex items-center gap-2"><svg class="size-4 flex-none text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Your date: <b x-text="departure.label"></b></span>
+      <button type="button" class="py-1 font-semibold underline underline-offset-2" @click="clearDeparture()">Change</button>
+    </div>
     <div class="grid grid-cols-[1fr_120px] gap-3">
       {% include "partials/field.html" with name="travel_when" label="When?" type="text" placeholder="mid-July" %}
       <label class="flex flex-col gap-1.5">

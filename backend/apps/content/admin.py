@@ -4,7 +4,7 @@ from unfold.decorators import action, display
 
 from apps.core.admin import thumbnail
 
-from .models import FAQ, Guide, Review, ReviewSource, Stat
+from .models import FAQ, AboutPhoto, Guide, Review, ReviewSource, Stat
 
 # Not on the site since the redesign (kept in the database, hidden from the admin):
 # Feature («Почему мы»), Season («Когда ехать»), Partner, GalleryPost («Живые кадры»).
@@ -72,6 +72,16 @@ class ReviewAdmin(OrderedAdmin):
 class FAQAdmin(OrderedAdmin):
     list_display = ["question", "is_published"]
     search_fields = ["question", "answer"]
+
+
+@admin.register(AboutPhoto)
+class AboutPhotoAdmin(OrderedAdmin):
+    list_display = ["image_preview", "caption", "is_published"]
+    list_display_links = ["image_preview", "caption"]
+
+    @display(description="")
+    def image_preview(self, obj):
+        return thumbnail(obj.image)
 
 
 @admin.register(Stat)

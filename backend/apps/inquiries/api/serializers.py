@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.inquiries.contact import normalize_contact
 from apps.inquiries.models import Inquiry
-from apps.tours.models import Tour
+from apps.tours.models import Departure, Tour
 
 
 class InquiryCreateSerializer(serializers.ModelSerializer):
@@ -13,6 +13,12 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
         help_text="Tour slug; empty for a general question.",
+    )
+    departure = serializers.PrimaryKeyRelatedField(
+        queryset=Departure.objects.upcoming(),
+        required=False,
+        allow_null=True,
+        help_text="A date picked in the tour calendar.",
     )
     # Honeypot: hidden in the form, real people leave it empty.
     website = serializers.CharField(
@@ -27,6 +33,7 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
             "email",
             "contact",
             "tour",
+            "departure",
             "travel_when",
             "date_from",
             "date_to",
@@ -50,6 +57,9 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
         date_from, date_to = attrs.get("date_from"), attrs.get("date_to")
         if date_from and date_to and date_to < date_from:
             raise serializers.ValidationError({"date_to": "End date is before start date."})
+        departure, tour = attrs.get("departure"), attrs.get("tour")
+        if departure and tour and departure.tour_id != tour.pk:
+            raise serializers.ValidationError({"departure": "This date belongs to another tour."})
         return attrs
 
 

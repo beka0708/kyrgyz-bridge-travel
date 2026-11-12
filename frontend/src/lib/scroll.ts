@@ -53,33 +53,167 @@ export function initScrollProgress() {
 }
 
 
-/** Stats count up from 0 when they appear (`data-count="3000"`, suffix stays in the markup). */
+const numberFormat = new Intl.NumberFormat("en-US");
+
+/** Count one number up from 0 (`data-count="3000"`); the suffix stays in the markup. */
+function countUp(el: HTMLElement, delay = 0) {
+  if (el.dataset.counted) return;
+  el.dataset.counted = "1";
+  const target = Number(el.dataset.count) || 0;
+  const duration = 1600;
+  let start = 0;
+  const tick = (now: number) => {
+    start ||= now + delay;
+    const t = Math.max(0, Math.min(1, (now - start) / duration));
+    const eased = 1 - Math.pow(1 - t, 4); // strong ease-out: fast start, gentle landing
+    el.textContent = numberFormat.format(Math.round(target * eased));
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  el.textContent = "0";
+  requestAnimationFrame(tick);
+}
+
+/** Stats count up when they appear. Numbers in the About block are started by it. */
 export function initCounters() {
-  const items = document.querySelectorAll<HTMLElement>("[data-count]");
+  const items = Array.from(document.querySelectorAll<HTMLElement>("[data-count]")).filter(
+    (el) => !el.closest("[data-about-scene]"),
+  );
   if (!items.length || reducedMotion() || !("IntersectionObserver" in window)) return;
-  const format = new Intl.NumberFormat("en-US");
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        const el = entry.target as HTMLElement;
-        observer.unobserve(el);
-        const target = Number(el.dataset.count) || 0;
-        const start = performance.now();
-        const duration = 1400;
-        const tick = (now: number) => {
-          const t = Math.min(1, (now - start) / duration);
-          const eased = 1 - Math.pow(1 - t, 4); // strong ease-out: fast start, gentle landing
-          el.textContent = format.format(Math.round(target * eased));
-          if (t < 1) requestAnimationFrame(tick);
-        };
-        el.textContent = "0";
-        requestAnimationFrame(tick);
+        observer.unobserve(entry.target);
+        countUp(entry.target as HTMLElement);
       }
     },
     { threshold: 0.6 },
   );
   items.forEach((el) => observer.observe(el));
+}
+
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
+/** Run `update` on scroll/resize, but only while `section` is near the screen. */
+function whileNear(section: HTMLElement, update: () => void) {
+  let frame = 0;
+  const onScroll = () => (frame ||= requestAnimationFrame(() => ((frame = 0), update())));
+  new IntersectionObserver(
+    ([entry]) => {
+      const method = entry.isIntersecting ? "addEventListener" : "removeEventListener";
+      window[method]("scroll", onScroll, { passive: true });
+      window[method]("resize", onScroll, { passive: true });
+      update();
+    },
+    { rootMargin: "100px 0px" },
+  ).observe(section);
+  update();
+}
+
+/** Wrap every word of `el` (keeping inner spans such as the accent) for a word-by-word rise. */
+function splitWords(el: HTMLElement) {
+  let index = 0;
+  const walk = (node: Node) => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        walk(child);
+        continue;
+      }
+      if (child.nodeType !== Node.TEXT_NODE || !child.textContent?.trim()) continue;
+      const fragment = document.createDocumentFragment();
+      for (const part of child.textContent.split(/(\s+)/)) {
+        if (!part) continue;
+        if (/^\s+$/.test(part)) {
+          fragment.append(" ");
+          continue;
+        }
+        const mask = document.createElement("span");
+        mask.className = "w";
+        const word = document.createElement("span");
+        word.style.setProperty("--i", String(index++));
+        word.textContent = part;
+        mask.append(word);
+        fragment.append(mask);
+      }
+      child.replaceWith(fragment);
+    }
+  };
+  el.setAttribute("aria-label", el.textContent?.replace(/\s+/g, " ").trim() ?? "");
+  walk(el);
+}
+
+/**
+ * G «floating»: photos drift past the text at their own speeds. The scroll position is followed
+ * with inertia (--lp eases towards it each frame), which gives the soft «glide» of altermind.com
+ * without taking over the page scroll. The heading rises word by word, then the numbers count.
+ */
+function initFloating(section: HTMLElement) {
+  const title = section.querySelector<HTMLElement>("[data-words]");
+  if (title) splitWords(title);
+  const counters = Array.from(section.querySelectorAll<HTMLElement>("[data-count]"));
+  counters.forEach((el) => (el.textContent = "0"));
+
+  let target = 0;
+  let current = 0;
+  let loop = 0;
+  const read = () => {
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    // -0.5 when the block enters at the bottom, +0.5 when it leaves at the top
+    target = clamp01((vh - rect.top) / (rect.height + vh)) - 0.5;
+  };
+  const tick = () => {
+    current += (target - current) * 0.075;
+    section.style.setProperty("--lp", current.toFixed(4));
+    loop = Math.abs(target - current) > 0.0005 ? requestAnimationFrame(tick) : 0;
+  };
+  const update = () => {
+    read();
+    loop ||= requestAnimationFrame(tick);
+  };
+
+  read();
+  current = target;
+  section.style.setProperty("--lp", current.toFixed(4));
+  whileNear(section, update);
+
+  new IntersectionObserver(
+    ([entry], observer) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      section.classList.add("is-in");
+      counters.forEach((el, i) => countUp(el, 500 + i * 120));
+    },
+    { threshold: 0.35 },
+  ).observe(section.querySelector(".about-float__copy") ?? section);
+}
+
+/**
+ * About «floating gallery» (`data-about-scene`, templates/partials/about/floating.html): photos
+ * drift past the text at their own speeds; see initFloating.
+ */
+export function initAboutScenes() {
+  const section = document.querySelector<HTMLElement>("[data-about-scene]");
+  if (!section || reducedMotion() || !("IntersectionObserver" in window)) return;
+  section.classList.add("is-scene");
+  initFloating(section);
+}
+
+/** «How it works» (`data-steps`): play the entrance once, when the steps come into view. */
+export function initSteps() {
+  const list = document.querySelector<HTMLElement>("[data-steps]");
+  if (!list) return;
+  if (reducedMotion() || !("IntersectionObserver" in window)) return;
+  list.classList.add("is-armed");
+  new IntersectionObserver(
+    ([entry], observer) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      list.classList.add("is-in");
+      window.setTimeout(() => list.classList.add("is-done"), 1800); // hover may react now
+    },
+    { threshold: 0.3 },
+  ).observe(list);
 }
 
 /**

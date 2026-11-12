@@ -1,0 +1,25 @@
+{% comment %}
+  «Share your experience»: guest faces, a short question and five stars. Tapping a star opens the
+  review form with that rating already chosen. `dark` = on a dark band. On a tour page (`tour` in
+  the context) the form opens with that tour picked and the question becomes «Been on this tour?».
+{% endcomment %}
+{% url 'content:review_submit' as review_url %}
+<div class="review-cta{% if dark %} is-dark{% endif %}">
+  <a class="review-cta__ask" href="{{ review_url }}{% if tour %}?tour={{ tour.slug }}{% endif %}">
+    <span class="review-cta__faces" aria-hidden="true">
+      {% for review in reviews|slice:":3" %}{% include "partials/reviews/_avatar.html" with size="size-10" %}{% endfor %}
+    </span>
+    <span class="flex flex-col leading-tight">
+      <span class="text-xs opacity-70">{% if tour %}Been on this tour?{% else %}Travelled with us?{% endif %}</span>
+      <b class="text-base">Share your experience</b>
+    </span>
+  </a>
+  <span class="review-cta__stars" role="group" aria-label="Rate your trip">
+    {# reversed in the DOM so «hover a star → it and the ones before it light up» works in CSS #}
+    {% for value in "54321" %}
+      <a href="{{ review_url }}?{% if tour %}tour={{ tour.slug }}&amp;{% endif %}rating={{ value }}" style="--n: {{ value }}" aria-label="Rate {{ value }} star{{ value|pluralize }}">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+      </a>
+    {% endfor %}
+  </span>
+</div>

@@ -40,10 +40,17 @@ class PublishableModel(models.Model):
 
 class SEOModel(models.Model):
     seo_title = models.CharField(
-        "SEO title", max_length=70, blank=True, help_text="До 60–70 символов. Пусто — название."
+        "SEO title",
+        max_length=70,
+        blank=True,
+        help_text="Заголовок в Google, до 60 символов, на английском. Пусто — соберётся сам.",
     )
     seo_description = models.CharField(
-        "SEO description", max_length=170, blank=True, help_text="До 150–160 символов."
+        "SEO description",
+        max_length=170,
+        blank=True,
+        help_text="Текст под заголовком в Google, 120–160 символов: что, где, для кого, цена. "
+        "Пусто — краткое описание.",
     )
     og_image = models.ImageField(
         "картинка для превью в соцсетях",
@@ -95,6 +102,7 @@ class SiteSettings(SEOModel):
     )
     address = models.CharField("адрес", max_length=255, blank=True)
     instagram_url = models.URLField("Instagram", blank=True)
+    tiktok_url = models.URLField("TikTok", blank=True)
     facebook_url = models.URLField("Facebook", blank=True)
     youtube_url = models.URLField("YouTube", blank=True)
     tripadvisor_url = models.URLField("TripAdvisor", blank=True)
@@ -139,8 +147,28 @@ class SiteSettings(SEOModel):
     about_title = models.CharField(
         "заголовок «О нас»", max_length=120, default="A team that *knows the mountains*"
     )
+    about_eyebrow = models.CharField(
+        "надпись над заголовком «О нас»",
+        max_length=60,
+        blank=True,
+        default="The team",
+        help_text="Мелкая строка над заголовком. Перед ней сам встанет «Since <год основания>».",
+    )
     about_text = models.TextField("текст «О нас»", blank=True)
-    about_image = models.ImageField("фото «О нас»", upload_to="home/", blank=True)
+    about_link_label = models.CharField(
+        "текст ссылки под «О нас»",
+        max_length=40,
+        blank=True,
+        default="Meet the guides",
+        help_text="Ведёт к блоку гидов. Пусто — ссылки нет.",
+    )
+    about_image = models.ImageField(
+        "фото «О нас»",
+        upload_to="home/",
+        blank=True,
+        help_text="Запасное: пока не загружены «Фото блока «О нас»», галерея собирается из "
+        "этого фото, гидов и туров.",
+    )
 
     trust_line = models.CharField(
         "строка доверия под кнопками",
@@ -182,6 +210,11 @@ class SiteSettings(SEOModel):
     )
     founder_since = models.PositiveSmallIntegerField(
         "год основания", null=True, blank=True, help_text="Например 2014"
+    )
+    founder_instagram = models.URLField(
+        "Instagram основателя",
+        blank=True,
+        help_text="Ссылка на личный профиль: https://instagram.com/… Пусто — иконки нет.",
     )
 
     legal_name = models.CharField(

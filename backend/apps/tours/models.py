@@ -55,7 +55,14 @@ class TourQuerySet(PublishableQuerySet):
                 rating_avg=Avg("reviews__rating", filter=published_reviews),
                 rating_count=Count("reviews", filter=published_reviews),
             )
-            .prefetch_related("images")
+            .prefetch_related(
+                "images",
+                models.Prefetch(
+                    "departures",
+                    queryset=Departure.objects.upcoming().exclude(status=DepartureStatus.FULL),
+                    to_attr="upcoming_departures",
+                ),
+            )
         )
 
 
@@ -100,7 +107,7 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
         "ближайший выезд",
         max_length=60,
         blank=True,
-        help_text="Показывается на фото тура, например: June 14. Пусто — не показывать.",
+        help_text="Только если нет дат в расписании ниже, текстом: «Any day, May – October».",
     )
     is_featured = models.BooleanField("хит сезона", default=False)
 
@@ -112,6 +119,15 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
 
     def __str__(self):
         return self.title
+
+    @property
+    def next_departure_label(self):
+        """The first open date from the calendar, else the free text («Any day, May – October»)."""
+        upcoming = getattr(self, "upcoming_departures", None)
+        if upcoming is None:
+            upcoming = [d for d in self.departures.upcoming() if not d.is_full][:1]
+        upcoming = [d for d in upcoming if not d.is_full]
+        return upcoming[0].short_label if upcoming else self.next_departure
 
     def get_absolute_url(self):
         return reverse("tours:detail", kwargs={"slug": self.slug})
@@ -178,10 +194,8 @@ class Tour(TimeStampedModel, OrderableModel, PublishableModel, SEOModel):
     def filter_tags(self):
         """Space-separated tags for the home filter chips."""
         tags = [self.tour_type]
-        if self.duration_days <= 2:
-            tags.append("short")
-        if self.is_winter:
-            tags.append("winter")
+        if self.is_featured:
+            tags.append("best")
         return " ".join(tags)
 
     @property
@@ -338,3 +352,126 @@ class TourDayImage(OrderableModel):
 
     def __str__(self):
         return self.alt or f"Фото {self.pk}"
+
+
+class DepartureStatus(models.TextChoices):
+    OPEN = "open", "Есть места"
+    FEW = "few", "Мало мест"
+    FULL = "full", "Мест нет"
+
+
+class DepartureQuerySet(models.QuerySet):
+    def upcoming(self):
+        from django.utils import timezone
+
+        return self.filter(start_date__gte=timezone.localdate(), tour__is_published=True)
+
+
+class Departure(TimeStampedModel):
+    """One date of a tour in the calendar: «Ala-Kul Trek, 14–19 June 2027, 3 seats left»."""
+
+    tour = models.ForeignKey(
+        Tour, verbose_name="тур", on_delete=models.CASCADE, related_name="departures"
+    )
+    start_date = models.DateField("начало")
+    end_date = models.DateField(
+        "конец", blank=True, editable=False, help_text="Считается по длительности тура."
+    )
+    status = models.CharField(
+        "места", max_length=10, choices=DepartureStatus.choices, default=DepartureStatus.OPEN
+    )
+    seats_left = models.PositiveSmallIntegerField(
+        "осталось мест",
+        null=True,
+        blank=True,
+        help_text="Покажем «3 seats left». 0 — «мест нет». Пусто — число не показываем.",
+    )
+    price = models.DecimalField(
+        "цена этой даты",
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text="Пусто — цена тура.",
+    )
+    note = models.CharField(
+        "пометка", max_length=60, blank=True, help_text="Короткая, на английском: Festival week"
+    )
+
+    objects = DepartureQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "выезд"
+        verbose_name_plural = "расписание выездов"
+        ordering = ["start_date", "tour__order"]
+        constraints = [
+            models.UniqueConstraint(fields=["tour", "start_date"], name="unique_tour_departure")
+        ]
+
+    def __str__(self):
+        return f"{self.tour} — {self.dates_label}"
+
+    def clean(self):
+        if self.end_date and self.start_date and self.end_date < self.start_date:
+            raise ValidationError({"end_date": "Конец раньше начала."})
+
+    def save(self, *args, **kwargs):
+        from datetime import timedelta
+
+        # the end always follows the tour's length, so moving a date never leaves a stale end
+        if self.start_date and self.tour_id:
+            self.end_date = self.start_date + timedelta(days=self.tour.duration_days - 1)
+        # the client only edits «seats left»: 0 closes the date, a free seat opens it again
+        if self.seats_left == 0:
+            self.status = DepartureStatus.FULL
+        elif self.seats_left and self.status == DepartureStatus.FULL:
+            self.status = DepartureStatus.OPEN
+        super().save(*args, **kwargs)
+
+    @property
+    def dates_label(self):
+        """«14 – 19 Jun 2027», «28 Jun – 3 Jul 2027», «30 Dec 2027 – 4 Jan 2028»."""
+        start, end = self.start_date, self.end_date or self.start_date
+        if start == end:
+            return f"{start.day} {start:%b %Y}"
+        if start.year != end.year:
+            return f"{start.day} {start:%b %Y} – {end.day} {end:%b %Y}"
+        if start.month != end.month:
+            return f"{start.day} {start:%b} – {end.day} {end:%b %Y}"
+        return f"{start.day} – {end.day} {end:%b %Y}"
+
+    @property
+    def short_label(self):
+        """For cards: «14 Jun»."""
+        return f"{self.start_date.day} {self.start_date:%b}"
+
+    @property
+    def weekdays_label(self):
+        end = self.end_date or self.start_date
+        return f"{self.start_date:%a} → {end:%a}"
+
+    @property
+    def is_full(self):
+        return self.status == DepartureStatus.FULL
+
+    @property
+    def seats_label(self):
+        if self.is_full:
+            return "Sold out"
+        if self.seats_left:
+            return f"{self.seats_left} seat{'' if self.seats_left == 1 else 's'} left"
+        return "Few seats left" if self.status == DepartureStatus.FEW else "Available"
+
+    @property
+    def effective_price(self):
+        return self.price if self.price is not None else self.tour.price_from
+
+    @property
+    def price_label(self):
+        if self.price is None:
+            return self.tour.price_label if self.tour.price_from else ""
+        symbols = {Currency.USD: "$", Currency.EUR: "€"}
+        amount = f"{self.price:,.0f}"
+        symbol = symbols.get(self.tour.currency)
+        return f"{symbol}{amount}" if symbol else f"{amount} {self.tour.currency}"
