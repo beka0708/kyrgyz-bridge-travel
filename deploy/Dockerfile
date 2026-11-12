@@ -2,7 +2,7 @@
 # Build context: repository root (Tailwind scans backend templates while building CSS).
 
 # --- 1. Frontend: Vite + Tailwind -> backend/static/dist ---------------------------
-FROM node:22-alpine AS frontend
+FROM node:26-alpine AS frontend
 # Set NPM_REGISTRY=https://registry.npmmirror.com in .env if the official registry is slow.
 ARG NPM_REGISTRY=https://registry.npmjs.org/
 WORKDIR /app/frontend
